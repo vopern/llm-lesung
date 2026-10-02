@@ -1,0 +1,39 @@
+# Production compose file — shipped to /app/compose.yaml on the instance by
+# `make deploy`. The app image arrives via `docker save | rsync | docker load`, so
+# it is never built or pulled there; the DB is rsync'd into ./data separately
+# (`make push-db`). The app itself needs no configuration; /app/.env (written by
+# `make deploy`) only carries the optional tunnel settings and contact address.
+services:
+  web:
+    image: llm-lesung:latest
+    restart: unless-stopped
+    ports:
+      - "80:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Cloudflare Tunnel: publishes the site under a domain through an outbound
+  # connection, so no inbound port is opened. Runs only when `make deploy` found
+  # a TUNNEL_TOKEN (it then sets COMPOSE_PROFILES=tunnel in /app/.env). Who may
+  # reach the hostname is decided at Cloudflare (Access), not here.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: [tunnel]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

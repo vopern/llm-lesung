@@ -1,0 +1,28 @@
+[project]
+name = "laws"
+version = "0.1.0"
+description = "LLM-Lesung — AI analysis of German Bundestag draft bills"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx",
+    "pypdf",
+    # Pinned: the package bundles the Claude Code CLI the pipeline runs (0.2.163 → CLI 2.1.286).
+    "claude-agent-sdk==0.2.163",
+    "pydantic",
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pyyaml>=6.0.3",
+]
+
+[tool.pytest.ini_options]
+# Only this project's suite. `references/` holds a vendored copy of the Estonian
+# LawLab for comparison; its tests need dependencies we don't install, and its
+# `eval` package shadows ours once pytest puts that directory on sys.path.
+testpaths = ["tests"]
+pythonpath = ["."]

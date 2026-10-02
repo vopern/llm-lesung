@@ -1,0 +1,465 @@
+# Per Gesetzentwurf of either suite: every pinned input an eval run may use.
+# The eval harness reads its message fields from here, never from the database.
+# Checked by: uv run python -m eval.testset lint
+
+"18/11163":
+  titel: Entwurf eines Gesetzes zur Neustrukturierung des Bundeskriminalamtgesetzes
+  gesetzentwurf: {file: 18-11163.txt, sha256: "5e165acee98373067367dc9e270f8f6ed5a8f21136d5bb7f19f3403581813411"}
+"18/12086":
+  titel: Entwurf eines Gesetzes zur Bekämpfung von Kinderehen
+  gesetzentwurf: {file: 18-12086.txt, sha256: "40a78be0d491d6f9f3416427e7a8859de956c612b5c1234f9ffc037bd9681d28"}
+"19/14337":
+  titel: Entwurf eines Gesetzes zur Einführung eines Bundes-Klimaschutzgesetzes
+  gesetzentwurf: {file: 19-14337.txt, sha256: "1b24012f1ecc66bac9252fb8178135a8a25228707dc7da3e597f4c88f3e9f2e3"}
+"19/30399":
+  titel: Entwurf eines Gesetzes zur Änderung der Strafprozessordnung – Erweiterung der Wiederaufnahmemöglichkeiten zuungunsten des Verurteilten gemäß § 362 der Strafprozessordnung (Gesetz zur Herstellung materieller Gerechtigkeit)
+  gesetzentwurf: {file: 19-30399.txt, sha256: "2ce5b41b470ae186297393de373d4b111362d02bc2719713beade3f448856ed4"}
+"20/300":
+  titel: Entwurf eines Gesetzes über die Feststellung eines Zweiten Nachtrags zum Bundeshaushaltsplan für das Haushaltsjahr 2021 (Zweites Nachtragshaushaltsgesetz 2021)
+  gesetzentwurf: {file: 20-300.txt, sha256: "ef739bb2cf8840935fc2f84f086439e34fb8bdf7eef519e9d759edc6cdf92714"}
+"20/3877":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Infektionsschutzgesetzes
+  gesetzentwurf: {file: 20-3877.txt, sha256: "fe172b0ded02902670e0f22a2e6efc8b0a88dddc5d4c7a856128ea18b4d41dec"}
+"20/15096":
+  titel: Entwurf eines Gesetzes zur Änderung des Grundgesetzes (Artikel 109, 115 und 143h)
+  gesetzentwurf: {file: 20-15096.txt, sha256: "e139932963eca1ae59198e6277cf5b1680a933ecb446473ee469199c0088577f"}
+"21/16":
+  titel: Entwurf eines Gesetzes zur Modernisierung des Berufsrechts der Wirtschaftsprüfer
+  gesetzentwurf: {file: 21-16.txt, sha256: "0033ca0021c6067576dcf58351965c10da129a4bcf4d9429f1f5d0636899907e"}
+"21/17":
+  titel: Entwurf eines Gesetzes zur Verlängerung der Mietpreisbremse
+  gesetzentwurf: {file: 21-17.txt, sha256: "b7cf13b1f672a5614ea4b68f52d1974e4637c30f1459c80087f5a52e528facd0"}
+"21/319":
+  titel: Entwurf eines Gesetzes zur Änderung des Telekommunikationsgesetzes und zur Feststellung des überragenden öffentlichen Interesses für den Ausbau von Telekommunikationsnetzen (TKG-Änderungsgesetz 2025)
+  gesetzentwurf: {file: 21-319.txt, sha256: "a5401651118c6f3d6fc2001c71f4a20b3dbc81d7ac20fcc578e14b0b8c41cb40"}
+"21/333":
+  titel: Entwurf eines Gesetzes zur besseren Bekämpfung der Kriminalität von Kindern, Jugendlichen und Heranwachsenden
+  gesetzentwurf: {file: 21-333.txt, sha256: "4749c6f36607e7c8cc9a6396c9cd67147735b18ca0c583afb8b8fb37f18680f4"}
+"21/537":
+  titel: Entwurf eines Sechsten Gesetzes zur Änderung des Staatsangehörigkeitsgesetzes
+  gesetzentwurf: {file: 21-537.txt, sha256: "37c5eec74e8a035996b1084b50cdc0f5afa101772ad39adfad38eb97aa15d8dc"}
+"21/570":
+  titel: Entwurf eines Gesetzes zur Anpassung des Batterierechts an die Verordnung (EU) 2023/1542 (Batterierecht-EU-Anpassungsgesetz - Batt-EU-AnpG)
+  gesetzentwurf: {file: 21-570.txt, sha256: "11bd8642dd78ed90af991b93b77f52e1af34ab9a69e2bce1cefea27909575737"}
+"21/575":
+  titel: Entwurf eines Gesetzes zur Änderung des Grundgesetzes (Artikel 143h - Klimaschutzfolgenbereinigung)
+  gesetzentwurf: {file: 21-575.txt, sha256: "f570c2ff2ed6142b0fd1c8fb51c31378ad6359aed4187db0c059e00564aba5e3"}
+"21/576":
+  titel: Entwurf eines Gesetzes zur Beseitigung der Klimaschutzfolgen und Wiederherstellung der Energieinfrastruktur in Deutschland (Klimaschutzfolgenbereinigungsgesetz)
+  gesetzentwurf: {file: 21-576.txt, sha256: "2e3ca777367741b5154eeb094c9ee64f842cb534caa70ac96ab659fa7d59a275"}
+"21/777":
+  titel: Entwurf eines Gesetzes zur Änderung des Bundes-Immissionsschutzgesetzes und weiterer Vorschriften
+  gesetzentwurf: {file: 21-777.txt, sha256: "26a34ed5a14dc8284b0bee5a97a70eeca6567bb0bb9668bfb095962c994f3caf"}
+"21/781":
+  titel: Entwurf eines Gesetzes zur Beschleunigung des Wohnungsbaus und zur Wohnraumsicherung
+  gesetzentwurf: {file: 21-781.txt, sha256: "caa11e959a98afc8fddf2a947f4af8f5928f7dd963e17987a4678bd9a7f29b76"}
+"21/1087":
+  titel: Entwurf eines Gesetzes zur Ausführung von Artikel 109 Absatz 3 Satz 6 und Satz 7 des Grundgesetzes und zur Änderung anderer Gesetze
+  gesetzentwurf: {file: 21-1087.txt, sha256: "64bfb6a00ab2fc30f701a583f7452c7ad0d719769bd443e7a094807acb08ef31"}
+"21/1384":
+  titel: Entwurf eines Gesetzes zur frühzeitigen Integration von Asylbewerbern in den Arbeitsmarkt
+  gesetzentwurf: {file: 21-1384.txt, sha256: "3ba1e346993abad15f9807537160f84c791aa3b22d3be52a0108cadeb95c5502"}
+"21/1387":
+  titel: Entwurf eines ... Gesetzes zur Änderung der Strafprozessordnung - Schaffung einer gesetzlichen Grundlage für den Erlass eines (Sicherungs-)Unterbringungsbefehls bei einer Krisenintervention
+  gesetzentwurf: {file: 21-1387.txt, sha256: "f5a1fb59f1c4fb931738d95577e932c7621d92626b4622617c46ff81e0d5898b"}
+"21/1394":
+  titel: Entwurf eines Gesetzes zur Verbesserung des strafrechtlichen Schutzes von Kindern
+  gesetzentwurf: {file: 21-1394.txt, sha256: "e73c14f907680e3c439b4f5038e1935ebc1b2665852d2d6763086fe55ba8364e"}
+"21/1493":
+  titel: Entwurf eines Gesetzes über die Einführung einer bundeseinheitlichen Pflegefachassistenzausbildung
+  gesetzentwurf: {file: 21-1493.txt, sha256: "a2b51b0d1354039d03e0a3ae1cb611315110e310ca8a907981fdebeb93a789bd"}
+"21/1494":
+  titel: Entwurf eines Gesetzes zur Änderung des Kohlendioxid-Speicherungsgesetzes
+  gesetzentwurf: {file: 21-1494.txt, sha256: "f06f55db11e5aa1d12c8e0b6d30ac2f484b2357ba68072398d72e61103dffae5"}
+"21/1496":
+  titel: Entwurf eines Vierten Gesetzes zur Änderung des Energiewirtschaftsgesetzes
+  gesetzentwurf: {file: 21-1496.txt, sha256: "694ebb0e731aa8a2c27b3d2e1e49f41e458e587fa95cec628a36be329007d6a5"}
+"21/1497":
+  titel: Entwurf eines Gesetzes zur Änderung des Energiewirtschaftsrechts zur Stärkung des Verbraucherschutzes im Energiebereich sowie zur Änderung weiterer energierechtlicher Vorschriften
+  gesetzentwurf: {file: 21-1497.txt, sha256: "cb40ac5961d5557dca8a6043eb0f9b10a8889860ee9d356e3166757221b18ff4"}
+"21/1506":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Elektro- und Elektronikgerätegesetzes
+  gesetzentwurf: {file: 21-1506.txt, sha256: "39311b307868952b55916b13d3261507d9ce56fa3ded447618a93181e5026fc0"}
+"21/1508":
+  titel: Entwurf eines Gesetzes zu den Änderungen vom 1. Juni 2024 der Internationalen Gesundheitsvorschriften (2005) (IGV) vom 23. Mai 2005
+  gesetzentwurf: {file: 21-1508.txt, sha256: "cfdac1e4525f6822b695b8d654f5a68fa31eab53febde7af25af978e148437e2"}
+"21/1757":
+  titel: Entwurf eines Gesetzes zur Änderung des Strafgesetzbuchs - Straffreiheit für Fahren ohne Fahrschein
+  gesetzentwurf: {file: 21-1757.txt, sha256: "e7aedb6181db51e5bad55f2f755a88d65aa310bc0e27e475cf970323524123f3"}
+"21/1847":
+  titel: Entwurf eines Gesetzes über den Zugang zu Schuldnerberatungsdiensten für Verbraucher (Schuldnerberatungsdienstegesetz - SchuBerDG)
+  gesetzentwurf: {file: 21-1847.txt, sha256: "bf28b34bd176edc2fa7a5523f9c0fd005a51498f2930528c38d55b6337f03f20"}
+"21/1849":
+  titel: Entwurf eines Gesetzes zur Änderung des Zuständigkeitsstreitwerts der Amtsgerichte, zum Ausbau der Spezialisierung der Justiz in Zivilsachen sowie zur Änderung weiterer prozessualer Regelungen
+  gesetzentwurf: {file: 21-1849.txt, sha256: "7ae057e9439872a0edcfc34e34e59cb4c8a1168d5c1157cd0a6ed5904efe49dc"}
+"21/1850":
+  titel: Entwurf eines Gesetzes zur Änderung des AZRG und weiterer Gesetze in Folge der Anpassung des nationalen Rechts an das Gemeinsame Europäische Asylsystem (GEAS-Anpassungsfolgegesetz)
+  gesetzentwurf: {file: 21-1850.txt, sha256: "7bb8b74d0d7f17a975b6d5589adcef2fa50990e51fc5ba5847ec5d667daeec36"}
+"21/1853":
+  titel: Entwurf eines Gesetzes zur Modernisierung des Wehrdienstes - Wehrdienst-Modernisierungsgesetz (WDModG)
+  gesetzentwurf: {file: 21-1853.txt, sha256: "bd2419b9ad63bd9bb950ebf0240fc8e134dc2d71c92ca73d8d5c72c48befafb5"}
+"21/1855":
+  titel: Entwurf eines Dritten Gesetzes zur Änderung des Gesetzes gegen den unlauteren Wettbewerb
+  gesetzentwurf: {file: 21-1855.txt, sha256: "aff2c81ff0a7c8967d898dd8b11834fc3b7f7852a6b44a751d96707edec51e78"}
+"21/1856":
+  titel: Entwurf eines Gesetzes zur Änderung des Verbrauchervertrags- und des Versicherungsvertragsrechts sowie zur Änderung des Behandlungsvertragsrechts
+  gesetzentwurf: {file: 21-1856.txt, sha256: "14bc834eef66d0e7e22cb03d0508b6a9da5f7d1766a4ae102f0ce4a895cb10c3"}
+"21/1857":
+  titel: Entwurf eines Gesetzes zur Umsetzung der Richtlinie (EU) 2022/2464 hinsichtlich der Nachhaltigkeitsberichterstattung von Unternehmen in der durch die Richtlinie (EU) 2025/794 geänderten Fassung
+  gesetzentwurf: {file: 21-1857.txt, sha256: "d857fb35e3c4f1bf0cd0d6f7e70267f2933f5c12879f14b3f9715a3e44658edd"}
+"21/1865":
+  titel: Entwurf eines Gesetzes zur Anpassung des Mindeststeuergesetzes und zur Umsetzung weiterer Maßnahmen
+  gesetzentwurf: {file: 21-1865.txt, sha256: "6ace4c417ae933b9c4563478f6c821385b3fc8b658850ced0c10b669a7df5df8"}
+"21/1866":
+  titel: Entwurf eines Dritten Gesetzes zur Änderung des Energiesteuer- und des Stromsteuergesetzes
+  gesetzentwurf: {file: 21-1866.txt, sha256: "e07ca8d49577bac75bb3c90dfb5b359d21ecc2a96650d043eae63c64dbdb02e0"}
+"21/1897":
+  titel: Entwurf eines Gesetzes zum Investitionsschutzabkommen vom 30. Juni 2019 zwischen der Europäischen Union und ihren Mitgliedstaaten einerseits und der Sozialistischen Republik Vietnam andererseits
+  gesetzentwurf: {file: 21-1897.txt, sha256: "86f5b4d5ed2e86994d1d2d2ef8b9f365fd3d5f6a9a3f7790fd691cb2212417ae"}
+"21/1898":
+  titel: Entwurf eines Gesetzes zum Investitionsschutzabkommen vom 19. Oktober 2018 zwischen der Europäischen Union und ihren Mitgliedstaaten einerseits und der Republik Singapur andererseits
+  gesetzentwurf: {file: 21-1898.txt, sha256: "f2aea51e8a11dfc0ef7902f810ab5de65c9536cf67b938862a667008458988c3"}
+"21/1926":
+  titel: Entwurf eines Gesetzes zur Modernisierung des Sicherheitsüberprüfungsgesetzes und zur Änderung beamtenrechtlicher Vorschriften
+  gesetzentwurf: {file: 21-1926.txt, sha256: "798f704d6e715d7fb720d4275c32729dd1c48ec0d985181d3cf7d48bcb1d9cd5"}
+"21/1928":
+  titel: Entwurf eines Gesetzes zur Beschleunigung des Ausbaus von Geothermieanlagen, Wärmepumpen und Wärmespeichern sowie zur Änderung weiterer rechtlicher Rahmenbedingungen für den klimaneutralen Ausbau der Wärmeversorgung
+  gesetzentwurf: {file: 21-1928.txt, sha256: "722a0186f93443aec4ba1762bd20292ea7a659a2686cdbdbe5dc77c1f6940a8e"}
+"21/1931":
+  titel: Entwurf eines Gesetzes zur beschleunigten Planung und Beschaffung für die Bundeswehr
+  gesetzentwurf: {file: 21-1931.txt, sha256: "5a98b34402ce9e9862690d9280395f49f744a37c7243ffcbb9d401dfadc9fbfd"}
+"21/1934":
+  titel: Entwurf eines Gesetzes zur Beschleunigung der Vergabe öffentlicher Aufträge
+  gesetzentwurf: {file: 21-1934.txt, sha256: "8ec7bc9e989223e16cb32331294a71abcfb78520f0c92da940442a3bed04e3b8"}
+"21/1937":
+  titel: Entwurf eines Gesetzes zur Umsetzung der Richtlinie (EU) 2023/2226
+  gesetzentwurf: {file: 21-1937.txt, sha256: "c2ccfe20a76829e64e73df349c4452d75f6ba48e38b6d2f064957ce245688442"}
+"21/1938":
+  titel: Entwurf eines Gesetzes zur Änderung des Tierarzneimittelgesetzes und des Apothengesetzes
+  gesetzentwurf: {file: 21-1938.txt, sha256: "84033c1cf26c80344aae6a136cb4823094fdb804cb0dd8f8c148ce3e8a2a203d"}
+"21/1974":
+  titel: Entwurf eines Steueränderungsgesetzes 2025
+  gesetzentwurf: {file: 21-1974.txt, sha256: "cd5b4708612a49f68cdc21b0703c4907e91f7e81434678a50c6c43868608d5a0"}
+"21/2473":
+  titel: Entwurf eines Gesetzes zur Anpassung des Pflanzenschutzgesetzes an unionsrechtliche Regelungen
+  gesetzentwurf: {file: 21-2473.txt, sha256: "a1c48d4be86511d3022304c6c72a44a6a8ce4e0076a2e43f54ad7c2c319242e2"}
+"21/2475":
+  titel: Entwurf eines Gesetzes zur Änderung des Tiergesundheitsgesetzes, des Tierarzneimittelgesetzes und des Tiergesundheitsrechtlichen Bußgeldgesetzes
+  gesetzentwurf: {file: 21-2475.txt, sha256: "536e250783652608b4c88e534fa736093b6b72f652db938d1a4c88640ba7b121"}
+"21/2506":
+  titel: Entwurf eines Gesetzes zur Beschleunigung der Verfügbarkeit von Wasserstoff und zur Änderung weiterer rechtlicher Rahmenbedingungen für den Wasserstoffhochlauf und weiterer energierechtlicher Vorschriften
+  gesetzentwurf: {file: 21-2506.txt, sha256: "c02de7b3a70c2956d61cc1a7cc6f7d22c5db9da3a6599ba7fecc94c67250831c"}
+"21/2510":
+  titel: Entwurf eines Gesetzes zur Umsetzung der Richtlinie (EU) 2022/2557 und zur Stärkung der Resilienz kritischer Anlagen
+  gesetzentwurf: {file: 21-2510.txt, sha256: "e09378bf1e00db8e1abddf025054ac2e9a8e33e19d8174bfdaed083025b65116"}
+"21/2512":
+  titel: "Entwurf eines Gesetzes zur Anpassung der Krankenhausreform \r\n(Krankenhausreformanpassungsgesetz - KHAG)"
+  gesetzentwurf: {file: 21-2512.txt, sha256: "0823984de98aeac5e12c2cd717a55dde12ae5dd7e4932a458b2b0353846e1456"}
+"21/2996":
+  titel: "Entwurf eines Gesetzes über den Informationsaustausch zwischen den Strafverfolgungsbehörden der Mitgliedstaaten der Europäischen Union\r\n"
+  gesetzentwurf: {file: 21-2996.txt, sha256: "4566391eb96fdd4486ec510bff6c207776d7ccfd134e4b9ec10d8ae0c2a992a3"}
+"21/2997":
+  titel: Entwurf eines Gesetzes zur Umsetzung des Urteils des Bundesverfassungsgerichts zur Vaterschaftsanfechtung
+  gesetzentwurf: {file: 21-2997.txt, sha256: "268a9ad8366ee6c5456636e3ba827c7bd342f7f5e44451b3ad576a576dba8e12"}
+"21/2998":
+  titel: Entwurf eines Gesetzes zur Durchführung der Verordnung (EU) 2023/2854 des Europäischen Parlaments und des Rates vom 13. Dezember 2023 über harmonisierte Vorschriften für einen fairen Datenzugang und eine faire Datennutzung sowie zur Änderung der Verordnung (EU) 2017/2394 und der Richtlinie (EU) 2020/1828
+  gesetzentwurf: {file: 21-2998.txt, sha256: "0aefecb1c62e0efc9fd67bc83b099c110eaabfcc9c7afed8229a2aa551708f64"}
+"21/2999":
+  titel: Entwurf eines Gesetzes zur Neuregelung des Rechtsrahmens für intelligente Verkehrssysteme im Straßenverkehr und deren Schnittstellen zu anderen Verkehrsträgern und die Datenbereitstellung über den Nationalen Zugangspunkt
+  gesetzentwurf: {file: 21-2999.txt, sha256: "3fe1cf57f0cc3e2fd77dbd2af3015df618636aef351372e65af690ff7eae6a80"}
+"21/3055":
+  titel: Entwurf eines Gesetzes zur Änderung des Registerzensuserprobungsgesetzes
+  gesetzentwurf: {file: 21-3055.txt, sha256: "731ac31e60794159dfb9639e287861f0a60984320470bc58320a8b18515fca80"}
+"21/3192":
+  titel: Entwurf eines Gesetzes zur Umsetzung der Richtlinie (EU) 2023/1544 und zur Durchführung der Verordnung (EU) 2023/1543 über die grenzüberschreitende Sicherung und Herausgabe elektronischer Beweismittel in Strafverfahren innerhalb der Europäischen Union
+  gesetzentwurf: {file: 21-3192.txt, sha256: "5e3f12c52ef5a61ce0e4981df7048b97cfbcc879b223ece057ed92f1879f4826"}
+"21/3194":
+  titel: Entwurf eines Gesetzes zu den Entschließungen LP.3(4) vom 30. Oktober 2009 und LP.5(14) vom 11. Oktober 2019 über die Änderung des Artikels 6 des Protokolls vom 7. November 1996 zum Übereinkommen über die Verhütung der Meeresverschmutzung durch das Einbringen von Abfällen und anderen Stoffen von 1972 (Londoner Protokoll)
+  gesetzentwurf: {file: 21-3194.txt, sha256: "258ce6bc79cf41198caa60c64eb320ffdd5766c964a890f549dd9ee7b29ecf4e"}
+"21/3195":
+  titel: Entwurf eines Ersten Gesetzes zur Änderung des Hohe-See-Einbringungsgesetzes
+  gesetzentwurf: {file: 21-3195.txt, sha256: "939f5ec20f33c4f3bfb5df510faaedc68e18ff6f60fcaaf19e9d4616692aed64"}
+"21/3491":
+  titel: Entwurf eines Gesetzes zu dem Abkommen vom 27. August 2025 zwischen der Regierung der Bundesrepublik Deutschland und der Regierung des Königreichs der Niederlande über die Erschließung von grenzüberschreitenden Kohlenwasserstofflagerstätten in der Nordsee
+  gesetzentwurf: {file: 21-3491.txt, sha256: "dafdc970233609b29ae97c3a6704f4e9a708e2886462aa6771d398cb149486c1"}
+"21/3505":
+  titel: Entwurf eines Fünften Gesetzes zur Änderung des Straßenverkehrsgesetzes und anderer straßenverkehrsrechtlicher Vorschriften
+  gesetzentwurf: {file: 21-3505.txt, sha256: "d0494bbf1989500da1abe0b25bf2624894ce93a8286e36de6b11e5678123f38b"}
+"21/3510":
+  titel: "Entwurf eines Gesetzes zur Begrenzung der Risiken durch Investmentfonds und zur Umsetzung der Richtlinie (EU) 2024/927 im Hinblick auf Übertragungsvereinbarungen, Liquiditätsrisikomanagement, die aufsichtliche Berichterstattung, die Erbringung von Verwahr- und Hinterlegungsdienstleistungen und die Kreditvergabe durch alternative Investmentfonds sowie zur Umsetzung der Richtlinie (EU) 2024/2994 im Hinblick auf die Behandlung des Konzentrationsrisikos, das aus Risikopositionen gegenüber zentralen Gegenparteien erwächst, und des Ausfallrisikos bei zentral geclearten Derivategeschäften und zur Änderung weiterer Vorschriften\r\n(Fondsrisikobegrenzungsgesetz)"
+  gesetzentwurf: {file: 21-3510.txt, sha256: "7e06e5fc8ac09250befa3532f1b9605f3157bd17949e4605354263ce988da4be"}
+"21/3541":
+  titel: "Entwurf eines Dreizehnten Gesetzes zur Änderung des Zweiten Buches Sozialgesetzbuch und anderer Gesetze\r\n"
+  gesetzentwurf: {file: 21-3541.txt, sha256: "5e3df92b66a588188cb5b491a88be77ffb17160d0d04333bc0e8ac941b322ba6"}
+"21/3543":
+  titel: Entwurf eines Gesetzes zur Ausführung des Übereinkommens im Rahmen des Seerechtsübereinkommens der Vereinten Nationen über die Erhaltung und nachhaltige Nutzung der biologischen Vielfalt der Meere von Gebieten außerhalb nationaler Hoheitsbefugnisse (Hochseeschutzgesetz - HochseeSchG)
+  gesetzentwurf: {file: 21-3543.txt, sha256: "6bcb04c9d77a90ccd3a3c5282db6b41f92a06c9ac2fb99ee4726ce40024f4925"}
+"21/3544":
+  titel: Entwurf eines Gesetzes zur Durchführung der EU-Verordnung über europäische Daten-Governance (Daten-Governance-Gesetz - DGG)
+  gesetzentwurf: {file: 21-3544.txt, sha256: "ab1540bb889dc5c6cebd2e51b791b87276771b6ed55fc1135ef126e8289e37d5"}
+"21/3620":
+  titel: Entwurf eines Gesetzes für den Bürokratierückbau im Bereich des Bundesministeriums des Innern
+  gesetzentwurf: {file: 21-3620.txt, sha256: "695a9906a0733a2cf8f14fb6493b9f5b9f2d48862332367397e9dc78078a3a30"}
+"21/3737":
+  titel: Entwurf eines Gesetzes zur weiteren Digitalisierung der Zwangsvollstreckung
+  gesetzentwurf: {file: 21-3737.txt, sha256: "dbd3b6798ad2d69ae0efadefefc135a7913a3067ec40439695679cead32d818d"}
+"21/3948":
+  titel: Entwurf eines Gesetzes zur Änderung flaggen-, schiffsregister- und seefischereirechtlicher Vorschriften
+  gesetzentwurf: {file: 21-3948.txt, sha256: "d248cdeb0e2941e6e2ddf4efc5e216fb19bc902e40699661749bdb4c34d1f33c"}
+"21/4080":
+  titel: Entwurf eines Gesetzes zur Weiterentwicklung der Digitalisierung in der Migrationsverwaltung (Migrationsverwaltungsdigitalisierungsweiterentwicklungsgesetz - MDWG)
+  gesetzentwurf: {file: 21-4080.txt, sha256: "580d1202ac529e13ad8431ceb0dda98651b5a780b7b6f96e983fddd23b0b7e8d"}
+"21/4081":
+  titel: Entwurf eines Gesetzes zur besseren Verhinderung missbräuchlicher Anerkennungen der Vaterschaft
+  gesetzentwurf: {file: 21-4081.txt, sha256: "842c127be15e10e0641bb63184ed86502feeb120a9354c67fc9ce8e09e87b286"}
+"21/4082":
+  titel: Entwurf eines Gesetzes zur Einführung der elektronischen Aufenthaltsüberwachung und der Täterarbeit im Gewaltschutzgesetz
+  gesetzentwurf: {file: 21-4082.txt, sha256: "dfc47ba483910a8b14e1822ec417ae24a522f6b33645f649deeac418350b6ed7"}
+"21/4083":
+  titel: Entwurf eines Zweiten Gesetzes zur Weiterentwicklung der Treibhausgasminderungs-Quote
+  gesetzentwurf: {file: 21-4083.txt, sha256: "7bb301960a2394115953e54883ba567856cf51bd133904c637abc8d23b2dece4"}
+"21/4084":
+  titel: Entwurf eines Gesetzes zur Weiterentwicklung der Apothekenversorgung (Apothekenversorgung-Weiterentwicklungsgesetz - ApoVWG)
+  gesetzentwurf: {file: 21-4084.txt, sha256: "9c83758bbbe3aaff9beaf938ff29ab59d3ad0634a9ba558f38754c5a90847948"}
+"21/4088":
+  titel: Entwurf eines Gesetzes zur Reform der steuerlich geförderten privaten Altersvorsorge (Altersvorsorgereformgesetz)
+  gesetzentwurf: {file: 21-4088.txt, sha256: "2f99f646ab46220ec8a2db8eaea7c4de9c5589b12ba11dfb2c4ef66b23b8afa4"}
+"21/4099":
+  titel: Entwurf eines Infrastruktur-Zukunftsgesetzes
+  gesetzentwurf: {file: 21-4099.txt, sha256: "ffb7733ae47d4c8d33b6ffc9fe20e663dc7b64fea744edfd1992d80ca6a3837c"}
+"21/4146":
+  titel: Entwurf eines Gesetzes zur Änderung des Umwelt-Rechtsbehelfsgesetzes und weiterer umweltrechtlicher Vorschriften
+  gesetzentwurf: {file: 21-4146.txt, sha256: "bab40a49b8b2be3f3e7fa5e8a68a995a3ce355c30506ffe8ea013db39b481557"}
+"21/4266":
+  titel: Entwurf eines Gesetzes zum Entzug des Klagerechts für staatsfinanzierte Nichtregierungsorganisationen
+  gesetzentwurf: {file: 21-4266.txt, sha256: "87eec276c1d14de245e17403289746ce8151c5feeffeb95c72f1f56155d229d6"}
+"21/4297":
+  titel: Entwurf eines Gesetzes zur Modernisierung des Produkthaftungsrechts
+  gesetzentwurf: {file: 21-4297.txt, sha256: "c51a770f686b3af754e5aad3efedc5a64953aa978d30d46020a875d9ed572807"}
+"21/4346":
+  titel: Entwurf eines Gesetzes zum Schutz der Bundesbeamten vor politischer Verfolgung und Stärkung des Rechtsschutzes gegen den Dienstherrn
+  gesetzentwurf: {file: 21-4346.txt, sha256: "610cc504f556863a82500909873498077f5dfeacdbe63f7847bc2fd601c7517b"}
+"21/4347":
+  titel: Entwurf eines Gesetzes zur Änderung des Grundgesetzes (Artikel 64 - Trennung von Amt und Mandat)
+  gesetzentwurf: {file: 21-4347.txt, sha256: "a1019019ab93826165f68cbc26f2033432dbd8ff33b7ea6b1247f5d9964027ad"}
+"21/4348":
+  titel: Entwurf eines Gesetzes zur Aufhebung des Gesetzes über die Rechtsverhältnisse der Parlamentarischen Staatssekretäre
+  gesetzentwurf: {file: 21-4348.txt, sha256: "a18711ad98f0bbdce8763f374db8fd7204c3b8c7a9248abaa7a565cd861ce4be"}
+"21/4349":
+  titel: Entwurf eines Gesetzes zur Aufhebung des Polizeibeauftragtengesetzes
+  gesetzentwurf: {file: 21-4349.txt, sha256: "77bfbc563238c4d83f4d2825e1bf86fb1c54af8c72fc55feced8b7ed14210882"}
+"21/4454":
+  titel: Entwurf eines Gesetzes zur Änderung des Bundesrechnungshofgesetzes (BRH-Unabhängigkeitsgesetz)
+  gesetzentwurf: {file: 21-4454.txt, sha256: "fd7946fdf3fcaf43796ef5a54018bb0dc0c8761b53566c78c74388ef97a3310a"}
+"21/4550":
+  titel: Entwurf eines Neunten Gesetzes zur Änderung des Steuerberatungsgesetzes und zur Änderung weiterer steuerrechtlicher Vorschriften
+  gesetzentwurf: {file: 21-4550.txt, sha256: "e2e2cd4c349cc03a64c48c3759c78b5f01fbddc8f117aa3f1327820aa13596ce"}
+"21/4744":
+  titel: Entwurf eines Gesetzes zur Einführung eines Gesetzes zur Anpassung von Kraftstoffpreisen und zur Änderung des Gesetzes gegen Wettbewerbsbeschränkungen (Kraftstoffmaßnahmenpaket)
+  gesetzentwurf: {file: 21-4744.txt, sha256: "a21a0e045ad2df0e530758e6c0425bdb5644c6ed9a421dc3b65c679483c7e719"}
+"21/4933":
+  titel: Entwurf eines Gesetzes zur Ächtung politisch motivierter Boykottmaßnahmen durch Nichtregierungsorganisationen
+  gesetzentwurf: {file: 21-4933.txt, sha256: "ad8019d93d158675ab3a210ea5290e93e4b6f15fbf60655228ad151b148947a2"}
+"21/5140":
+  titel: Entwurf eines Gesetzes zur Änderung des Behindertengleichstellungsgesetzes
+  gesetzentwurf: {file: 21-5140.txt, sha256: "f7c3e98c8252159b5e9ef62c75c5e83d1383cef1aebfcf8487dce77bb3c2810c"}
+"21/5141":
+  titel: Entwurf eines Gesetzes zur Modernisierung der nationalen Umsetzung von europäischen Regelungen zum Ökodesign, zur Energieverbrauchskennzeichnung und zu weiteren Regelungen
+  gesetzentwurf: {file: 21-5141.txt, sha256: "bdfe96ea8f9f6fcfcead5ea0123d6fd7c01f7614a8b9845237cbe36fc038e9d8"}
+"21/5212":
+  titel: Entwurf eines Gesetzes über die Grundsätze zur Ablösung der Staatsleistungen an Religions- und Weltanschauungsgemeinschaften
+  gesetzentwurf: {file: 21-5212.txt, sha256: "f9a1b8b7f5fa7a1b26be3ac2183e74205b5c01c1cdc641a125623e776fe51a2a"}
+"21/5319":
+  titel: Entwurf eines Gesetzes zur Änderung des Straßenverkehrsgesetzes (Tempolimit)
+  gesetzentwurf: {file: 21-5319.txt, sha256: "5927fddcdf3194cc680a425a2334112262e5e0236ea382035d6b1585facdde1b"}
+"21/5321":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Energiesteuergesetzes zur temporären Absenkung der Energiesteuer für Kraftstoffe (2. Energiesteuersenkungsgesetz)
+  gesetzentwurf: {file: 21-5321.txt, sha256: "85a158627def173a00b7fe3d64c9d204d9bc65d391b7274e4e4d66abe6bbd264"}
+"21/5346":
+  titel: Entwurf eines Gesetzes zur Anpassung des Verpackungsrechts und anderer Rechtsbereiche an die Verordnung (EU) 2025/40
+  gesetzentwurf: {file: 21-5346.txt, sha256: "5b0720bd80a4a83b0d96effc8328b0c1e615875151b8ae7c8681e6a88f61a58c"}
+"21/5348":
+  titel: Entwurf eines Gesetzes zur Verbesserung der Möglichkeiten zur Einziehung von Kraftfahrzeugen, die zur Begehung von Straftaten verwendet werden
+  gesetzentwurf: {file: 21-5348.txt, sha256: "fcf8cdb717489e6b5ac42e98105f176bfcf005d95851fd1591f96198f6eb081e"}
+"21/5388":
+  titel: Entwurf eines Gesetzes zur Abschaffung des Windenergieflächenbedarfsgesetzes (Windenergieflächenbedarfsabschaffungsgesetz - WindBAG)
+  gesetzentwurf: {file: 21-5388.txt, sha256: "1c0ac98fe340aa024418a4ec3ccdb27f76e198de5432f1e65f87bd2973809be6"}
+"21/5423":
+  titel: Entwurf eines Gesetzes zur Änderung des Grundgesetzes (Artikel 54 - Einführung der Direktwahl des Bundespräsidenten)
+  gesetzentwurf: {file: 21-5423.txt, sha256: "e8d104ac008b2288d6d61f05450e0c36abaf13cfd34d1b5c10e65efd4562e1a1"}
+"21/5476":
+  titel: Entwurf eines Gesetzes zur Änderung des Bürgerlichen Gesetzbuchs und des Asylgesetzes (Massenmigrationsbewältigungsgesetz)
+  gesetzentwurf: {file: 21-5476.txt, sha256: "a02d8ec0c8b5be292a8b4151cc5cd4747196ca2496e67bdb2b386a19d5cd7476"}
+"21/5480":
+  titel: Entwurf eines ... Gesetzes zur Änderung des Strafgesetzbuches - Konsensbasiertes Sexualstrafrecht - Verbesserung des Schutzes vor sexueller Misshandlung und Vergewaltigung
+  gesetzentwurf: {file: 21-5480.txt, sha256: "1011fdcae66879d026f4f8790314e1d8f5af9e0d39caf3208a14f4adcc7d6b5b"}
+"21/5688":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Luftverkehrsteuergesetzes
+  gesetzentwurf: {file: 21-5688.txt, sha256: "78161646e6c269805fea7a94d382407222bd3021d0cbe48337e497edd009b9d1"}
+"21/5752":
+  titel: Entwurf eines Gesetzes zum Schließen einer Gerechtigkeitslücke bei der Besteuerung von Kryptowerten
+  gesetzentwurf: {file: 21-5752.txt, sha256: "f0e53479e2a214d831b02205f1b23c9caa2268087386fbd3e534049199d7ee2f"}
+"21/5777":
+  titel: Entwurf eines Gesetzes zur Einführung einer Beweislastumkehr bei der selbständigen erweiterten Einziehung nach § 76a Absatz 4 des Strafgesetzbuches
+  gesetzentwurf: {file: 21-5777.txt, sha256: "fd0cf737e10572bb2272aa20bc7d41a195d21ad76b5bf024608dd392a394d310"}
+"21/5871":
+  titel: Entwurf eines Gesetzes zur Haftung bei Unfällen mit Elektrokleinstfahrzeugen im Straßenverkehr
+  gesetzentwurf: {file: 21-5871.txt, sha256: "6e1ffc6ce52a6c2a436fdba3a7dd698b2a843ca2106a4933edc0bf7fab2e59c4"}
+"21/5873":
+  titel: Entwurf eines Gesetzes zur Änderung des Preisangabenrechts zur Sanktionierung von Verstößen gegen nationale und europäische Regelungen über Preisangaben
+  gesetzentwurf: {file: 21-5873.txt, sha256: "b7ea396f1682e246e4a260ec577e2c787167d47e8e81311ced5acd7bc9976dd0"}
+"21/5874":
+  titel: Entwurf eines Gesetzes zur Einführung eines antragslosen Kindergeldes
+  gesetzentwurf: {file: 21-5874.txt, sha256: "ee2c88f594b7db8c09ec0bf5c05c80d5769fea6dae5cc90d327b11deac7df5cf"}
+"21/5921":
+  titel: Entwurf eines Gesetzes zur Regelung der Förderung des Spitzensports und weiterer Maßnahmen gesamtstaatlicher Bedeutung im Sport sowie zur Errichtung der Spitzensport-Agentur (Sportfördergesetz -  SpoFöG)
+  gesetzentwurf: {file: 21-5921.txt, sha256: "4506cff0f7ad6f6b69b086181dbcae8afc819d159e28ef27c4a2063ea40767f6"}
+"21/5922":
+  titel: Entwurf eines Gesetzes zur Stärkung von Medizinregistern und zur Verbesserung der Medizinregisterdatennutzung
+  gesetzentwurf: {file: 21-5922.txt, sha256: "43d92e4997b6e30bb3dc66e959e2d5304d2d5905444929ed55fc87e380fa31a9"}
+"21/5923":
+  titel: Entwurf eines Gesetzes zur Umsetzung der Richtlinie (EU) 2024/1799 zur Förderung der Reparatur von Waren
+  gesetzentwurf: {file: 21-5923.txt, sha256: "1eb25cc8147ca5765dad60179e3dd4d9ddc47ce6f7e7938ce8a64095ff025cda"}
+"21/6004":
+  titel: Entwurf eines Gesetzes zur Aussetzung des Anpassungsverfahrens gemäß §11 Absatz 4 des Abgeordnetengesetzes für das Jahr 2026 (Anpassungsverfahrensaussetzungsgesetz 2026)
+  gesetzentwurf: {file: 21-6004.txt, sha256: "edd30a3fcfd156849a949bdd16e4966cad10f93b8300b310392cc273f13aab41"}
+"21/6129":
+  titel: Entwurf eines Gesetzes zur Ermöglichung der digitalen Fluggastabfertigung
+  gesetzentwurf: {file: 21-6129.txt, sha256: "eca6ac8e565d0ef95c65bf9b0ba161512b887b65c24f53f159766d717ddca6c3"}
+"21/6130":
+  titel: Entwurf eines Gesetzes zur Stabilisierung der Beitragssätze in der gesetzlichen Krankenversicherung (GKV-Beitragssatzstabilisierungsgesetz)
+  gesetzentwurf: {file: 21-6130.txt, sha256: "635491b45781ecab3c6c4fc07dfde47a08c4a09f589d091eea3514ba4d683fe4"}
+"21/6134":
+  titel: Entwurf eines Gesetzes zur Durchführung der Verordnung (EU) 2024/2847 über horizontale Cybersicherheitsanforderungen für Produkte mit digitalen Elementen (Cyberresilienz-Verordnung)
+  gesetzentwurf: {file: 21-6134.txt, sha256: "830c8731e296a7e7acab56d6d0f4e01e7028c2914d413c3e0f1a4686228547ce"}
+"21/6135":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Düngegesetzes
+  gesetzentwurf: {file: 21-6135.txt, sha256: "fa33087bc83bbd0dfb8cfd357e976b2f232491f3a5c4b6a8446ccfa4dd207c94"}
+"21/6178":
+  titel: Entwurf eines Zweiten Gesetzes zur Änderung des Allgemeinen Gleichbehandlungsgesetzes
+  gesetzentwurf: {file: 21-6178.txt, sha256: "9cedabfb29da83598ed5415c53979dceba2b0cba5db8f44e92d8211433207091"}
+"21/6214":
+  titel: Entwurf eines Gesetzes zur Stärkung der Rechte von Verletzten insbesondere schwerer Gewalt- und Sexualstraftaten auf psychosoziale Prozessbegleitung
+  gesetzentwurf: {file: 21-6214.txt, sha256: "d41aef5301a57d0b9afca1c3ddb70221c3eae4ab44cc30a7ea1be12394f6518b"}
+"21/6278":
+  titel: Entwurf eines Gesetzes zur Änderung des Gebäudeenergiegesetzes, zur Änderung des Gebäude-Elektromobilitätsinfrastruktur-Gesetzes und zur Änderung weiterer Vorschriften im Wärmebereich
+  gesetzentwurf: {file: 21-6278.txt, sha256: "6569a7e020649a9715f3a3cfb7dc91b1f95abb2528d91621085c3bc01f13b890"}
+"21/6279":
+  titel: Entwurf eines Gesetzes zur Sicherung der Versorgungssicherheit Strom und zur Bereitstellung neuer Kapazitäten und zur Änderung der Besonderen Gebührenverordnung BNetzA
+  gesetzentwurf: {file: 21-6279.txt, sha256: "32208fab2ea9164d02add9ca838d2774264e9be7c560eeb1fac9a139bc804e0e"}
+"21/6328":
+  titel: Entwurf eines Gesetzes zur Abschaffung des § 188 des Strafgesetzbuches (Meinungsfreiheits- und Demokratiestärkungsgesetz)
+  gesetzentwurf: {file: 21-6328.txt, sha256: "1388b0069965d1fb6f14c44d58f793cdce7ceedae4e197a763e120c51bad2a30"}
+"21/6330":
+  titel: Entwurf eines Gesetzes zur Abweichung von dem Anpassungsverfahren gemäß § 11 Absatz 4 des Abgeordnetengesetzes für das Jahr 2026 (Anpassungsverfahrensabweichungsgesetz 2026)
+  gesetzentwurf: {file: 21-6330.txt, sha256: "e882796b44c62dfe45ff5c6e9143fc8982a1852797bbadb728bbf068828fa845"}
+"21/6332":
+  titel: Entwurf eines Gesetzes zur flächendeckenden Absenkung der Energie- und Stromsteuersätze (Energie- und Stromsteuersenkungsgesetz)
+  gesetzentwurf: {file: 21-6332.txt, sha256: "efafadc961a9ebf1c4de7768969b7a4cba17b4cd359d7168f06260c23c295c05"}
+"21/6333":
+  titel: Entwurf eines Gesetzes zur dauerhaften Ermäßigung der Umsatzsteuer auf Gas und Wärme (Gas- und Wärme-Umsatzsteuersenkungsgesetz)
+  gesetzentwurf: {file: 21-6333.txt, sha256: "6ed1b7f124dab8a3c26927f00fcb75b988e7a798534ecdde1a98c5cad3769107"}
+"21/6334":
+  titel: Entwurf eines Gesetzes zur Aufhebung des Treibhausgas-Emissionshandelsgesetzes und des Brennstoffemissionshandelsgesetzes (CO2-Preis-Abschaffungsgesetz)
+  gesetzentwurf: {file: 21-6334.txt, sha256: "cb44b854e9351c541581883d683301ed33f2fab48026db67e985f2dd9a385f9b"}
+"21/6377":
+  titel: Entwurf eines Gesetzes zur Stärkung der Vermögensabschöpfung bei Cum-/Ex-Leerverkaufsgeschäften sowie bei Einziehungsbeteiligten
+  gesetzentwurf: {file: 21-6377.txt, sha256: "5035d5cbc7f30341ff4eafe9ad59de843dea75bef486348ee915dca75d0f4416"}
+"21/6510":
+  titel: Entwurf eines Gesetzes zur Änderung des Versorgungsausgleichsrechts
+  gesetzentwurf: {file: 21-6510.txt, sha256: "cd3ece79fc0704296826025f19013ec1680986686690525e8c866477912e4d1e"}
+"21/6560":
+  titel: Entwurf eines Gesetzes zur Entlastung der Länder und ihrer Kommunen (Länder- und Kommunalentlastungsgesetz - LKEG)
+  gesetzentwurf: {file: 21-6560.txt, sha256: "4cc56e7bd617d1af50678e3d4e0d7bc848910f666ed86727d0425dbeef91517d"}
+"21/6587":
+  titel: Entwurf eines Gesetzes zur Änderung des Wärmeplanungsgesetzes
+  gesetzentwurf: {file: 21-6587.txt, sha256: "47b12186ec258b2560dadda81c32b3622d756a850ace72f0a59b0d88cf520381"}
+"21/6588":
+  titel: Entwurf eines Gesetzes zur Modernisierung des Städtebau- und Raumordnungsrechts
+  gesetzentwurf: {file: 21-6588.txt, sha256: "6d681391691120c22c860fa876c2292aae8b1493a4e3f4b8f91b1674e0b5a224"}
+"21/6806":
+  titel: Entwurf eines Gesetzes zur Änderung der Strafprozessordnung - digitale Ermittlungsmaßnahmen
+  gesetzentwurf: {file: 21-6806.txt, sha256: "e0e01f9f6d5c5aa89d89dd21965e080fa01103248d86ec9c8a8dd6924ab7d772"}
+"21/6809":
+  titel: Entwurf eines Fünften Gesetzes zur Änderung des Tierschutzgesetzes
+  gesetzentwurf: {file: 21-6809.txt, sha256: "0d9f13206b63b74d459c3a6e57e99d94a737b1c2a25d60a1e3ca92869ddb5ec7"}
+"21/7252":
+  titel: Entwurf eines Gesetzes zur Stärkung der Demokratie durch Einführung von Volksabstimmungen auf Bundesebene
+  gesetzentwurf: {file: 21-7252.txt, sha256: "9765602c0286c6a03d9773ae2def221db4292995bed946f1e500945249e8498a"}
+"21/7253":
+  titel: Entwurf eines Gesetzes zur Strafbarkeit der Betätigung auf dem Gebiet der Paralleljustiz
+  gesetzentwurf: {file: 21-7253.txt, sha256: "6191ea865cbe9fa49f20a085be5e248837c7c5ecb2edd8689ecf42c1b0c5f50f"}
+"21/7260":
+  titel: Entwurf eines Gesetzes zur Stärkung des strafrechtlichen Kinderschutzes und zur Verschärfung der Sanktionen bei schweren sexuellen Übergriffen
+  gesetzentwurf: {file: 21-7260.txt, sha256: "bc995e835be1ccf64c41330229962634d58c23c2cd4813bcf04ffb1147db1ee6"}
+"21/7347":
+  titel: Entwurf eines Gesetzes zur Strafverschärfung bei Wiederholungstätern
+  gesetzentwurf: {file: 21-7347.txt, sha256: "62037751ff386c66e324253de6597c3d1a57d85b27a205290f61fa8386f1345d"}
+"21/7403":
+  titel: Entwurf eines Siebzehnten Gesetzes zur Änderung des Luftverkehrsgesetzes
+  gesetzentwurf: {file: 21-7403.txt, sha256: "7e652c7b1074be3fd985ccf37227a2b7e02e65615c5501cc68d22b173b7d95cf"}
+"21/7404":
+  titel: Entwurf eines Gesetzes zur Änderung des Fahrlehrergesetzes und anderer straßenverkehrsrechtlicher Gesetze
+  gesetzentwurf: {file: 21-7404.txt, sha256: "a9fbc6312688b0bd90924fb886acf642136e12e5f8987de53b8303347e09549a"}
+"21/7557":
+  titel: Entwurf eines ... Gesetzes zur Änderung des Waffengesetzes - Ausgestaltung des unerlaubten Umgangs mit halbautomatischen Kurzwaffen zum Verschießen von Patronenmunition als Verbrechen
+  gesetzentwurf: {file: 21-7557.txt, sha256: "5500b3b080927be163bfb7f498b81a891ebacc5b262863eade2e2c1f2bd1c746"}
+"21/7560":
+  titel: Entwurf eines … Gesetzes zur Änderung des Strafgesetzbuches - Stärkung des strafrechtlichen Schutzes vor sogenannten K.-o.-Tropfen
+  gesetzentwurf: {file: 21-7560.txt, sha256: "79c204586d45b9427dbb1e416c51eafaf60152330980d18e2f89d08876623a78"}
+"21/7561":
+  titel: Entwurf eines Gesetzes zur Änderung der Regelung über ärztliche Zwangsmaßnahmen im Betreuungsrecht und zur Stärkung des ultima-ratio-Gebots sowie der Selbstbestimmung der Betroffenen
+  gesetzentwurf: {file: 21-7561.txt, sha256: "10d241b127a29946ac6914c5d12041727fe6fecf4ca5c94d0f60691a84bd923f"}
+"21/7570":
+  titel: Entwurf eines Vierten Gesetzes zur Änderung des Transplantationsgesetzes - Einführung einer Widerspruchsregelung
+  gesetzentwurf: {file: 21-7570.txt, sha256: "767d5a2d5de65a762db5200bad5507711d45d5e7b0e7c5fc3a6a6f51583a52fb"}
+"21/7732":
+  titel: Entwurf eines ... Gesetzes zur Änderung des Bundesdatenschutzgesetzes (BDSG)
+  gesetzentwurf: {file: 21-7732.txt, sha256: "2af585d5dd9da93c485158774600981627955e557c2945313705f8be793b95c7"}
+"21/7733":
+  titel: Entwurf eines Gesetzes zur Strafbewehrung der Leugnung des Existenzrechts des Staates Israel
+  gesetzentwurf: {file: 21-7733.txt, sha256: "42312bc6e76dd458061b6e47a3fb70e7c6032064c5602e0e7556cf6abcd632ce"}
+
+# --- Angreifer --------------------------------------------------------------
+"19/13437":
+  titel: Entwurf eines Gesetzes zur Änderung des Grunderwerbsteuergesetzes
+  gesetzentwurf: {file: 19-13437.txt, sha256: "468ffa81433294f0ab7282f9b1b4f0e8fbb038df80c02b61d9735b6c191c3c4b"}
+"19/4455":
+  titel: Entwurf eines Gesetzes zur Vermeidung von Umsatzsteuerausfällen beim Handel mit Waren im Internet und zur Änderung weiterer steuerlicher Vorschriften (JStG 2018)
+  gesetzentwurf: {file: 19-4455.txt, sha256: "a0ab56000b226e89f790898f7b2b58358d3314447f266dd8163726fa4eed5489"}
+"14/23":
+  titel: Entwurf eines Steuerentlastungsgesetzes 1999/2000/2002
+  gesetzentwurf: {file: 14-23.txt, sha256: "daea60adc214a17ba08da3ea6a3e38b01c766825c50bd999865c714bc027d57a"}
+"17/15":
+  titel: Entwurf eines Gesetzes zur Beschleunigung des Wirtschaftswachstums (Wachstumsbeschleunigungsgesetz)
+  gesetzentwurf: {file: 17-15.txt, sha256: "f15bb08f8b08561a5c5c739af3f88d3ed3b67d5dfe60f152af2b991847372b14"}
+"17/8877":
+  titel: Entwurf eines Gesetzes zur Änderung des Rechtsrahmens für Strom aus solarer Strahlungsenergie und zu weiteren Änderungen im Recht der erneuerbaren Energien
+  gesetzentwurf: {file: 17-8877.txt, sha256: "10d349aff72ff42f8c0028bb14b81e7c65a00dabff0359bca7596cbfba6ce3de"}
+"18/10207":
+  titel: Entwurf eines Neunten Gesetzes zur Änderung des Gesetzes gegen Wettbewerbsbeschränkungen
+  gesetzentwurf: {file: 18-10207.txt, sha256: "0151b4a0cf70659829e2153c2f55211e576a6d2c0abf172097ea8b67be9ab8b0"}
+"18/8045":
+  titel: Entwurf eines Gesetzes zur Reform der Investmentbesteuerung (InvStRefG)
+  gesetzentwurf: {file: 18-8045.txt, sha256: "9721275307677b82b40144b091142024d0909f5c96763eed83218e0fc41d7e54"}
+"21/518":
+  titel: Entwurf eines Gesetzes zu dem Vierten Protokoll vom 18. September 2023 zur Änderung des Vertrags vom 27. Oktober 1956 zwischen der Bundesrepublik Deutschland, der Französischen Republik und dem Großherzogtum Luxemburg über die Schiffbarmachung der Mosel
+  gesetzentwurf: {file: 21-518.txt, sha256: "6cc5b942bccd64dd0b035812a5add2b65fd141038e3f7f8dd7bc33698c1faf23"}
+"21/5588":
+  titel: Entwurf eines Gesetzes zur Aussetzung des Anpassungsverfahrens gemäß § 11 Absatz 4 des Abgeordnetengesetzes für das Jahr 2026 (Anpassungsverfahrensaussetzungsgesetz 2026)
+  gesetzentwurf: {file: 21-5588.txt, sha256: "a1d862aace0b025aaa14aed7dcf706fffc1cc4d9c5755b8881c1bcc9566a649d"}
+"21/2213":
+  titel: Entwurf eines Gesetzes zur Abschaffung der Sommerzeit
+  gesetzentwurf: {file: 21-2213.txt, sha256: "16039a222c4d18550f17ffdcee211f7449113cdabb4237bdcf8d2e8ce7968ded"}
+"21/2027":
+  titel: Entwurf eines Gesetzes zur Änderung des Grundgesetzes (Artikel 3 Absatz 3 Satz 1 - Einfügung des Merkmals sexuelle Identität)
+  gesetzentwurf: {file: 21-2027.txt, sha256: "19fc2bbf22d05feb6046a1a75377cd7103f0250e452f687fd6f753eb64db6099"}
+"21/3064":
+  titel: Entwurf eines ... Gesetzes zur Änderung des Grundgesetzes (Artikel 3 Absatz 3 Satz 1)
+  gesetzentwurf: {file: 21-3064.txt, sha256: "d0e1e5c0be452f93dc174009286aff702c708896326478ff0dbc41a9b842537c"}
+"21/3945":
+  titel: Entwurf eines Gesetzes zu dem Vertrag vom 17. Juli 2025 zwischen der Bundesrepublik Deutschland und dem Vereinigten Königreich Großbritannien und Nordirland über Freundschaft und bilaterale Zusammenarbeit
+  gesetzentwurf: {file: 21-3945.txt, sha256: "c72a8fa2f1a5d162f7a9d74a17f1a8fe9c2a9e7fc8ba347112c44c12148b998a"}
+"16/2712":
+  titel: Entwurf eines Jahressteuergesetzes 2007 (JStG 2007)
+  gesetzentwurf: {file: 16-2712.txt, sha256: "1b5384a299a111491f29bc1e4ef40b6b13f10cf0842c71096bd4831816db2d4a"}

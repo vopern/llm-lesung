@@ -1,0 +1,8 @@
+# Terraform — never commit state (may contain sensitive data) or local overrides.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfvars
+*.auto.tfvars

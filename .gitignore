@@ -1,0 +1,12 @@
+.venv/
+data/
+.env
+__pycache__/
+frontend/node_modules/
+frontend/dist/
+.idea/
+.pytest_cache/
+/docs/
+/.claude/
+/CLAUDE.md
+/eval/testset/texts/

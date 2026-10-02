@@ -1,0 +1,713 @@
+:root {
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #1d4ed8;
+  --border: #e5e7eb;
+  --bg: #ffffff;
+  --bg-subtle: #f9fafb;
+  --hoch: #dc2626;
+  --mittel: #d97706;
+  --niedrig: #16a34a;
+  /* Tints for the count chips, which carry dark text rather than white. */
+  --hoch-bg: #fee2e2;
+  --mittel-bg: #fef3c7;
+  --niedrig-bg: #dcfce7;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.05);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, "Noto Sans", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.brand-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.brand-title:hover {
+  text-decoration: none;
+}
+
+.brand-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  color: var(--text);
+  font-size: 0.95rem;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.nav-link.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Language toggle */
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.lang-toggle button {
+  border: none;
+  background: var(--bg);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.lang-toggle button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Main + footer */
+.main-content {
+  flex: 1;
+  padding-top: 28px;
+  padding-bottom: 48px;
+  width: 100%;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 18px 0;
+}
+
+/* Notices */
+.notice {
+  color: var(--muted);
+  padding: 24px 0;
+}
+
+.notice-error {
+  color: var(--hoch);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 0;
+  font-size: 1rem;
+}
+
+/* Risk cards */
+.cards-heading {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.risk-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.risk-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: transform 0.05s ease, box-shadow 0.1s ease;
+}
+
+.risk-card:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.risk-card.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.risk-card-hoch {
+  border-left-color: var(--hoch);
+}
+.risk-card-mittel {
+  border-left-color: var(--mittel);
+}
+.risk-card-niedrig {
+  border-left-color: var(--niedrig);
+}
+
+.risk-card-count {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.risk-card-hoch .risk-card-count {
+  color: var(--hoch);
+}
+.risk-card-mittel .risk-card-count {
+  color: var(--mittel);
+}
+.risk-card-niedrig .risk-card-count {
+  color: var(--niedrig);
+}
+
+.risk-card-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Filters */
+.filters {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  min-width: 240px;
+  flex: 1 1 240px;
+  max-width: 420px;
+}
+
+.status-select {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  min-width: 220px;
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.bills-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  min-width: 640px;
+}
+
+.bills-table th,
+.bills-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.bills-table th {
+  background: var(--bg-subtle);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.bills-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bill-row {
+  cursor: pointer;
+}
+
+.bill-row:hover {
+  background: var(--bg-subtle);
+}
+
+.bill-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.col-number {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.col-title {
+  min-width: 260px;
+}
+
+.col-updated {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.col-findings {
+  white-space: nowrap;
+  /* Wide enough for the three severity chips on one row. */
+  min-width: 108px;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-variant-caps: small-caps;
+  white-space: nowrap;
+}
+
+.badge-hoch {
+  background: var(--hoch);
+}
+.badge-mittel {
+  background: var(--mittel);
+}
+.badge-niedrig {
+  background: var(--niedrig);
+}
+.badge-none {
+  background: #9ca3af;
+}
+
+/* Finding chips — per-severity counts on the list page. The three severity
+   chips cover risk-bearing findings only; .chip-verfassung is the categories
+   that are reported but never enter the severity rating. */
+.finding-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip-hoch {
+  background: var(--hoch-bg);
+  color: #991b1b;
+}
+.chip-mittel {
+  background: var(--mittel-bg);
+  color: #92400e;
+}
+.chip-niedrig {
+  background: var(--niedrig-bg);
+  color: #166534;
+}
+.chip-verfassung {
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+.chip-none {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pagination button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.page-range {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Detail page */
+.back-link {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+}
+
+.detail-message {
+  padding: 24px 0;
+}
+
+.detail-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.detail-header-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+/* Names the aggregation next to the detail-page badge: the value is the
+   severity of the worst risk-bearing finding, not a rating of the bill. */
+.worst-finding-label {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.doc-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-title {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin: 0 0 16px;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 0 16px;
+}
+
+.detail-meta div {
+  margin: 0;
+}
+
+.detail-meta dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.detail-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.pdf-link {
+  font-weight: 600;
+}
+
+.pdf-link-unused {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.related-documents {
+  list-style: none;
+  margin: -8px 0 0;
+  padding: 0;
+}
+
+.related-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.detail-summary {
+  margin-bottom: 28px;
+}
+
+.detail-summary h2,
+.detail-findings h2,
+.method-box h2 {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.detail-summary p {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+/* Findings */
+.finding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.finding-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  background: var(--bg);
+}
+
+.finding-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.finding-category {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.finding-title {
+  font-size: 1.02rem;
+  margin: 0 0 6px;
+}
+
+.finding-description {
+  margin: 0;
+}
+
+.finding-quote {
+  margin: 12px 0 0;
+  padding: 8px 14px;
+  border-left: 3px solid var(--border);
+  background: var(--bg-subtle);
+  color: #374151;
+  font-style: italic;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Methodology box */
+.method-box {
+  margin-top: 32px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: var(--bg-subtle);
+}
+
+.method-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 0 12px;
+}
+
+.method-meta div {
+  margin: 0;
+}
+
+.method-meta dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.method-meta dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.method-documents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.method-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.method-disclaimer {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* About / prose */
+.prose {
+  max-width: 720px;
+}
+
+.prose h1 {
+  font-size: 1.7rem;
+  margin: 0 0 16px;
+}
+
+.prose h2 {
+  font-size: 1.15rem;
+  margin: 28px 0 8px;
+}
+
+.prose p {
+  margin: 0 0 12px;
+}
+
+.category-list {
+  margin: 8px 0 12px;
+  padding-left: 20px;
+}
+
+.category-list li {
+  margin-bottom: 6px;
+}
+
+/* Evaluation page (technical, linked from the footer and About only) */
+.footer-link {
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.eval-reports {
+  padding-left: 20px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .risk-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .header-inner {
+    align-items: flex-start;
+  }
+
+  .detail-title {
+    font-size: 1.35rem;
+  }
+}

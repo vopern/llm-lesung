@@ -1,0 +1,269 @@
+"""Score a harness run against its case set: a summary and the detailed results.
+
+Offline and free. Verdicts are the mechanical passage verdicts of
+``eval/testset/score.py`` (``hit`` / ``near`` / ``miss`` for positives,
+``touched`` / ``clear`` for negatives), plus what a run itself can end in:
+
+``fired`` / ``quiet``  an unanchored Angreifer negative with / without findings.
+``oversize``  the input is over ``MAX_INPUT_CHARS`` and was not sent.
+``failed``    the call raised; the sample has a ``.failed.json``.
+``not_run``   the run has no sample for the document.
+
+Two files in the run directory, per case set:
+
+``summary-<cases>.json``  run metadata, sample status, cost, passage recall per
+                          split × context and per expected category.
+``results-<cases>.json``  per document: the expectations and the analysis
+                          with every finding and each case's verdict, naming
+                          the findings that matched by index.
+
+    uv run python -m eval.harness report --tag v6-text-json-claude-opus-4-8-effort-high
+    uv run python -m eval.harness report --task angreifer --split dev
+"""
+
+import argparse
+import json
+import re
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+
+from eval.quotecheck import squash
+from eval.testset import config as testset_config
+from eval.testset.lint import TEXTS, documents, load, load_manifest
+from eval.testset.score import POSITIVE, _pct, locate, score_case, summarize
+
+from . import config, html, tasks
+from .tasks import Task
+
+# Every case set name of every task, for ``--cases``.
+ALL_CASE_SETS = sorted({name for t in tasks.TASKS.values() for name in t.case_sets})
+
+# Only cases the draft alone can settle. A case that needs Bestandsrecht, EU law
+# or outside facts measures pipeline reach, which an Entwurf-only run cannot have.
+CONTEXT = "none"
+
+# Case fields a reader of the results needs next to the verdict.
+EXPECTATION_FIELDS = ("id", "kind", "expected_passage", "anchor", "expected_defect",
+                      "expected_category", "expected_severity", "requires_context",
+                      "forbidden_claim", "story", "source")
+
+
+def case_set(task: Task, name: str | None) -> str:
+    """``name`` if the task has that case set, the task's default if ``None``."""
+    if name is None:
+        return task.default_cases
+    if name not in task.case_sets:
+        raise SystemExit(f"--cases {name}: {task.name} has {', '.join(task.case_sets)}")
+    return name
+
+
+def load_cases(task: Task, case_set: str) -> list[dict]:
+    """The cases of a case set that require no context beyond the draft."""
+    return [c for c in load(task.case_sets[case_set]) if c["requires_context"] == CONTEXT]
+
+
+def load_samples(out: Path) -> dict[str, dict]:
+    """Every sample and failure record of a run, by document.
+
+    A sample supersedes a failure of the same document, which the run deletes
+    anyway; this keeps a stale failure file from hiding a result.
+    """
+    samples: dict[str, dict] = {}
+    paths = sorted((out / "samples").glob("*.json"),
+                   key=lambda p: not p.name.endswith(".failed.json"))
+    for path in paths:
+        record = json.loads(path.read_text(encoding="utf-8"))
+        samples[record["doc"]] = record
+    return samples
+
+
+def _status_row(case: dict, verdict: str) -> dict:
+    return {"id": case["id"], "kind": case["kind"], "split": case["split"],
+            "requires_context": case["requires_context"],
+            "expected_category": case["expected_category"],
+            "verdict": verdict}
+
+
+def build(task: Task, cases: list[dict], samples: dict[str, dict], manifest: dict[str, dict],
+          texts: Path = TEXTS, near: int = testset_config.NEAR_CHARS) -> tuple[list[dict], list[dict]]:
+    """``(rows, documents)``: one verdict row per case, and the results."""
+    rows: list[dict] = []
+    results: list[dict] = []
+    for (_, file), group in documents(cases).items():
+        doc = group[0]["doc"]
+        entry = {"doc": doc, "titel": manifest[doc]["titel"], "split": group[0]["split"],
+                 "text_file": file,
+                 "expectations": [{k: c[k] for k in EXPECTATION_FIELDS} for c in group],
+                 "run": None}
+        results.append(entry)
+        record = samples.get(doc)
+        if record is None:
+            rows += [_status_row(c, "not_run") for c in group]
+            continue
+        status = record["status"]
+        run = {"status": status,
+               **{k: record.get(k) for k in ("prompt_version", "model", "effort", "max_turns", "risk",
+                                             "cost_usd", "num_turns", "seconds",
+                                             "tool_calls", "rescued_by")}}
+        if status != "ok":
+            if status == "failed":
+                run["error"] = f"{record['error_type']}: {record['error']}"
+            verdicts = [_status_row(c, status) for c in group]
+        else:
+            squashed = squash((texts / file).read_text(encoding="utf-8"))
+            findings = [f | {"index": i}
+                        for i, f in enumerate(task.findings(record["analysis"]))]
+            run["summary"] = record["analysis"]["summary"]
+            run["findings"] = [f | {"located": bool(locate(f["quote"], squashed))}
+                               for f in findings]
+            verdicts = [score_case(c, findings, squashed, near, task.quiet_negatives)
+                        for c in group]
+        run["verdicts"] = verdicts
+        rows += verdicts
+        entry["run"] = run
+    return rows, results
+
+
+# A sentence ends at . ! or ? followed by whitespace and a capital letter, so
+# "Abs. 2" and "§ 5 Nr. 3" stay inside their sentence.
+SENTENCE_END = re.compile(r"[.!?]\s+(?=[A-ZÄÖÜ„])")
+
+
+def words_per_sentence(texts: list[str]) -> float | None:
+    """Mean words per sentence over ``texts``; ``None`` when there is no text."""
+    texts = [t.strip() for t in texts if t and t.strip()]
+    if not texts:
+        return None
+    words = sum(len(t.split()) for t in texts)
+    sentences = sum(len(SENTENCE_END.findall(t)) + 1 for t in texts)
+    return round(words / sentences, 1)
+
+
+def by_category(rows: list[dict]) -> dict[str, dict]:
+    """Positive verdicts per split and expected category."""
+    out: dict[str, dict] = {}
+    for row in rows:
+        if row["kind"] != "positiv":
+            continue
+        cell = out.setdefault(row["split"], {}).setdefault(row["expected_category"], Counter())
+        cell[row["verdict"]] += 1
+    return {split: {cat: {"counts": dict(c),
+                          "scorable": c["hit"] + c["near"] + c["miss"],
+                          "strict": round(c["hit"] / s, 3) if (s := c["hit"] + c["near"] + c["miss"]) else None}
+                    for cat, c in sorted(cats.items())}
+            for split, cats in sorted(out.items())}
+
+
+def summarize_run(task: Task, rows: list[dict], results: list[dict], case_set: str,
+                  tag: str, near: int) -> dict:
+    runs = [d["run"] for d in results if d["run"]]
+    findings = [f for r in runs for f in r.get("findings", [])]
+    return {
+        "task": task.name,
+        "tag": tag,
+        "case_set": case_set,
+        "cases_file": task.case_sets[case_set].name,
+        "input_set": "entwurf",
+        "requires_context": CONTEXT,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "prompt_versions": dict(Counter(r["prompt_version"] for r in runs)),
+        "models": dict(Counter(r["model"] for r in runs)),
+        # ``null`` is the model's default effort.
+        "efforts": dict(Counter(r["effort"] for r in runs)),
+        "max_turns": dict(Counter(r["max_turns"] for r in runs)),
+        "shipped_prompt_version": task.prompt_version,
+        "near_chars": near,
+        "documents": len(results),
+        "cases": len({r["id"] for r in rows}),
+        "runs": dict(Counter(r["status"] for r in runs))
+        | {"not_run": sum(not d["run"] for d in results)},
+        "rescued": dict(Counter(r["rescued_by"] for r in runs if r.get("rescued_by"))),
+        "cost_usd": round(sum(r["cost_usd"] or 0 for r in runs), 2),
+        "seconds": round(sum(r["seconds"] or 0 for r in runs), 1),
+        "findings": {"total": len(findings),
+                     "unlocated": sum(not f["located"] for f in findings if f["quote"]),
+                     "by_category": dict(Counter(f["category"] for f in findings)),
+                     "by_severity": dict(Counter(f["severity"] for f in findings))},
+        # Readability of the prose a reader sees: summaries and finding descriptions.
+        "words_per_sentence": words_per_sentence(
+            [r["summary"] for r in runs if r.get("summary")]
+            + [f["description"] for f in findings]),
+        "recall": summarize(rows),
+        "recall_by_category": by_category(rows),
+    }
+
+
+def report_name(case_set: str, split: str) -> str:
+    """``beschlussempfehlungen`` for every split, ``beschlussempfehlungen-dev`` for one."""
+    return case_set if split == "all" else f"{case_set}-{split}"
+
+
+def write_report(out: Path, task: Task, case_set: str, tag: str,
+                 near: int = testset_config.NEAR_CHARS, split: str = "all") -> dict:
+    """Score the run in ``out`` on one split (or all) and write both files.
+
+    Samples of documents outside the split stay on disk and are ignored.
+    """
+    cases = [c for c in load_cases(task, case_set) if split == "all" or c["split"] == split]
+    rows, results = build(task, cases, load_samples(out), load_manifest(), near=near)
+    summary = summarize_run(task, rows, results, case_set, tag, near) | {"split": split}
+    name = report_name(case_set, split)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f"summary-{name}.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / f"results-{name}.json").write_text(
+        json.dumps({"summary": summary, "documents": results}, ensure_ascii=False, indent=2),
+        encoding="utf-8")
+    html.write_run(out, name)
+    _print(summary, out, name)
+    return summary
+
+
+def _print(summary: dict, out: Path, name: str) -> None:
+    if any(len(summary[k]) > 1 for k in ("prompt_versions", "models", "efforts", "max_turns")):
+        print(f"WARNING: mixed runs {summary['prompt_versions']} {summary['models']} "
+              f"efforts {summary['efforts']} max_turns {summary['max_turns']}")
+    print(f"runs {summary['runs']}  rescued {summary['rescued']}  cost ${summary['cost_usd']:.2f}  "
+          f"findings {summary['findings']['total']} "
+          f"({summary['findings']['unlocated']} unlocated)")
+    verdicts = POSITIVE + ["oversize", "failed"]
+    for split, entry in summary["recall"].items():
+        for context in ("all", "none", "context"):
+            e = entry[context]
+            counts = " ".join(f"{v}={e['counts'].get(v, 0)}" for v in verdicts)
+            print(f"{split:5} positives {context:8} {counts}  strict {_pct(e['strict'])}"
+                  f"  lenient {_pct(e['lenient'])}  category {e['category_match']}")
+        if entry["negatives"]:
+            print(f"{split:5} negatives          {entry['negatives']}")
+    print(f"-> {out / f'summary-{name}.json'}\n-> {out / f'results-{name}.json'}"
+          f"\n-> {out / f'report-{name}.html'}")
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m eval.harness report",
+        description="Score a harness run into summary and results JSON. Offline, free.",
+    )
+    parser.add_argument("--task", choices=sorted(tasks.TASKS), default="lektor")
+    parser.add_argument("--cases", choices=ALL_CASE_SETS,
+                        help="which case file of the task; defaults to its first")
+    parser.add_argument("--model", help="defaults to the task's shipped model")
+    parser.add_argument("--effort", choices=config.EFFORTS,
+                        help="defaults to the task's shipped effort")
+    parser.add_argument("--max-turns", type=int, metavar="N")
+    parser.add_argument("--tag", help="run directory name; defaults to "
+                        "<prompt version>-<model>[-effort-<level>][-turns-<n>]")
+    parser.add_argument("--split", choices=["dev", "test", "all"], default="all")
+    parser.add_argument("--near", type=int, default=testset_config.NEAR_CHARS)
+    args = parser.parse_args(argv)
+
+    task = tasks.get(args.task)
+    tag = args.tag or config.default_tag(task, args.model or task.model,
+                                         args.effort or task.effort, args.max_turns)
+    out = config.run_dir(task.name, tag)
+    if not (out / "samples").is_dir():
+        print(f"no samples in {out}")
+        return 1
+    write_report(out, task, case_set(task, args.cases), tag, args.near, args.split)
+    return 0

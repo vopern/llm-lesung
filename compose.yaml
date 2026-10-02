@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    restart: unless-stopped
+
+# Run the analysis pipeline as a one-off (writes into the same ./data volume).
+# The image puts the project venv on PATH, so `uvicorn`/`python` resolve directly:
+#   docker compose run --rm web python -m backend.pipeline --limit 10
+# Or refresh a running deployment periodically (e.g. from host cron, daily):
+#   docker compose exec web python -m backend.pipeline

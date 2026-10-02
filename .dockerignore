@@ -1,0 +1,16 @@
+.venv
+frontend/node_modules
+node_modules
+data
+.env
+frontend/dist
+dist
+__pycache__
+**/__pycache__
+.git
+.idea
+docs
+tests
+.pytest_cache
+references
+.claude

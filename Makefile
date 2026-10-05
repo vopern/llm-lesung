@@ -1,9 +1,9 @@
 # LLM-Lesung — common operations. See README.md for details.
 
-.PHONY: setup pipeline pipeline-all serve dev build test \
+.PHONY: setup pipeline pipeline-all redteam redteam-all serve dev build test \
         gg-build gg-run gg-score gg-report gg-eval \
         eval-fetch eval-lint eval-export eval-score eval-run eval-report \
-        infra-up infra-ip infra-down deploy push-db push-eval ssh-ec2 dockerlogs
+        infra-up infra-ip infra-down deploy push-db push-eval pull-feedback ssh-ec2 dockerlogs
 
 # --- Local: app + pipeline runs ----------------------------------------------
 LIMIT ?= 5
@@ -17,6 +17,15 @@ pipeline:         ## analyze LIMIT bills (default 5), e.g. make pipeline LIMIT=2
 
 pipeline-all:     ## analyze the full legislative period (~340 bills, ~$$45)
 	uv run python -m backend.pipeline
+
+redteam:          ## red-team LIMIT stored bills (default 5), one Claude call each
+	uv run python -m backend.redteam_pipeline --limit $(LIMIT)
+
+redteam-all:      ## red-team every stored bill whose pass is missing or outdated
+	uv run python -m backend.redteam_pipeline
+
+locate-quotes:    ## find page and context of the stored findings' quotes (free, no Claude call)
+	uv run python -m backend.locate_quotes
 
 serve: build      ## build frontend and serve app on http://localhost:8000
 	uv run uvicorn backend.server:app --port 8000
@@ -140,6 +149,10 @@ push-eval:        ## upload data/eval-public as a new release and switch to it a
 	$(SSH) "cd /app/data && ln -sfn eval-releases/$$REL eval-public.tmp && mv -T eval-public.tmp eval-public \
 		&& ls -1d eval-releases/* | head -n -3 | xargs -r rm -rf" && \
 	echo "Eval release $$REL live (previous releases kept: 2)."
+
+pull-feedback:    ## download the reader feedback files into data/feedback/
+	@$(RESOLVE_HOST); mkdir -p data/feedback && \
+	rsync -avz -e "ssh -i $(SSH_KEY)" ec2-user@$$HOST:/app/data/feedback/ data/feedback/
 
 ssh-ec2:          ## open a shell on the instance
 	@$(RESOLVE_HOST); $(SSH)

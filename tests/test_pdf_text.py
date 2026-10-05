@@ -111,3 +111,19 @@ def test_non_200_raises_and_writes_no_cache(cache_dir, monkeypatch):
     with pytest.raises(RuntimeError, match="404"):
         pdf_text.download_pdf("https://example.org/missing.pdf", cache_key="h")
     assert not cache_dir.exists() or not any(cache_dir.iterdir())
+
+
+def test_get_pages_extracts_once_per_cache_key(cache_dir, monkeypatch):
+    monkeypatch.setattr(pdf_text.httpx, "get", lambda url, **kw: _Resp(b"%PDF-1"))
+    calls = []
+
+    def _extract(pdf_bytes):
+        calls.append(pdf_bytes)
+        return ["Seite eins.", "Seite zwei."]
+
+    monkeypatch.setattr(pdf_text, "extract_pages", _extract)
+
+    url = "https://example.org/2100001.pdf"
+    assert pdf_text.get_pages(url, cache_key="hash-a") == ["Seite eins.", "Seite zwei."]
+    assert pdf_text.get_pages(url, cache_key="hash-a") == ["Seite eins.", "Seite zwei."]
+    assert len(calls) == 1

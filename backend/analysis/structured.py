@@ -33,13 +33,16 @@ from backend import config
 
 _log = logging.getLogger("llm_lesung.structured")
 
-# One model response per call. The main call has no tools, so its answer is
-# always its first response; the rescue call answers through the CLI's
-# structured-output tool within the same limit.
+# One model response per main call: it has no tools, so its answer is always
+# its first response.
 MAX_TURNS = 1
 
-# Tools the CLI offers every session even with ``tools=[]``. A call to one ends
-# the single turn without an answer.
+# The rescue call answers through the CLI's structured-output tool; a tool input
+# the CLI rejects costs a turn, and the further turns are its retries.
+RESCUE_MAX_TURNS = 3
+
+# Tools the CLI offers every session even with ``tools=[]``. A call to one
+# spends a turn without an answer.
 DISALLOWED_TOOLS = ["EndConversation"]
 
 # Loads no MCP servers but those the options name (none). Without it the CLI
@@ -449,7 +452,7 @@ def _rescue_options(schema: dict) -> ClaudeAgentOptions:
         tools=[],
         disallowed_tools=DISALLOWED_TOOLS,
         extra_args=EXTRA_ARGS,
-        max_turns=MAX_TURNS,
+        max_turns=RESCUE_MAX_TURNS,
         thinking=THINKING,
         output_format={"type": "json_schema", "schema": schema},
     )

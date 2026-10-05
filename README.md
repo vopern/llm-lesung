@@ -21,9 +21,16 @@ DIP API + Drucksachen-PDFs  →  pipeline (Claude)  →  SQLite  →  FastAPI  �
 - **Pipeline** (`backend/pipeline.py`) — a batch CLI: fetch bill metadata from the Bundestag
   DIP API, download the Drucksache PDF, extract text with `pypdf`, analyze with Claude
   (one structured call per bill), derive the bill risk, and store findings in SQLite.
+- **Adversarial pass** (`backend/redteam_pipeline.py`) — a second batch CLI over the stored
+  bills: asks what a bad-faith actor gets out of each draft as written and stores the
+  exploits beside the findings. It never changes a bill's findings or risk.
 - **SQLite** (`data/llm-lesung.db`) — the single shared state; no ORM, no external DB.
 - **FastAPI** (`backend/server.py`) — read-only JSON API (`/api/bills`, `/api/bills/{id}`,
   `/api/meta`) that, in production, also serves the built SPA from `frontend/dist`.
+- **Reader feedback** — each finding and exploit on the detail page has a small form
+  (correct / not correct, optional text). `POST /api/feedback` appends it to
+  `data/feedback/<YYYY-MM>.jsonl` (`FEEDBACK_DIR`) together with a snapshot of the rated
+  finding; nothing about the sender is stored, and the database is never written.
 - **React SPA** (`frontend/`) — Vite + TypeScript, list page with risk-filter cards, per-bill
   detail page, about page, DE/EN UI toggle.
 
@@ -34,7 +41,8 @@ Web serving and data production are fully decoupled — they share only the SQLi
 Requires Python 3.13 + [uv](https://docs.astral.sh/uv/) and Node 22 + npm.
 
 The most common operations are wrapped in a `Makefile`: `make setup`, `make test`,
-`make pipeline LIMIT=20`, `make pipeline-all`, `make serve` (build + run on :8000),
+`make pipeline LIMIT=20`, `make pipeline-all`, `make locate-quotes` (page links for the
+findings already stored, no Claude call), `make redteam LIMIT=20`, `make serve` (build + run on :8000),
 `make dev` (hot reload). The sections below show the underlying commands.
 
 ```bash
@@ -58,13 +66,14 @@ SDK): a local `claude login` (claude.ai subscription) works with no configuratio
 |---|---|---|---|
 | `ANTHROPIC_API_KEY` | No | — | Set only to bill the pipeline against the Anthropic API instead of the local Claude Code login. |
 | `CLAUDE_CODE_OAUTH_TOKEN` | No | — | Subscription token from `claude setup-token`, for headless/container runs without a local login. |
-| `DIP_API_KEY` | No | built-in public key | Bundestag DIP API key. A working public, referer-locked key ships as the default. It rotates ~yearly; if it stops working, re-scrape it from [`dip.bundestag.de/dip-config.js`](https://dip.bundestag.de/dip-config.js), or request a personal key from `parlamentsdokumentation@bundestag.de`. |
+| `DIP_API_KEY` | No | built-in public key | Bundestag DIP API key. A working public key ships as the default. It rotates ~yearly; if it stops working, re-scrape it from [`dip.bundestag.de/dip-config.js`](https://dip.bundestag.de/dip-config.js), or request a personal key from `parlamentsdokumentation@bundestag.de`. |
 | `ANALYSIS_MODEL` | No | `claude-sonnet-5` | Claude model for analysis (override for cheaper/experimental runs). |
 | `ANALYSIS_EFFORT` | No | `high` | Reasoning effort of the analysis call (`low`, `medium`, `high`, `xhigh`, `max`). |
-| `REDTEAM_MODEL` / `REDTEAM_EFFORT` | No | `ANALYSIS_MODEL` / `ANALYSIS_EFFORT` | Model and reasoning effort of the Angreifer pass, run by the eval harness. |
-| `RESCUE_MODEL` | No | `claude-sonnet-5` | Claude model that transcribes a response the output schema rejected; its result is checked verbatim against that response. |
+| `REDTEAM_MODEL` / `REDTEAM_EFFORT` | No | `ANALYSIS_MODEL` / `ANALYSIS_EFFORT` | Model and reasoning effort of the adversarial pass (Angreifer). |
 | `LLM_LESUNG_DB` | No | `./data/llm-lesung.db` | Path to the SQLite database file. |
-| `CONTACT_EMAIL` | No | — | Contact address shown on the About page; unset hides the contact section. `make deploy` passes it to the instance. |
+| `CONTACT_EMAIL` | No | — | Contact address shown on the About page; unset hides the contact section. |
+
+`.env.example` lists the remaining tuning variables.
 
 ## Running the analysis pipeline
 
@@ -80,16 +89,29 @@ Flags:
 - `--force` — re-analyze every bill even if it appears unchanged.
 - `--skip-analysis` — stop after metadata + status refresh (no PDF download, no Claude call).
 
-Each analysis reads the Gesetzentwurf together with the Beschlussempfehlungen DIP lists for it,
-so findings describe the draft as amended in committee. Inputs are never truncated: a bill whose
-documents sum to more than 1M characters is skipped and logged.
+Each analysis reads the Gesetzentwurf together with its Beschlussempfehlungen (the committee
+recommendations), so findings describe the draft as amended in committee. Inputs are never
+truncated: a bill whose documents sum to more than 1M characters is skipped and logged.
 
-Re-analysis is idempotent: each stored analysis records the documents it read
-(`analysis_documents`, shown in the Methodik box on the bill's page), and a bill is re-analyzed
-only when that set changes — a new or removed Beschlussempfehlung, or a document with a new
-`pdf_hash` (`aktualisiert` when it has none) — or when the prompt version changed. A failed
-analysis is therefore retried on the next run. Daily is plenty — the Bundestag does not move
-faster. The bill's page grays out a listed Beschlussempfehlung the stored analysis has not read.
+Re-runs are idempotent: a bill is analyzed again only when its documents or the prompt version
+changed, and a failed analysis is retried on the next run. Daily is plenty — the Bundestag does
+not move faster.
+
+### Adversarial pass
+
+A second, separate job red-teams the bills already in the database — it needs no DIP access
+and reads only the Gesetzentwurf:
+
+```bash
+uv run python -m backend.redteam_pipeline --limit 5
+```
+
+- `--limit N` — red-team at most N bills whose pass is missing or outdated (default: all).
+- `--force` — red-team every bill even if its stored pass is current.
+
+A bill is red-teamed again only when its Gesetzentwurf changed or the adversarial prompt
+version did. The exploits are stored separately from the findings and never enter a bill's
+risk.
 
 ## Development
 
@@ -187,8 +209,9 @@ cd infra && terraform output -raw url && cd ..   # e.g. http://18.184.x.x; url_i
 
 ```bash
 make deploy        # after a code change
-make push-db       # after a new local pipeline run (sub-second, no restart)
-make push-eval     # upload the HTML reports in data/eval-public/ (atomic switch, no restart)
+make push-db       # after a new local pipeline run
+make push-eval     # upload the HTML reports in data/eval-public/
+make pull-feedback # download the reader feedback into data/feedback/
 make infra-ip      # after your ISP gives you a new IP, then: make infra-up
 make ssh-ec2       # shell on the box;  make dockerlogs  follows container logs
 make infra-down    # tear everything down

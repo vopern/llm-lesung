@@ -19,11 +19,12 @@ Everything else mirrors ``analyzer.py``: one single-turn, tool-less
 
 import asyncio
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from claude_agent_sdk import ClaudeAgentOptions
 
-from backend import config
+from backend import config, tracelog
 
 from . import structured
 from .schema import RedTeamAnalysis
@@ -232,6 +233,18 @@ def build_message(titel: str, dokumentnummer: str, text: str) -> str:
     )
 
 
-def redteam_bill(titel: str, dokumentnummer: str, text: str) -> RedTeamAnalysis:
-    """Red-team a single bill with Claude and return the validated result."""
-    return asyncio.run(run_query(build_message(titel, dokumentnummer, text))).output
+def redteam_bill(
+    titel: str,
+    dokumentnummer: str,
+    text: str,
+    trace: Path | None = None,
+    trace_fields: dict | None = None,
+) -> RedTeamAnalysis:
+    """Red-team a single bill with Claude and return the validated result.
+
+    With ``trace`` set, the call's message stream is written there
+    (``tracelog.traced``), headed by ``trace_fields``.
+    """
+    user_message = build_message(titel, dokumentnummer, text)
+    with tracelog.traced(trace, trace_fields or {}, user_message) as on_message:
+        return asyncio.run(run_query(user_message, on_message=on_message)).output

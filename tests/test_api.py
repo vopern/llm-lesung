@@ -30,6 +30,19 @@ def _bill(bill_id: str, **overrides) -> dict:
     return base
 
 
+_EXPLOIT = {
+    "muster": "schwellenwert",
+    "akteur": "Ein Konzern, der die Steuer vermeiden will.",
+    "titel": "Erwerb knapp unter der Schwelle",
+    "schritte": ["Erwerb von 89,9 Prozent.", "Ein Mitinvestor hält den Rest."],
+    "vorteil": "Die Steuer entfällt.",
+    "aufwand": "mittel",
+    "quote": "mindestens 90 vom Hundert",
+    "fehlende_absicherung": "Eine Zurechnung abgestimmter Erwerbe fehlt.",
+    "severity": "hoch",
+}
+
+
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
     db_path = str(tmp_path / "test.db")
@@ -69,6 +82,14 @@ def client(tmp_path, monkeypatch):
           "datum": "2026-01-01", "pdf_url": "https://example.org/10.pdf",
           "pdf_hash": "abc", "aktualisiert": "2026-01-10T10:00:00", "text_chars": 1000}],
         trace="20260101-000000/traces/21-10.jsonl",
+    )
+    db.replace_exploits(conn, "10", [_EXPLOIT])
+    db.mark_redteamed(
+        conn, "10", "Ein Angriff.", config.REDTEAM_PROMPT_VERSION, config.REDTEAM_MODEL,
+        [{"document_id": "10", "typ": "gesetzentwurf", "dokumentnummer": "21/10",
+          "datum": "2026-01-01", "pdf_url": "https://example.org/10.pdf",
+          "pdf_hash": "abc", "aktualisiert": "2026-01-10T10:00:00", "text_chars": 1000}],
+        trace="20260102-000000-redteam/traces/21-10.jsonl",
     )
 
     db.replace_findings(
@@ -202,11 +223,13 @@ def test_detail_includes_findings(client):
     assert len(bill["findings"]) == 2
     finding = bill["findings"][0]
     assert set(finding.keys()) == {
+        "id",
         "severity",
         "category",
         "title",
         "description",
         "quote",
+        "location",
     }
 
 
@@ -227,7 +250,27 @@ def test_detail_includes_analysis_documents(client):
 
 
 def test_detail_never_exposes_the_local_trace_path(client):
-    assert "analysis_trace" not in client.get("/api/bills/10").json()
+    bill = client.get("/api/bills/10").json()
+    assert "analysis_trace" not in bill
+    assert "redteam_trace" not in bill
+
+
+def test_detail_includes_exploits_and_the_redteam_pass(client):
+    bill = client.get("/api/bills/10").json()
+    assert [{k: v for k, v in e.items() if k != "id"} for e in bill["exploits"]] == [_EXPLOIT]
+    assert bill["redteam_summary"] == "Ein Angriff."
+    assert bill["redteam_prompt_version"] == config.REDTEAM_PROMPT_VERSION
+    assert bill["redteamed_at"] is not None
+    assert bill["redteam_documents"][0]["dokumentnummer"] == "21/10"
+    # Exploits never enter the risk.
+    assert bill["risk"] == "hoch" and len(bill["findings"]) == 2
+
+
+def test_detail_exploits_empty_when_the_pass_has_not_run(client):
+    bill = client.get("/api/bills/20").json()
+    assert bill["exploits"] == []
+    assert bill["redteamed_at"] is None
+    assert bill["redteam_documents"] == []
 
 
 def test_detail_analysis_documents_empty_when_unanalyzed(client):
@@ -279,6 +322,7 @@ def test_meta_shape(client):
         "niedrig": 1,
         "unanalysiert": 1,
         "total": 3,
+        "verfassung": 0,
     }
     assert meta["statuses"] == ["Beschlossen", "Überwiesen"]
     assert meta["prompt_version"] == config.PROMPT_VERSION
@@ -367,3 +411,79 @@ def test_eval_folder_behind_a_swapped_symlink(eval_client, tmp_path):
     folder.symlink_to(tmp_path / "r2")
     assert [r["path"] for r in client.get("/api/eval").json()] == ["r2.html"]
     assert client.get("/api/eval/reports/r2.html").text == "r2"
+
+
+def test_list_verfassung_filter(client):
+    # No bill in the fixture has a constitutional finding.
+    assert client.get("/api/bills?verfassung=1").json()["total"] == 0
+    assert client.get("/api/bills?verfassung=0").json()["total"] == 3
+
+
+# --- POST /api/feedback -----------------------------------------------------
+
+
+@pytest.fixture()
+def feedback_dir(tmp_path, monkeypatch):
+    path = tmp_path / "feedback"
+    monkeypatch.setattr(config, "FEEDBACK_DIR", str(path))
+    return path
+
+
+def _feedback_records(feedback_dir) -> list[dict]:
+    import json
+
+    return [json.loads(line) for file in sorted(feedback_dir.glob("*.jsonl"))
+            for line in file.read_text(encoding="utf-8").splitlines()]
+
+
+def test_feedback_on_a_finding_is_appended_with_its_snapshot(client, feedback_dir):
+    finding = client.get("/api/bills/10").json()["findings"][0]
+    r = client.post("/api/feedback", json={"kind": "finding", "id": finding["id"],
+                                           "verdict": "down", "text": "  § 5 gibt es.  "})
+    assert r.status_code == 201
+    (record,) = _feedback_records(feedback_dir)
+    assert record["at"]
+    assert {k: v for k, v in record.items() if k not in ("at", "analyzed_at")} == {
+        "kind": "finding", "verdict": "down", "text": "§ 5 gibt es.",
+        "bill_id": "10", "dokumentnummer": "21/10", "category": "referenz",
+        "severity": "hoch", "title": "Falscher Verweis", "quote": "gemäß § 5 Absatz 3",
+        "prompt_version": config.PROMPT_VERSION, "model": config.ANALYSIS_MODEL,
+    }
+
+
+def test_feedback_on_an_exploit_records_the_redteam_run(client, feedback_dir):
+    exploit = client.get("/api/bills/10").json()["exploits"][0]
+    r = client.post("/api/feedback", json={"kind": "exploit", "id": exploit["id"], "verdict": "up"})
+    assert r.status_code == 201
+    (record,) = _feedback_records(feedback_dir)
+    assert record["title"] == _EXPLOIT["titel"] and record["category"] == _EXPLOIT["muster"]
+    assert record["prompt_version"] == config.REDTEAM_PROMPT_VERSION
+    assert record["text"] == ""
+
+
+def test_feedback_appends_one_line_per_submission(client, feedback_dir):
+    finding = client.get("/api/bills/10").json()["findings"][0]
+    for verdict in ("up", "down"):
+        client.post("/api/feedback", json={"kind": "finding", "id": finding["id"], "verdict": verdict})
+    assert [r["verdict"] for r in _feedback_records(feedback_dir)] == ["up", "down"]
+
+
+def test_feedback_rejects_unknown_targets_and_bad_input(client, feedback_dir):
+    finding = client.get("/api/bills/10").json()["findings"][0]
+    ok = {"kind": "finding", "id": finding["id"], "verdict": "up"}
+    assert client.post("/api/feedback", json=ok | {"id": 999999}).status_code == 404
+    assert client.post("/api/feedback", json=ok | {"verdict": "maybe"}).status_code == 422
+    assert client.post("/api/feedback", json=ok | {"kind": "bill"}).status_code == 422
+    assert client.post("/api/feedback", json=ok | {"text": "x" * 2001}).status_code == 422
+    assert not feedback_dir.exists()
+
+
+def test_feedback_stops_when_the_months_file_is_full(client, feedback_dir, monkeypatch):
+    from backend import feedback
+
+    finding = client.get("/api/bills/10").json()["findings"][0]
+    body = {"kind": "finding", "id": finding["id"], "verdict": "up"}
+    assert client.post("/api/feedback", json=body).status_code == 201
+    monkeypatch.setattr(feedback, "MAX_FILE_BYTES", 1)
+    assert client.post("/api/feedback", json=body).status_code == 503
+    assert len(_feedback_records(feedback_dir)) == 1

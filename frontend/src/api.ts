@@ -39,12 +39,38 @@ export interface BillsResponse {
   page_size: number;
 }
 
+// Where a finding's quote stands in the documents the analysis read.
+export interface QuoteLocation {
+  document_id: string;
+  page: number; // 1-based page of the PDF
+  before: string;
+  match: string; // the quote as the document spells it
+  after: string;
+}
+
 export interface Finding {
+  id: number; // changes with every re-analysis
   severity: Severity;
   category: Category;
   title: string;
   description: string;
   quote: string | null;
+  location: QuoteLocation | null; // null: no quote, or not found
+}
+
+// One attack from the adversarial pass: what a bad-faith actor gets out of the
+// draft as written.
+export interface Exploit {
+  id: number; // changes with every re-run of the pass
+  muster: string;
+  akteur: string;
+  titel: string;
+  schritte: string[];
+  vorteil: string;
+  aufwand: Severity;
+  quote: string;
+  fehlende_absicherung: string;
+  severity: Severity;
 }
 
 // One document the stored analysis read.
@@ -95,6 +121,12 @@ export interface BillDetail {
   // Empty for unanalyzed bills and analyses that predate the column.
   analysis_documents: AnalysisDocument[];
   related_documents: RelatedDocument[];
+  // The adversarial pass; `redteamed_at` null means it has not run.
+  exploits: Exploit[];
+  redteam_summary: string | null;
+  redteam_prompt_version: string | null;
+  redteam_model: string | null;
+  redteamed_at: string | null;
 }
 
 export interface Meta {
@@ -104,6 +136,8 @@ export interface Meta {
     niedrig: number;
     unanalysiert: number;
     total: number;
+    // Bills with a verfassungsrisiko/kompetenz finding; overlaps the risk counts.
+    verfassung: number;
   };
   statuses: string[];
   prompt_version: string;
@@ -141,6 +175,7 @@ export interface BillsQuery {
   risk?: Risk | null;
   status?: string | null;
   q?: string | null;
+  verfassung?: boolean;
   page?: number;
   page_size?: number;
 }
@@ -150,6 +185,7 @@ export function fetchBills(query: BillsQuery = {}): Promise<BillsResponse> {
   if (query.risk) params.set("risk", query.risk);
   if (query.status) params.set("status", query.status);
   if (query.q) params.set("q", query.q);
+  if (query.verfassung) params.set("verfassung", "1");
   params.set("page", String(query.page ?? 1));
   params.set("page_size", String(query.page_size ?? 20));
   return getJson<BillsResponse>(`/api/bills?${params.toString()}`);
@@ -161,6 +197,25 @@ export function fetchBill(id: string): Promise<BillDetail> {
 
 export function fetchMeta(): Promise<Meta> {
   return getJson<Meta>("/api/meta");
+}
+
+// --- Reader feedback (POST /api/feedback) -----------------------------------
+
+export type FeedbackKind = "finding" | "exploit";
+export type FeedbackVerdict = "up" | "down";
+
+export async function postFeedback(
+  kind: FeedbackKind,
+  id: number,
+  verdict: FeedbackVerdict,
+  text: string,
+): Promise<void> {
+  const res = await fetch("/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, id, verdict, text }),
+  });
+  if (!res.ok) throw new ApiError(res.status, `HTTP ${res.status} für /api/feedback`);
 }
 
 // --- Evaluation reports (GET /api/eval) -------------------------------------

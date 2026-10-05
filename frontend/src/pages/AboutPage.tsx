@@ -71,7 +71,7 @@ export function AboutPage() {
         {de ? (
           <>
             LLM-Lesung liest die Gesetzentwürfe des Deutschen Bundestags mit einem
-            Sprachmodell gegen und sucht nach handwerklichen Fehlern: ins Leere
+            Sprachmodell gegen und sucht nach vermeidbaren Fehlern: ins Leere
             laufende Verweise, Widersprüche zwischen Gesetzestext und Begründung,
             Rechen- und Datumsfehler, fehlende Teile und Unklarheiten mit
             praktischen Folgen. Jeder Befund zitiert die betroffene Stelle, damit er
@@ -81,7 +81,7 @@ export function AboutPage() {
         ) : (
           <>
             LLM-Lesung reads the draft bills of the German Bundestag with a language
-            model and looks for drafting defects: references that point nowhere,
+            model and looks for avoidable errors: references that point nowhere,
             contradictions between the legal text and its reasoning, arithmetic and
             date errors, missing parts, and ambiguities with practical consequences.
             Every finding quotes the passage concerned, so it can be checked against
@@ -98,9 +98,8 @@ export function AboutPage() {
             <a href={LAWLAB_URL} target="_blank" rel="noopener noreferrer">LawLab</a>{" "}
             prüft Gesetzentwürfe mit KI und weist auf Fehler hin, bevor sie Gesetz
             werden (Hintergrund: <a href={WIRED_URL} target="_blank" rel="noopener noreferrer">Reportage bei WIRED</a>).
-            Auch Deutschland hat seine Beispiele — Gesetze, die unter Zeitdruck
-            entstanden, per Reparaturgesetz nachgebessert oder vom
-            Bundesverfassungsgericht beanstandet wurden.
+            Gesetze werden unter Zeitdruck geschrieben und später nachgebessert –
+            ein Gegenleser, der früh auf Fehler hinweist, kann hier helfen.
           </>
         ) : (
           <>
@@ -108,8 +107,8 @@ export function AboutPage() {
             <a href={LAWLAB_URL} target="_blank" rel="noopener noreferrer">LawLab</a>{" "}
             checks draft bills with AI and flags mistakes before they become law
             (background: <a href={WIRED_URL} target="_blank" rel="noopener noreferrer">WIRED story</a>).
-            Germany has its own examples — laws passed under time pressure, patched
-            by repair amendments or objected to by the Federal Constitutional Court.
+            Laws are written under time pressure and patched later – a proofreader
+            that flags mistakes early can help.
           </>
         )}
       </p>
@@ -117,17 +116,21 @@ export function AboutPage() {
       <p>
         {de ? (
           <>
-            LLM-Lesung ist eine Studie, kein fertiges Werkzeug: Sie soll klären, wo
-            KI helfen kann, Gesetzentwürfe gegenzulesen und einem Stresstest zu
-            unterziehen — und wo ihre Grenzen liegen. Deshalb soll auch gemessen werden,
-            welche bekannten Mängel das Modell findet und welche es übersieht.
+            LLM-Lesung versteht sich als Studie, nicht als fertiges Werkzeug. Es
+            geht nicht darum, einzelne Fehler herauszustellen. Die Befunde sollen
+            zeigen, ob KI das Fehlerrisiko in der Gesetzgebung senken kann – und wo
+            ihre Grenzen liegen. Deshalb wird auch gemessen, was das Modell findet
+            und was es übersieht: mit Evaluationen an bekannten Mängeln und mit
+            Rückmeldungen von Leserinnen und Lesern.
           </>
         ) : (
           <>
-            LLM-Lesung is a study, not a finished tool: it sets out to find where AI
-            can help to proofread and stress-test draft legislation — and where its
-            limits are. That is why it measures openly which known defects the model
-            finds and which it misses.
+            LLM-Lesung sees itself as a study, not a finished tool. The point is
+            not to single out individual errors. The findings are meant to show
+            whether AI can lower the risk of errors in lawmaking – and where its
+            limits are. That is why it also measures what the model finds and what
+            it misses: with evaluations on known defects and with feedback from
+            readers.
           </>
         )}
       </p>

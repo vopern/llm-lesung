@@ -1,13 +1,124 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ApiError, fetchBill, type BillDetail } from "../api";
+import { Link, useLocation, useParams } from "react-router-dom";
+import {
+  ApiError,
+  fetchBill,
+  type AnalysisDocument,
+  type BillDetail,
+  type Exploit,
+  type Finding,
+  type QuoteLocation,
+} from "../api";
 import { useI18n } from "../i18n";
-import { categoryLabel, formatDate, formatDateTime } from "../format";
+import {
+  CONSTITUTIONAL_CATEGORIES,
+  RISK_LABELS,
+  categoryLabel,
+  formatDate,
+  formatDateTime,
+  musterLabel,
+} from "../format";
+import { Feedback } from "../components/Feedback";
 import { RiskBadge } from "../components/RiskBadge";
+
+// Where a finding's quote stands: a link to that page of the PDF and the
+// passage around it, so the quote can be checked without searching.
+function QuoteSource({
+  location,
+  documents,
+}: {
+  location: QuoteLocation;
+  documents: AnalysisDocument[];
+}) {
+  const { t } = useI18n();
+  const doc = documents.find((d) => d.document_id === location.document_id);
+  return (
+    <div className="quote-source">
+      {doc && (
+        <a
+          className="quote-page-link"
+          href={`${doc.pdf_url}#page=${location.page}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Drs. {doc.dokumentnummer}, {t("quotePage")} {location.page} ↗
+        </a>
+      )}
+      <details className="quote-context">
+        <summary>{t("quoteContext")}</summary>
+        <p>
+          {location.before}
+          <mark>{location.match}</mark>
+          {location.after}
+        </p>
+      </details>
+    </div>
+  );
+}
+
+function FindingCard({
+  finding: f,
+  documents,
+}: {
+  finding: Finding;
+  documents: AnalysisDocument[];
+}) {
+  return (
+    <article className="finding-card">
+      <div className="finding-card-head">
+        <RiskBadge level={f.severity} />
+        <span className="finding-category">{categoryLabel(f.category)}</span>
+      </div>
+      <h3 className="finding-title">{f.title}</h3>
+      <p className="finding-description">{f.description}</p>
+      {f.quote && <blockquote className="finding-quote">{f.quote}</blockquote>}
+      {f.location && <QuoteSource location={f.location} documents={documents} />}
+      <Feedback kind="finding" id={f.id} />
+    </article>
+  );
+}
+
+// An attack from the adversarial pass. Its severity is plain text, not a
+// badge: it never enters the bill's severity.
+function ExploitCard({ exploit: e }: { exploit: Exploit }) {
+  const { t } = useI18n();
+  return (
+    <article className="finding-card">
+      <div className="finding-card-head">
+        <span className="finding-category">
+          {musterLabel(e.muster)} · {t("exploitSeverity")}: {RISK_LABELS[e.severity]} ·{" "}
+          {t("exploitEffort")}: {RISK_LABELS[e.aufwand]}
+        </span>
+      </div>
+      <h3 className="finding-title">{e.titel}</h3>
+      <dl className="exploit-facts">
+        <dt>{t("exploitActor")}</dt>
+        <dd>{e.akteur}</dd>
+        <dt>{t("exploitSteps")}</dt>
+        <dd>
+          <ol>
+            {e.schritte.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ol>
+        </dd>
+        <dt>{t("exploitGain")}</dt>
+        <dd>{e.vorteil}</dd>
+        <dt>{t("exploitMissing")}</dt>
+        <dd>{e.fehlende_absicherung}</dd>
+      </dl>
+      <blockquote className="finding-quote">{e.quote}</blockquote>
+      <Feedback kind="exploit" id={e.id} />
+    </article>
+  );
+}
 
 export function DetailPage() {
   const { id = "" } = useParams();
   const { t } = useI18n();
+  // Back to the list as it was left: the list passes its filters and page.
+  const listSearch = (useLocation().state as { listSearch?: string } | null)?.listSearch;
+  const backTo = `/${listSearch ?? ""}`;
 
   const [bill, setBill] = useState<BillDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +157,7 @@ export function DetailPage() {
       <div className="detail-message">
         <h1>{t("notFoundTitle")}</h1>
         <p>{t("notFoundBody")}</p>
-        <Link className="back-link" to="/">
+        <Link className="back-link" to={backTo}>
           ← {t("backToList")}
         </Link>
       </div>
@@ -57,7 +168,7 @@ export function DetailPage() {
     return (
       <div className="detail-message">
         <p className="notice notice-error">{t("errorGeneric")}</p>
-        <Link className="back-link" to="/">
+        <Link className="back-link" to={backTo}>
           ← {t("backToList")}
         </Link>
       </div>
@@ -66,6 +177,13 @@ export function DetailPage() {
 
   const documents = bill.analysis_documents ?? [];
   const related = bill.related_documents ?? [];
+  const craftFindings = bill.findings.filter(
+    (f) => !CONSTITUTIONAL_CATEGORIES.has(f.category),
+  );
+  const constitutionalFindings = bill.findings.filter((f) =>
+    CONSTITUTIONAL_CATEGORIES.has(f.category),
+  );
+  const exploits = bill.exploits ?? [];
   const analyzedIds = new Set(documents.map((d) => d.document_id));
   const docTypeLabel = (typ: string) =>
     typ === "gesetzentwurf"
@@ -76,7 +194,7 @@ export function DetailPage() {
 
   return (
     <article className="detail-page">
-      <Link className="back-link" to="/">
+      <Link className="back-link" to={backTo}>
         ← {t("backToList")}
       </Link>
 
@@ -149,26 +267,58 @@ export function DetailPage() {
 
       <section className="detail-findings">
         <h2>{t("findingsHeading")}</h2>
-        {bill.findings.length === 0 ? (
+        {craftFindings.length === 0 ? (
           <p className="notice">{t("noFindings")}</p>
         ) : (
           <div className="finding-list">
-            {bill.findings.map((f, i) => (
-              <article key={i} className="finding-card">
-                <div className="finding-card-head">
-                  <RiskBadge level={f.severity} />
-                  <span className="finding-category">
-                    {categoryLabel(f.category)}
-                  </span>
-                </div>
-                <h3 className="finding-title">{f.title}</h3>
-                <p className="finding-description">{f.description}</p>
-                {f.quote && <blockquote className="finding-quote">{f.quote}</blockquote>}
-              </article>
+            {craftFindings.map((f) => (
+              <FindingCard key={f.id} finding={f} documents={documents} />
             ))}
           </div>
         )}
       </section>
+
+      {constitutionalFindings.length > 0 && (
+        <section className="detail-constitutional">
+          <h2>{t("constitutionalHeading")}</h2>
+          <p className="section-note">{t("constitutionalNote")}</p>
+          <div className="finding-list">
+            {constitutionalFindings.map((f) => (
+              <FindingCard key={f.id} finding={f} documents={documents} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {bill.redteamed_at && (
+        <details className="detail-exploits">
+          <summary>
+            <span className="experimental-tag">{t("exploitsExperimental")}</span>
+            {t("exploitsHeading")}{" "}
+            <span className="exploit-count">({exploits.length})</span>
+          </summary>
+          <p className="section-note">{t("exploitsNote")}</p>
+          {exploits.length === 0 ? (
+            <p className="notice">{t("noExploits")}</p>
+          ) : (
+            <>
+              {bill.redteam_summary && (
+                <p className="exploit-summary">{bill.redteam_summary}</p>
+              )}
+              <div className="finding-list">
+                {exploits.map((e) => (
+                  <ExploitCard key={e.id} exploit={e} />
+                ))}
+              </div>
+            </>
+          )}
+          <p className="exploit-run">
+            {t("methodModel")}: {bill.redteam_model ?? "–"} · {t("methodPromptVersion")}:{" "}
+            {bill.redteam_prompt_version ?? "–"} · {t("methodAnalyzedAt")}:{" "}
+            {formatDateTime(bill.redteamed_at)}
+          </p>
+        </details>
+      )}
 
       <section className="method-box">
         <h2>{t("methodHeading")}</h2>

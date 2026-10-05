@@ -12,6 +12,30 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   kompetenz: "Kompetenz",
 };
 
+// Reported, but excluded from the bill's severity.
+export const CONSTITUTIONAL_CATEGORIES: ReadonlySet<string> = new Set([
+  "verfassungsrisiko",
+  "kompetenz",
+]);
+
+// Attack patterns of the adversarial pass.
+const MUSTER_LABELS: Record<string, string> = {
+  adressatenwahl: "Adressatenwahl",
+  entkopplung: "Entkopplung",
+  schwellenwert: "Schwellenwert",
+  definitionsmacht: "Definitionsmacht",
+  zeitfenster: "Zeitfenster",
+  nachweisluecke: "Nachweislücke",
+  sanktionsarithmetik: "Sanktionsarithmetik",
+  kumulation: "Kumulation",
+  anwendungsbereich: "Anwendungsbereich",
+  vollzugsspielraum: "Vollzugsspielraum",
+};
+
+export function musterLabel(muster: string): string {
+  return MUSTER_LABELS[muster] ?? muster;
+}
+
 export function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category as Category] ?? category;
 }

@@ -112,6 +112,14 @@ def _finding(severity: str = "mittel", category: str = "referenz") -> Finding:
     )
 
 
+@pytest.fixture(autouse=True)
+def pages(monkeypatch):
+    """Serve every document's page texts from memory; tests override as needed."""
+    monkeypatch.setattr(
+        pipeline.pdf_text, "get_pages", lambda url, cache_key=None: ["Ein Gesetzestext."]
+    )
+
+
 def _patch_dip(monkeypatch, documents):
     monkeypatch.setattr(
         pipeline.dip_client, "fetch_gesetzentwuerfe", lambda limit=None: documents
@@ -135,7 +143,7 @@ def _stored(**overrides) -> dict:
     base = {
         "risk": "mittel",
         "prompt_version": config.PROMPT_VERSION,
-        "analysis_documents": [pipeline._entwurf_document(_fresh())],
+        "analysis_documents": [pipeline.entwurf_document(_fresh())],
     }
     base.update(overrides)
     return base
@@ -162,7 +170,7 @@ def test_needs_analysis_aktualisiert_alone_does_not_count_when_hashed():
 
 def test_needs_analysis_changed_aktualisiert_without_hash():
     existing = _stored(
-        analysis_documents=[pipeline._entwurf_document(_fresh(pdf_hash=None))]
+        analysis_documents=[pipeline.entwurf_document(_fresh(pdf_hash=None))]
     )
     inputs = _inputs(pdf_hash=None, aktualisiert="2026-03-01T00:00:00")
     assert pipeline.needs_analysis(existing, inputs, force=False) is True
@@ -893,3 +901,53 @@ def test_run_failed_analysis_still_catalogues(conn, monkeypatch):
     monkeypatch.setattr(pipeline.analyzer, "analyze_bill", _boom)
     pipeline.run(conn, max_attempts=1)
     assert _related_ids(conn, "1") == ["900"]
+
+
+# --------------------------------------------------------------------------- #
+# Quotes are located in the documents the analysis read
+# --------------------------------------------------------------------------- #
+def test_run_stores_where_a_quote_stands(conn, monkeypatch):
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch)
+    monkeypatch.setattr(
+        pipeline.pdf_text, "get_pages",
+        lambda url, cache_key=None: ["Seite eins.", "Die Frist be-\nträgt drei Monate. Ende."],
+    )
+    finding = _finding()
+    finding.quote = "Die Frist beträgt drei Monate."
+    monkeypatch.setattr(
+        pipeline.analyzer, "analyze_bill",
+        lambda *a, **k: BillAnalysis(summary="S", findings=[finding, _finding()]),
+    )
+
+    assert pipeline.run(conn) == 0
+
+    located, unlocated = db.get_bill(conn, "1")["findings"]
+    assert located["location"] == {
+        "document_id": "1",
+        "page": 2,
+        "before": "Seite eins. ",
+        "match": "Die Frist beträgt drei Monate.",
+        "after": " Ende.",
+    }
+    assert unlocated["location"] is None
+
+
+def test_unreadable_pages_do_not_cost_the_analysis(conn, monkeypatch):
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch)
+
+    def _boom(url, cache_key=None):
+        raise RuntimeError("no pages")
+
+    monkeypatch.setattr(pipeline.pdf_text, "get_pages", _boom)
+    monkeypatch.setattr(
+        pipeline.analyzer, "analyze_bill",
+        lambda *a, **k: BillAnalysis(summary="S", findings=[_finding()]),
+    )
+
+    assert pipeline.run(conn) == 0
+
+    bill = db.get_bill(conn, "1")
+    assert bill["risk"] == "mittel"
+    assert bill["findings"][0]["location"] is None

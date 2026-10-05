@@ -1,5 +1,6 @@
 import type { Bill, Severity } from "../api";
 import { CATEGORY_LABELS, RISK_LABELS } from "../format";
+import { useI18n } from "../i18n";
 
 const SEVERITIES: Severity[] = ["hoch", "mittel", "niedrig"];
 
@@ -8,10 +9,12 @@ const SEVERITIES: Severity[] = ["hoch", "mittel", "niedrig"];
 // matches the bill's severity rating; the constitutional categories are
 // reported separately because they never enter that rating.
 export function FindingChips({ bill }: { bill: Bill }) {
+  const { t } = useI18n();
+
   // risk IS NULL means "not yet analyzed" — most of the corpus. That must not
   // look like "analyzed, nothing found".
   if (bill.risk === null) {
-    return <span className="chip chip-none">–</span>;
+    return <span className="findings-none">{t("notAnalyzed")}</span>;
   }
 
   const counts: Record<Severity, number> = {
@@ -22,7 +25,7 @@ export function FindingChips({ bill }: { bill: Bill }) {
   const shown = SEVERITIES.filter((s) => counts[s] > 0);
 
   if (shown.length === 0 && bill.findings_verfassung === 0) {
-    return <span className="chip chip-none">0</span>;
+    return <span className="findings-zero">{t("zeroFindings")}</span>;
   }
 
   return (

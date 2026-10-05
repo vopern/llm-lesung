@@ -67,6 +67,9 @@ PIPELINE_RUNS_DIR = os.environ.get("PIPELINE_RUNS_DIR", "./data/pipeline/runs")
 # it is published. In production a symlink to the release `make push-eval` swapped in.
 EVAL_PUBLIC_DIR = os.environ.get("EVAL_PUBLIC_DIR", "./data/eval-public")
 
+# Reader feedback on findings and exploits, one JSONL file per month.
+FEEDBACK_DIR = os.environ.get("FEEDBACK_DIR", "./data/feedback")
+
 # --- Website ----------------------------------------------------------------
 # Contact address shown on the About page; empty hides the contact section.
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "").strip()

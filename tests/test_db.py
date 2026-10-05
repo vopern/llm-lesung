@@ -186,6 +186,147 @@ def test_init_db_adds_analysis_documents_to_existing_table():
     c.close()
 
 
+def _exploit(**overrides) -> dict:
+    base = {
+        "muster": "schwellenwert",
+        "akteur": "Ein Konzern mit Steuerabteilung, der die Grunderwerbsteuer vermeiden will.",
+        "titel": "Erwerb knapp unter der Schwelle",
+        "schritte": ["Erwerb von 89,9 Prozent.", "Ein Mitinvestor hält den Rest."],
+        "vorteil": "Die Steuer entfällt vollständig.",
+        "aufwand": "mittel",
+        "quote": "mindestens 90 vom Hundert",
+        "fehlende_absicherung": "Eine Zurechnung abgestimmter Erwerbe fehlt.",
+        "severity": "hoch",
+    }
+    base.update(overrides)
+    return base
+
+
+def _stored_exploits(conn) -> list[dict]:
+    """Bill 100's exploits without their row ids."""
+    return [{k: v for k, v in e.items() if k != "id"}
+            for e in db.get_bill(conn, "100")["exploits"]]
+
+
+def test_exploits_round_trip_and_replace(conn):
+    db.upsert_bill(conn, _bill("100"))
+    exploits = [_exploit(), _exploit(muster="zeitfenster", severity="niedrig")]
+    db.replace_exploits(conn, "100", exploits)
+    assert _stored_exploits(conn) == exploits
+
+    # replace wholesale
+    db.replace_exploits(conn, "100", exploits[1:])
+    assert _stored_exploits(conn) == exploits[1:]
+
+
+def test_exploits_empty_by_default(conn):
+    db.upsert_bill(conn, _bill("100"))
+    bill = db.get_bill(conn, "100")
+    assert bill["exploits"] == []
+    assert bill["redteamed_at"] is None
+    assert bill["redteam_documents"] == []
+
+
+def test_findings_and_exploits_are_replaced_independently(conn):
+    db.upsert_bill(conn, _bill("100"))
+    finding = {"severity": "hoch", "category": "referenz", "title": "t", "description": "d",
+               "quote": None, "location": None}
+    db.replace_findings(conn, "100", [finding])
+    db.replace_exploits(conn, "100", [_exploit()])
+
+    db.replace_findings(conn, "100", [])
+    assert _stored_exploits(conn) == [_exploit()]
+
+    db.replace_findings(conn, "100", [finding])
+    db.replace_exploits(conn, "100", [])
+    assert [{k: v for k, v in f.items() if k != "id"}
+            for f in db.get_bill(conn, "100")["findings"]] == [finding]
+
+
+def test_mark_redteamed(conn):
+    db.upsert_bill(conn, _bill("100"))
+    trace = "20261001-120000-redteam/traces/21-100.jsonl"
+    db.mark_redteamed(conn, "100", "Zwei Angriffe.", "v5", "claude-sonnet-5", _documents()[:1], trace=trace)
+    bill = db.get_bill(conn, "100")
+    assert bill["redteam_summary"] == "Zwei Angriffe."
+    assert bill["redteam_prompt_version"] == "v5"
+    assert bill["redteam_model"] == "claude-sonnet-5"
+    assert bill["redteamed_at"] is not None
+    assert bill["redteam_documents"] == _documents()[:1]
+    assert bill["redteam_trace"] == trace
+
+
+def test_the_two_passes_keep_their_own_columns(conn):
+    db.upsert_bill(conn, _bill("100"))
+    db.mark_analyzed(conn, "100", "mittel", "Lektor", "v7", "m-lektor", _documents(), trace="a.jsonl")
+    db.mark_redteamed(conn, "100", "Angreifer", "v5", "m-angreifer", _documents()[:1], trace="r.jsonl")
+    bill = db.get_bill(conn, "100")
+    assert (bill["risk"], bill["summary"], bill["prompt_version"], bill["model"]) == (
+        "mittel", "Lektor", "v7", "m-lektor")
+    assert bill["analysis_documents"] == _documents()
+    assert bill["analysis_trace"] == "a.jsonl"
+
+    db.mark_analyzed(conn, "100", "hoch", "Lektor neu", "v8", "m-lektor", _documents())
+    bill = db.get_bill(conn, "100")
+    assert (bill["redteam_summary"], bill["redteam_prompt_version"], bill["redteam_model"]) == (
+        "Angreifer", "v5", "m-angreifer")
+    assert bill["redteam_documents"] == _documents()[:1]
+    assert bill["redteam_trace"] == "r.jsonl"
+
+
+def test_upsert_preserves_the_redteam_pass(conn):
+    db.upsert_bill(conn, _bill("100"))
+    db.replace_exploits(conn, "100", [_exploit()])
+    db.mark_redteamed(conn, "100", "s", "v5", "m", _documents()[:1])
+    db.upsert_bill(conn, _bill("100", pdf_hash="changed"))
+    bill = db.get_bill(conn, "100")
+    assert _stored_exploits(conn) == [_exploit()]
+    assert bill["redteam_documents"] == _documents()[:1]
+    assert bill["redteamed_at"] is not None
+
+
+def test_init_db_adds_redteam_columns_and_exploits_to_existing_database():
+    c = db.connect(":memory:")
+    # A bills table without the red-team columns, and no exploits table.
+    c.execute(
+        "CREATE TABLE bills (id TEXT PRIMARY KEY, dokumentnummer TEXT NOT NULL, "
+        "wahlperiode INTEGER NOT NULL, titel TEXT NOT NULL, urheber TEXT, datum TEXT, "
+        "aktualisiert TEXT, status TEXT, vorgang_id TEXT, pdf_url TEXT NOT NULL, "
+        "pdf_hash TEXT, text_chars INTEGER, risk TEXT, summary TEXT, "
+        "prompt_version TEXT, model TEXT, analyzed_at TEXT, analysis_documents TEXT, "
+        "analysis_trace TEXT)"
+    )
+    c.execute(
+        "INSERT INTO bills (id, dokumentnummer, wahlperiode, titel, pdf_url, risk) "
+        "VALUES ('1', '21/1', 21, 'Alt', 'https://example.org/1.pdf', 'hoch')"
+    )
+    db.init_db(c)
+    db.init_db(c)  # idempotent
+    db.replace_exploits(c, "1", [_exploit()])
+    db.mark_redteamed(c, "1", "s", "v5", "m", [])
+    bill = db.get_bill(c, "1")
+    assert bill["risk"] == "hoch"
+    assert [{k: v for k, v in e.items() if k != "id"} for e in bill["exploits"]] == [_exploit()]
+    assert bill["redteam_summary"] == "s"
+    c.close()
+
+
+def test_cascade_delete_exploits(conn):
+    db.upsert_bill(conn, _bill("100"))
+    db.replace_exploits(conn, "100", [_exploit()])
+    conn.execute("DELETE FROM bills WHERE id = ?", ("100",))
+    conn.commit()
+    assert conn.execute("SELECT COUNT(*) FROM exploits").fetchone()[0] == 0
+
+
+def test_bill_ids_newest_first(conn):
+    db.upsert_bill(conn, _bill("1", aktualisiert="2026-01-01T00:00:00"))
+    db.upsert_bill(conn, _bill("2", aktualisiert="2026-03-01T00:00:00"))
+    db.upsert_bill(conn, _bill("3", aktualisiert="2026-02-01T00:00:00"))
+    assert db.bill_ids(conn) == ["2", "3", "1"]
+    assert db.bill_ids(conn) == [r["id"] for r in db.list_bills(conn)[0]]
+
+
 def test_cascade_delete_findings(conn):
     db.upsert_bill(conn, _bill("100"))
     db.replace_findings(conn, "100", [
@@ -293,7 +434,8 @@ def test_counts(conn):
     db.mark_analyzed(conn, "2", "mittel", "s", "v", "m", [])
     db.mark_analyzed(conn, "3", "niedrig", "s", "v", "m", [])
     c = db.counts(conn)
-    assert c == {"hoch": 1, "mittel": 1, "niedrig": 1, "unanalysiert": 1, "total": 4}
+    assert c == {"hoch": 1, "mittel": 1, "niedrig": 1, "unanalysiert": 1, "total": 4,
+                 "verfassung": 0}
 
 
 def test_distinct_statuses(conn):
@@ -407,3 +549,47 @@ def test_bill_documents_shared_across_bills_and_kept_by_upsert(conn):
     db.upsert_bill(conn, _bill("100", pdf_hash="changed"))
     assert db.get_bill_documents(conn, "100") == [shared]
     assert db.get_bill_documents(conn, "200") == [shared]
+
+
+def test_finding_location_round_trip(conn):
+    db.upsert_bill(conn, _bill("100"))
+    location = {"document_id": "100", "page": 14, "before": "davor ", "match": "§ 5 Abs. 9", "after": " danach"}
+    base = {"severity": "hoch", "category": "referenz", "title": "t", "description": "d", "quote": "§ 5 Abs. 9"}
+    db.replace_findings(conn, "100", [{**base, "location": location}, base])
+
+    located, unlocated = db.get_bill(conn, "100")["findings"]
+    assert located["location"] == location
+    assert unlocated["location"] is None
+
+
+def test_init_db_adds_location_columns_to_an_older_findings_table():
+    c = db.connect(":memory:")
+    c.execute(
+        "CREATE TABLE findings (id INTEGER PRIMARY KEY AUTOINCREMENT, bill_id TEXT NOT NULL, "
+        "severity TEXT NOT NULL, category TEXT NOT NULL, title TEXT NOT NULL, "
+        "description TEXT NOT NULL, quote TEXT)"
+    )
+    db.init_db(c)
+    columns = {row["name"] for row in c.execute("PRAGMA table_info(findings)")}
+    assert {"quote_document_id", "quote_page", "quote_before", "quote_match", "quote_after"} <= columns
+    c.close()
+
+
+def test_verfassung_filter_and_count(conn):
+    """Bills with a constitutional finding are counted once and can be filtered."""
+    for bill_id in ("1", "2", "3"):
+        db.upsert_bill(conn, _bill(bill_id))
+        db.mark_analyzed(conn, bill_id, "niedrig", "s", "v1", "m", [])
+    base = {"severity": "mittel", "title": "t", "description": "d", "quote": None}
+    db.replace_findings(conn, "1", [
+        {**base, "category": "verfassungsrisiko"},
+        {**base, "category": "kompetenz"},
+    ])
+    db.replace_findings(conn, "2", [{**base, "category": "referenz"}])
+
+    assert db.counts(conn)["verfassung"] == 1
+    rows, total = db.list_bills(conn, verfassung=True)
+    assert total == 1
+    assert [r["id"] for r in rows] == ["1"]
+    assert rows[0]["findings_verfassung"] == 2
+    assert db.list_bills(conn, verfassung=True, risk="hoch") == ([], 0)

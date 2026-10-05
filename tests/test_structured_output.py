@@ -101,8 +101,8 @@ def _json(analysis):
 
 # --- options -------------------------------------------------------------------------
 
-def test_every_structured_call_is_single_turn():
-    assert structured.MAX_TURNS == 1
+def test_main_calls_are_single_turn_and_the_rescue_call_may_retry():
+    assert structured.MAX_TURNS == 1 and structured.RESCUE_MAX_TURNS == 3
     assert analyzer._options().max_turns == 1 and redteam._options().max_turns == 1
     assert analyzer.MAX_TURNS == redteam.MAX_TURNS == 1
 
@@ -254,7 +254,7 @@ def test_an_unparseable_answer_is_rescued_by_a_verified_call(monkeypatch):
     assert run.rescue_result.session_id == "rescue" and len(seen) == 4
     (prompt, options), = prompts
     assert _broken(_analysis()) in prompt
-    assert options.model == structured.config.RESCUE_MODEL and options.max_turns == 1
+    assert options.model == structured.config.RESCUE_MODEL and options.max_turns == 3
     assert options.tools == []
     assert options.output_format == {"type": "json_schema", "schema": analyzer._output_schema()}
     assert [a["call"] for a in run.attempts] == ["rescue"]

@@ -4,10 +4,12 @@ The bill PDFs live on dserver.bundestag.de and are public (no auth), unlike the
 DIP search API. Downloads are cached on disk (``config.PDF_CACHE_DIR``) so
 re-runs and ``--force`` re-analyses never re-download an unchanged Drucksache.
 Text is extracted locally with ``pypdf`` and cached as a ``.txt`` sidecar next
-to the PDF, so re-analyses of an unchanged Drucksache skip extraction too.
+to the PDF, so re-analyses of an unchanged Drucksache skip extraction too. The
+page texts, which locating a quote needs, have a ``.pages.json`` sidecar.
 """
 
 import io
+import json
 import os
 from pathlib import Path
 
@@ -63,10 +65,15 @@ def download_pdf(url: str, cache_key: str | None = None) -> bytes:
     return resp.content
 
 
+def extract_pages(pdf_bytes: bytes) -> list[str]:
+    """Extract the text of every page from PDF bytes."""
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    return [page.extract_text() or "" for page in reader.pages]
+
+
 def extract_text(pdf_bytes: bytes) -> str:
     """Extract text from PDF bytes, joining page texts with '\\n'."""
-    reader = PdfReader(io.BytesIO(pdf_bytes))
-    return "\n".join(page.extract_text() or "" for page in reader.pages)
+    return "\n".join(extract_pages(pdf_bytes))
 
 
 def get_text(url: str, cache_key: str | None = None) -> str:
@@ -87,3 +94,19 @@ def get_text(url: str, cache_key: str | None = None) -> str:
     if txt_path is not None:
         _write_atomic(txt_path, text.encode("utf-8"))
     return text
+
+
+def get_pages(url: str, cache_key: str | None = None) -> list[str]:
+    """Page texts of a Drucksache PDF, extracting at most once per ``cache_key``.
+
+    Cached like ``get_text``, as a ``.pages.json`` sidecar next to the PDF.
+    """
+    pdf_path = _cache_path(config.PDF_CACHE_DIR, url, cache_key) if config.PDF_CACHE_DIR else None
+    pages_path = pdf_path.with_suffix(pdf_path.suffix + ".pages.json") if pdf_path is not None else None
+    if pages_path is not None and pages_path.exists():
+        return json.loads(pages_path.read_text(encoding="utf-8"))
+
+    pages = extract_pages(download_pdf(url, cache_key))
+    if pages_path is not None:
+        _write_atomic(pages_path, json.dumps(pages, ensure_ascii=False).encode("utf-8"))
+    return pages

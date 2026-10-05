@@ -55,6 +55,10 @@ export function Layout({ children }: { children: ReactNode }) {
           {t("footer")} ·{" "}
           <NavLink to="/evaluation" className="footer-link">
             {t("evalLink")}
+          </NavLink>{" "}
+          ·{" "}
+          <NavLink to="/datenschutz" className="footer-link">
+            {t("privacyLink")}
           </NavLink>
         </div>
       </footer>

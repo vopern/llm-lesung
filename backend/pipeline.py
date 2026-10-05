@@ -53,7 +53,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from backend import config, db, errorlog
-from backend.analysis import analyzer
+from backend.analysis import analyzer, quotes
 from backend.dip import client as dip_client
 from backend.dip import pdf_text
 
@@ -63,7 +63,7 @@ log = logging.getLogger("llm_lesung.pipeline")
 BESCHLUSSEMPFEHLUNG = "beschlussempfehlung"
 
 
-def _document_versions(documents: list[dict]) -> set[tuple]:
+def document_versions(documents: list[dict]) -> set[tuple]:
     """The identity of each document version: id plus ``pdf_hash``.
 
     Falls back to ``aktualisiert`` for documents DIP publishes without a hash.
@@ -107,7 +107,7 @@ def _decision_reason(existing_row: dict | None, inputs: list[dict], force: bool)
     stored = existing_row.get("analysis_documents") or []
     if not stored:
         return "Dokumente nicht erfasst"
-    if _document_versions(stored) != _document_versions(inputs):
+    if document_versions(stored) != document_versions(inputs):
         return _documents_change(stored, inputs)
     if existing_row.get("prompt_version") != config.PROMPT_VERSION:
         return "prompt_version geändert"
@@ -124,7 +124,7 @@ def _documents_change(stored: list[dict], inputs: list[dict]) -> str:
         previous = stored_by_id.get(doc.get("document_id"))
         if previous is None:
             changes.append(f"neu: {label}")
-        elif _document_versions([previous]) != _document_versions([doc]):
+        elif document_versions([previous]) != document_versions([doc]):
             changes.append(f"geändert: {label}")
     changes.extend(
         f"entfallen: {_document_label(d)}"
@@ -140,7 +140,7 @@ def _document_label(doc: dict) -> str:
     return f"{typ} {doc.get('dokumentnummer')}"
 
 
-def _entwurf_document(bill: dict) -> dict:
+def entwurf_document(bill: dict) -> dict:
     """The ``analysis_documents`` entry for the bill's Gesetzentwurf itself."""
     return {
         "document_id": bill.get("id"),
@@ -156,15 +156,40 @@ def _entwurf_document(bill: dict) -> dict:
 
 def _input_documents(bill: dict, related: list[dict]) -> list[dict]:
     """The analysis input set: the Gesetzentwurf, then its related documents."""
-    return [_entwurf_document(bill)] + [
+    return [entwurf_document(bill)] + [
         {**d, "text_chars": None} for d in related
     ]
 
 
-def _run_dir() -> Path:
-    """A new run's folder under ``config.PIPELINE_RUNS_DIR``; created lazily by its writers."""
+def locate_findings(findings: list[dict], documents: list[dict]) -> list[dict]:
+    """``findings`` with a ``location`` each: where its quote stands in ``documents``.
+
+    ``documents`` are ``analysis_documents`` entries, searched in order.
+    ``location`` is ``None`` for a finding without a quote or whose quote is
+    not found. Never raises: a document whose pages cannot be read is left out.
+    """
+    prepared = []
+    if any(f.get("quote") for f in findings):
+        for doc in documents:
+            try:
+                pages = pdf_text.get_pages(
+                    doc.get("pdf_url"),
+                    cache_key=doc.get("pdf_hash") or doc.get("aktualisiert"),
+                )
+            except Exception as exc:  # noqa: BLE001 — a missing page link must not cost the analysis
+                log.warning("%s: no page texts (%s)", _document_label(doc), exc)
+                continue
+            prepared.append(quotes.Document(doc.get("document_id"), pages))
+    return [{**f, "location": quotes.locate(f.get("quote"), prepared)} for f in findings]
+
+
+def new_run_dir(suffix: str = "") -> Path:
+    """A new run's folder under ``config.PIPELINE_RUNS_DIR``; created lazily by its writers.
+
+    Named by the UTC start plus ``suffix``, which tells the passes' folders apart.
+    """
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    return Path(config.PIPELINE_RUNS_DIR) / stamp
+    return Path(config.PIPELINE_RUNS_DIR) / f"{stamp}{suffix}"
 
 
 def trace_file(run_dir: Path, dokumentnummer: str, attempt: int) -> Path:
@@ -192,7 +217,7 @@ def _trace_fields(bill: dict, attempt: int, inputs: list[dict]) -> dict:
     }
 
 
-def _short(text: str | None, length: int = 60) -> str:
+def short(text: str | None, length: int = 60) -> str:
     """Truncate a title for single-line logging."""
     if not text:
         return ""
@@ -219,7 +244,8 @@ def _attempt_bill(
 
     Returned keys: ``bill`` (mutated in place), ``phase`` (``"skipped"``,
     ``"attempted"`` or ``"metadata"``), ``reason``, and on success
-    ``analysis`` + ``risk`` + ``documents`` + ``trace``, on failure ``error``.
+    ``analysis`` + ``findings`` (located, see ``locate_findings``) + ``risk`` +
+    ``documents`` + ``trace``, on failure ``error``.
     An input set over ``analyzer.MAX_INPUT_CHARS`` returns ``"skipped"`` with an
     ``oversize`` reason. With ``run_dir`` set, the Claude call is traced to
     ``trace_file(run_dir, …, attempt)``; ``trace`` is that path relative to
@@ -269,7 +295,7 @@ def _attempt_bill(
         log.info(
             "[%s] %s — analyze (%s)",
             bill.get("dokumentnummer"),
-            _short(bill.get("titel")),
+            short(bill.get("titel")),
             outcome["reason"],
         )
         trace = (
@@ -289,6 +315,9 @@ def _attempt_bill(
             trace_fields=_trace_fields(bill, attempt, inputs),
         )
         outcome["analysis"] = analysis
+        outcome["findings"] = locate_findings(
+            [f.model_dump() for f in analysis.findings], inputs
+        )
         outcome["risk"] = analyzer.derive_risk(analysis.findings)
         outcome["documents"] = inputs
         outcome["trace"] = (
@@ -371,7 +400,7 @@ def _process_bill(
             log.warning(
                 "[%s] %s — attempt %d/%d failed (%s: %s); retrying",
                 bill.get("dokumentnummer"),
-                _short(bill.get("titel")),
+                short(bill.get("titel")),
                 attempt,
                 max_attempts,
                 type(error).__name__,
@@ -404,7 +433,7 @@ def run(
     if max_attempts is None:
         max_attempts = config.PIPELINE_MAX_ATTEMPTS
     max_attempts = max(1, max_attempts)
-    run_dir = _run_dir()
+    run_dir = new_run_dir()
     errors = errorlog.ErrorLog(run_dir)
 
     log.info(
@@ -454,7 +483,7 @@ def run(
             bill = outcome["bill"]
             bill_id = bill.get("id")
             dokumentnummer = bill.get("dokumentnummer")
-            title = _short(bill.get("titel"))
+            title = short(bill.get("titel"))
             phase = outcome["phase"]
 
             if phase == "attempted":
@@ -497,11 +526,7 @@ def run(
 
             analysis = outcome["analysis"]
             risk = outcome["risk"]
-            db.replace_findings(
-                conn,
-                bill_id,
-                [f.model_dump() for f in analysis.findings],
-            )
+            db.replace_findings(conn, bill_id, outcome["findings"])
             db.mark_analyzed(
                 conn,
                 bill_id,

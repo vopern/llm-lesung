@@ -1,17 +1,19 @@
 """FastAPI web server for LLM-Lesung (Contract 4).
 
-Serves the read-only JSON API over the SQLite database and, in production,
-the built React SPA from ``frontend/dist``. It depends only on ``db.py`` and
-``config.py``: the web layer never calls Claude or DIP, it only reads the
+Serves the JSON API over the SQLite database and, in production, the built
+React SPA from ``frontend/dist``. It depends only on ``db.py``, ``feedback.py``
+and ``config.py``: the web layer never calls Claude or DIP, it only reads the
 database the pipeline produces and lists the HTML evaluation reports placed in
-``EVAL_PUBLIC_DIR``.
+``EVAL_PUBLIC_DIR``. Its one write is reader feedback, appended to files in
+``FEEDBACK_DIR`` — never to the database.
 
 Endpoints:
 - ``GET /api/bills``      paginated, filterable list of bills
-- ``GET /api/bills/{id}`` full bill incl. findings, analyzed and related documents (404 if unknown)
+- ``GET /api/bills/{id}`` full bill incl. findings, exploits, analyzed and related documents (404 if unknown)
 - ``GET /api/meta``       aggregate counts, statuses, prompt/model, last run, contact address
 - ``GET /api/eval``       the HTML evaluation reports, with title and modification time
 - ``GET /api/eval/reports/{path}``   one of those reports
+- ``POST /api/feedback``  a reader's verdict on one finding or exploit
 """
 
 import os
@@ -25,8 +27,9 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
-from backend import config, db
+from backend import config, db, feedback
 
 # Directory holding the built frontend (Vite output). Absent in dev.
 _FRONTEND_DIST = os.path.join(
@@ -110,6 +113,7 @@ def api_bills(
     risk: Literal["hoch", "mittel", "niedrig"] | None = None,
     status: str | None = None,
     q: str | None = None,
+    verfassung: bool = False,
     page: int = 1,
     page_size: int = 20,
     conn: sqlite3.Connection = Depends(get_conn),
@@ -119,7 +123,13 @@ def api_bills(
     page_size = max(1, min(page_size, 100))  # cap page_size at 100
     q = q.strip() if q else None
     rows, total = db.list_bills(
-        conn, risk=risk, status=status, q=q or None, page=page, page_size=page_size
+        conn,
+        risk=risk,
+        status=status,
+        q=q or None,
+        verfassung=verfassung,
+        page=page,
+        page_size=page_size,
     )
     items = [{field: row[field] for field in _LIST_FIELDS} for row in rows]
     return {"items": items, "total": total, "page": page, "page_size": page_size}
@@ -129,14 +139,16 @@ def api_bills(
 def api_bill(
     bill_id: str, conn: sqlite3.Connection = Depends(get_conn)
 ) -> dict:
-    """Full bill with findings, ``analysis_documents`` and ``related_documents``; 404 if unknown.
+    """Full bill with findings, exploits, ``analysis_documents`` and ``related_documents``; 404 if unknown.
 
-    ``analysis_trace`` names a file that exists only where the pipeline ran.
+    ``analysis_trace`` and ``redteam_trace`` name files that exist only where
+    the passes ran.
     """
     bill = db.get_bill(conn, bill_id)
     if bill is None:
         raise HTTPException(status_code=404, detail="Bill not found")
     bill.pop("analysis_trace", None)
+    bill.pop("redteam_trace", None)
     return bill
 
 
@@ -154,6 +166,32 @@ def api_meta(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
         "last_analyzed_at": last_analyzed_at,
         "contact_email": config.CONTACT_EMAIL or None,
     }
+
+
+# --- Reader feedback --------------------------------------------------------
+
+
+class FeedbackIn(BaseModel):
+    kind: Literal["finding", "exploit"]
+    id: int
+    verdict: Literal["up", "down"]
+    text: str = Field(default="", max_length=feedback.MAX_TEXT_CHARS)
+
+
+@app.post("/api/feedback", status_code=201)
+def api_feedback(body: FeedbackIn, conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    """Record a verdict on one finding or exploit; 404 if it no longer exists.
+
+    The record describes its target from the database, never from the request,
+    and holds nothing about the sender.
+    """
+    target = db.get_feedback_target(conn, body.kind, body.id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Finding not found")
+    record = {"kind": body.kind, "verdict": body.verdict, "text": body.text.strip(), **target}
+    if not feedback.append(record):
+        raise HTTPException(status_code=503, detail="Feedback is closed for this month")
+    return {"ok": True}
 
 
 # --- Evaluation reports -----------------------------------------------------

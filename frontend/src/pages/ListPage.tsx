@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   fetchBills,
   fetchMeta,
@@ -10,29 +10,58 @@ import {
 import { useI18n } from "../i18n";
 import { formatDate } from "../format";
 import { FindingChips } from "../components/FindingChips";
+import { Pagination } from "../components/Pagination";
 
 const PAGE_SIZE = 20;
 
 const RISK_ORDER: Risk[] = ["hoch", "mittel", "niedrig"];
 
+function parseRisk(value: string | null): Risk | null {
+  return RISK_ORDER.includes(value as Risk) ? (value as Risk) : null;
+}
+
 export function ListPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Filters and page live in the URL, so they survive a visit to a bill and
+  // filtered views can be shared.
+  const [params, setParams] = useSearchParams();
+  const risk = parseRisk(params.get("risk"));
+  const verfassung = params.get("verfassung") === "1";
+  const status = params.get("status") ?? "";
+  const q = params.get("q") ?? "";
+  const page = Math.max(1, parseInt(params.get("page") ?? "", 10) || 1);
+
+  function update(changes: Record<string, string | null>, replace = false) {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        for (const [key, value] of Object.entries(changes)) {
+          if (value) next.set(key, value);
+          else next.delete(key);
+        }
+        return next;
+      },
+      { replace }
+    );
+  }
 
   const [meta, setMeta] = useState<Meta | null>(null);
-  const [risk, setRisk] = useState<Risk | null>(null);
-  const [status, setStatus] = useState<string>("");
-  const [search, setSearch] = useState<string>(""); // raw input value
-  const [q, setQ] = useState<string>(""); // debounced value used for fetching
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState(q); // raw input value
+
+  // Follow the URL when it changes underneath the input (back/forward).
+  useEffect(() => {
+    setSearch(q);
+  }, [q]);
 
   // Debounce the search input so we don't fetch on every keystroke. Once q
   // catches up with search, the effect re-runs and bails without a timer.
   useEffect(() => {
     if (search === q) return;
     const handle = setTimeout(() => {
-      setQ(search);
-      setPage(1);
+      update({ q: search || null, page: null }, true);
     }, 300);
     return () => clearTimeout(handle);
   }, [search, q]);
@@ -56,12 +85,20 @@ export function ListPage() {
     };
   }, []);
 
-  // Bills reloaded whenever a filter or the page changes.
+  // Bills reloaded whenever a filter or the page changes. The previous rows
+  // stay on screen, dimmed, until the new ones arrive.
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError(false);
-    fetchBills({ risk, status: status || null, q: q || null, page, page_size: PAGE_SIZE })
+    fetchBills({
+      risk,
+      status: status || null,
+      q: q || null,
+      verfassung,
+      page,
+      page_size: PAGE_SIZE,
+    })
       .then((d) => {
         if (alive) setData(d);
       })
@@ -74,11 +111,24 @@ export function ListPage() {
     return () => {
       alive = false;
     };
-  }, [risk, status, q, page]);
+  }, [risk, status, q, verfassung, page]);
 
-  function toggleRisk(next: Risk) {
-    setPage(1);
-    setRisk((cur) => (cur === next ? null : next));
+  const total = data?.total ?? 0;
+  const items = data?.items ?? [];
+
+  // A page beyond the last one (stale link) falls back to the last page.
+  useEffect(() => {
+    if (data && data.page === page && page > 1 && data.items.length === 0 && data.total > 0) {
+      update({ page: String(Math.ceil(data.total / PAGE_SIZE)) }, true);
+    }
+  }, [data, page]);
+
+  const listRef = useRef<HTMLDivElement>(null);
+
+  function goToPage(next: number) {
+    update({ page: next > 1 ? String(next) : null });
+    const el = listRef.current;
+    if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: "start" });
   }
 
   const cardLabel: Record<Risk, string> = {
@@ -87,32 +137,51 @@ export function ListPage() {
     niedrig: t("riskLow"),
   };
 
-  const total = data?.total ?? 0;
-  const items = data?.items ?? [];
-  const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const to = Math.min(page * PAGE_SIZE, total);
-  const hasPrev = page > 1;
-  const hasNext = to < total;
+  const filtered = risk !== null || verfassung || status !== "" || q !== "";
+  const linkState = { listSearch: location.search };
 
   return (
     <div className="list-page">
-      <h2 className="cards-heading">{t("severityHeading")}</h2>
-      <div className="risk-cards">
+      <div className="stat-cards">
+        <button
+          type="button"
+          className={`stat-card ${risk === null && !verfassung ? "active" : ""}`}
+          aria-pressed={risk === null && !verfassung}
+          onClick={() => update({ risk: null, verfassung: null, page: null })}
+        >
+          <span className="stat-card-count">{meta?.counts.total ?? "–"}</span>
+          <span className="stat-card-label">{t("navBills")}</span>
+          <span className="stat-card-sub">
+            {meta ? meta.counts.total - meta.counts.unanalysiert : "–"} {t("statAnalyzed")}
+          </span>
+        </button>
         {RISK_ORDER.map((r) => (
           <button
             key={r}
             type="button"
-            className={`risk-card risk-card-${r} ${risk === r ? "active" : ""}`}
+            className={`stat-card stat-card-${r} ${risk === r ? "active" : ""}`}
             aria-pressed={risk === r}
-            onClick={() => toggleRisk(r)}
+            onClick={() => update({ risk: risk === r ? null : r, page: null })}
           >
-            <span className="risk-card-count">{meta?.counts[r] ?? "–"}</span>
-            <span className="risk-card-label">{cardLabel[r]}</span>
+            <span className="stat-card-count">{meta?.counts[r] ?? "–"}</span>
+            <span className="stat-card-label">{cardLabel[r]}</span>
+            <span className="stat-card-sub">{t("worstFinding")}</span>
           </button>
         ))}
+        {/* Same colour as the count chip of these categories in the table. */}
+        <button
+          type="button"
+          className={`stat-card stat-card-verfassung ${verfassung ? "active" : ""}`}
+          aria-pressed={verfassung}
+          onClick={() => update({ verfassung: verfassung ? null : "1", page: null })}
+        >
+          <span className="stat-card-count">{meta?.counts.verfassung ?? "–"}</span>
+          <span className="stat-card-label">{t("statVerfassung")}</span>
+          <span className="stat-card-sub">{t("statVerfassungSub")}</span>
+        </button>
       </div>
 
-      <div className="filters">
+      <div className="filters" ref={listRef}>
         <input
           type="search"
           className="search-input"
@@ -125,10 +194,7 @@ export function ListPage() {
           className="status-select"
           value={status}
           aria-label={t("colStatus")}
-          onChange={(e) => {
-            setPage(1);
-            setStatus(e.target.value);
-          }}
+          onChange={(e) => update({ status: e.target.value || null, page: null })}
         >
           <option value="">{t("allStatuses")}</option>
           {meta?.statuses.map((s) => (
@@ -139,15 +205,15 @@ export function ListPage() {
         </select>
       </div>
 
-      {loading ? (
-        <p className="notice">{t("loading")}</p>
-      ) : error ? (
+      {error ? (
         <p className="notice notice-error">{t("errorGeneric")}</p>
+      ) : !data ? (
+        <p className="notice">{t("loading")}</p>
       ) : items.length === 0 ? (
-        <p className="notice empty-state">{t("emptyState")}</p>
+        <p className="notice empty-state">{t(filtered ? "noMatches" : "emptyState")}</p>
       ) : (
-        <>
-          <div className="table-wrap">
+        <div className={`table-wrap ${loading ? "is-loading" : ""}`} aria-busy={loading}>
+          <div className="table-scroll">
             <table className="bills-table">
               <thead>
                 <tr>
@@ -163,17 +229,17 @@ export function ListPage() {
                   <tr
                     key={b.id}
                     className="bill-row"
-                    tabIndex={0}
-                    role="link"
-                    onClick={() => navigate(`/bill/${b.id}`)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        navigate(`/bill/${b.id}`);
-                      }
+                    onClick={(e) => {
+                      // The number is a real link; let it handle its own clicks.
+                      if ((e.target as HTMLElement).closest("a")) return;
+                      navigate(`/bill/${b.id}`, { state: linkState });
                     }}
                   >
-                    <td className="col-number">{b.dokumentnummer}</td>
+                    <td className="col-number">
+                      <Link to={`/bill/${b.id}`} state={linkState}>
+                        {b.dokumentnummer}
+                      </Link>
+                    </td>
                     <td className="col-title">{b.titel}</td>
                     <td className="col-status">{b.status ?? "–"}</td>
                     <td className="col-findings">
@@ -185,27 +251,8 @@ export function ListPage() {
               </tbody>
             </table>
           </div>
-
-          <div className="pagination">
-            <button
-              type="button"
-              disabled={!hasPrev}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              {t("prev")}
-            </button>
-            <span className="page-range">
-              {from}–{to} {t("rangeOf")} {total}
-            </span>
-            <button
-              type="button"
-              disabled={!hasNext}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              {t("next")}
-            </button>
-          </div>
-        </>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPage={goToPage} />
+        </div>
       )}
     </div>
   );

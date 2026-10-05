@@ -1,7 +1,7 @@
 """SQLite storage layer for LLM-Lesung (Contract 1).
 
-Plain stdlib ``sqlite3``, no ORM. One database file holds the bills and their
-AI findings. All public functions take an open connection so callers control
+Plain stdlib ``sqlite3``, no ORM. One database file holds the bills, their AI
+findings and the exploits of the adversarial pass. All public functions take an open connection so callers control
 transaction/lifecycle. The web server and the analysis pipeline share only this
 database file.
 """
@@ -33,7 +33,14 @@ CREATE TABLE IF NOT EXISTS bills (
   model         TEXT,
   analyzed_at   TEXT,
   analysis_documents TEXT,               -- JSON array: documents the stored analysis read; NULL = none recorded
-  analysis_trace TEXT                    -- trace of the call that produced it, relative to PIPELINE_RUNS_DIR; NULL = none
+  analysis_trace TEXT,                   -- trace of the call that produced it, relative to PIPELINE_RUNS_DIR; NULL = none
+  -- adversarial pass (independent of the analysis above):
+  redteam_summary TEXT,                  -- 1-3 sentence German summary of the pass
+  redteam_prompt_version TEXT,
+  redteam_model TEXT,
+  redteamed_at  TEXT,                    -- NULL = pass not run; set even when it found no exploit
+  redteam_documents TEXT,                -- JSON array: the Gesetzentwurf the stored pass read; NULL = none recorded
+  redteam_trace TEXT                     -- trace of the call that produced it, relative to PIPELINE_RUNS_DIR; NULL = none
 );
 
 CREATE TABLE IF NOT EXISTS findings (
@@ -43,10 +50,33 @@ CREATE TABLE IF NOT EXISTS findings (
   category    TEXT NOT NULL,             -- see analysis.schema.Category (6 craft + verfassungsrisiko|kompetenz)
   title       TEXT NOT NULL,             -- short German headline
   description TEXT NOT NULL,             -- German explanation
-  quote       TEXT                       -- verbatim excerpt from the bill, may be NULL
+  quote       TEXT,                      -- verbatim excerpt from the bill, may be NULL
+  -- where the quote stands in the documents the analysis read; all NULL when not located:
+  quote_document_id TEXT,                -- DIP drucksache id
+  quote_page  INTEGER,                   -- 1-based page of the PDF
+  quote_before TEXT,                     -- document text before the quote
+  quote_match TEXT,                      -- the quote as the document spells it
+  quote_after TEXT                       -- document text after the quote
 );
 
 CREATE INDEX IF NOT EXISTS idx_findings_bill_id ON findings(bill_id);
+
+-- Attacks the adversarial pass found; never part of a bill's risk.
+CREATE TABLE IF NOT EXISTS exploits (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  bill_id     TEXT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
+  muster      TEXT NOT NULL,             -- see analysis.schema.Muster
+  akteur      TEXT NOT NULL,             -- role, interest and capability
+  titel       TEXT NOT NULL,             -- short German headline
+  schritte_json TEXT NOT NULL,           -- JSON array: the attack as a sequence of steps
+  vorteil     TEXT NOT NULL,             -- what is extracted, in the bill's own currency
+  aufwand     TEXT NOT NULL,             -- 'niedrig'|'mittel'|'hoch'
+  quote       TEXT NOT NULL,             -- verbatim excerpt from the bill
+  fehlende_absicherung TEXT NOT NULL,    -- the sentence that would have stopped it
+  severity    TEXT NOT NULL              -- 'hoch'|'mittel'|'niedrig'
+);
+
+CREATE INDEX IF NOT EXISTS idx_exploits_bill_id ON exploits(bill_id);
 
 -- Related Drucksachen DIP currently lists for a bill's Vorgang (e.g.
 -- Beschlussempfehlungen); which of them an analysis read is analysis_documents.
@@ -71,8 +101,32 @@ CREATE TABLE IF NOT EXISTS bill_documents (
 # tests/test_db.py asserts the two stay in sync.
 _NON_RISK_BEARING_CATEGORIES = ("verfassungsrisiko", "kompetenz")
 
+# Columns of the bills table added after its first release; ``init_db`` adds
+# the ones a database file lacks.
+_ADDED_BILL_COLUMNS = [
+    "analysis_documents",
+    "analysis_trace",
+    "redteam_summary",
+    "redteam_prompt_version",
+    "redteam_model",
+    "redteamed_at",
+    "redteam_documents",
+    "redteam_trace",
+]
+
+# The same for the findings table. Each maps a key of a finding's ``location``
+# to its column and type.
+_LOCATION_COLUMNS = {
+    "document_id": ("quote_document_id", "TEXT"),
+    "page": ("quote_page", "INTEGER"),
+    "before": ("quote_before", "TEXT"),
+    "match": ("quote_match", "TEXT"),
+    "after": ("quote_after", "TEXT"),
+}
+
 # Columns of the bills table that ``upsert_bill`` writes on insert/refresh.
-# Analysis-result columns are managed separately by ``mark_analyzed``.
+# Result columns are managed separately by ``mark_analyzed`` and
+# ``mark_redteamed``.
 _BILL_COLUMNS = [
     "id",
     "dokumentnummer",
@@ -93,8 +147,8 @@ def connect(db_path: str | None = None) -> sqlite3.Connection:
     """Open a connection to the SQLite database.
 
     Creates the parent directory for the DB file, enables ``dict``-like row
-    access, and turns on foreign-key enforcement (needed for the findings
-    ``ON DELETE CASCADE``). Pass ``":memory:"`` for an in-memory database
+    access, and turns on foreign-key enforcement (needed for the
+    ``ON DELETE CASCADE`` of findings and exploits). Pass ``":memory:"`` for an in-memory database
     (used by tests).
     """
     path = db_path if db_path is not None else config.DB_PATH
@@ -118,17 +172,20 @@ def init_db(conn: sqlite3.Connection) -> None:
     """
     conn.executescript(SCHEMA)
     columns = {row["name"] for row in conn.execute("PRAGMA table_info(bills)")}
-    if "analysis_documents" not in columns:
-        conn.execute("ALTER TABLE bills ADD COLUMN analysis_documents TEXT")
-    if "analysis_trace" not in columns:
-        conn.execute("ALTER TABLE bills ADD COLUMN analysis_trace TEXT")
+    for column in _ADDED_BILL_COLUMNS:
+        if column not in columns:
+            conn.execute(f"ALTER TABLE bills ADD COLUMN {column} TEXT")
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(findings)")}
+    for column, sql_type in _LOCATION_COLUMNS.values():
+        if column not in columns:
+            conn.execute(f"ALTER TABLE findings ADD COLUMN {column} {sql_type}")
     conn.commit()
 
 
 def upsert_bill(conn: sqlite3.Connection, bill: dict) -> None:
     """Insert or update the DIP-sourced columns of a bill.
 
-    Analysis columns (risk, summary, findings, ...) are left untouched so an
+    Result columns (risk, summary, ``redteam_*``, ...) are left untouched so an
     unchanged re-fetch never wipes an existing analysis. Missing keys default
     to ``None``.
     """
@@ -149,11 +206,18 @@ def upsert_bill(conn: sqlite3.Connection, bill: dict) -> None:
 def replace_findings(
     conn: sqlite3.Connection, bill_id: str, findings: list[dict]
 ) -> None:
-    """Replace all findings for a bill wholesale (idempotent re-analysis)."""
+    """Replace all findings for a bill wholesale (idempotent re-analysis).
+
+    A finding's optional ``location`` (``document_id``, ``page``, ``before``,
+    ``match``, ``after``) says where its quote stands.
+    """
+    location_columns = [column for column, _ in _LOCATION_COLUMNS.values()]
+    columns = ["bill_id", "severity", "category", "title", "description", "quote"]
+    columns += location_columns
     conn.execute("DELETE FROM findings WHERE bill_id = ?", (bill_id,))
     conn.executemany(
-        "INSERT INTO findings (bill_id, severity, category, title, description, quote) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
+        f"INSERT INTO findings ({', '.join(columns)}) "
+        f"VALUES ({', '.join('?' for _ in columns)})",
         [
             (
                 bill_id,
@@ -162,6 +226,7 @@ def replace_findings(
                 f.get("title"),
                 f.get("description"),
                 f.get("quote"),
+                *((f.get("location") or {}).get(key) for key in _LOCATION_COLUMNS),
             )
             for f in findings
         ],
@@ -192,6 +257,68 @@ def mark_analyzed(
         "WHERE id = ?",
         (
             risk,
+            summary,
+            prompt_version,
+            model,
+            json.dumps(documents, ensure_ascii=False),
+            trace,
+            bill_id,
+        ),
+    )
+    conn.commit()
+
+
+_EXPLOIT_COLUMNS = [
+    "muster",
+    "akteur",
+    "titel",
+    "vorteil",
+    "aufwand",
+    "quote",
+    "fehlende_absicherung",
+    "severity",
+]
+
+
+def replace_exploits(
+    conn: sqlite3.Connection, bill_id: str, exploits: list[dict]
+) -> None:
+    """Replace all exploits for a bill wholesale (idempotent re-run)."""
+    conn.execute("DELETE FROM exploits WHERE bill_id = ?", (bill_id,))
+    columns = ", ".join(_EXPLOIT_COLUMNS)
+    placeholders = ", ".join("?" for _ in _EXPLOIT_COLUMNS)
+    conn.executemany(
+        f"INSERT INTO exploits (bill_id, schritte_json, {columns}) "
+        f"VALUES (?, ?, {placeholders})",
+        [
+            [bill_id, json.dumps(e.get("schritte"), ensure_ascii=False)]
+            + [e.get(col) for col in _EXPLOIT_COLUMNS]
+            for e in exploits
+        ],
+    )
+    conn.commit()
+
+
+def mark_redteamed(
+    conn: sqlite3.Connection,
+    bill_id: str,
+    summary: str,
+    prompt_version: str,
+    model: str,
+    documents: list[dict],
+    trace: str | None = None,
+) -> None:
+    """Record the adversarial pass on a bill; sets ``redteamed_at`` to now (UTC).
+
+    ``documents`` lists what the pass read, in the shape of
+    ``analysis_documents``, and ``trace`` the trace file of the call. The
+    analysis columns are not touched.
+    """
+    conn.execute(
+        "UPDATE bills SET redteam_summary = ?, redteam_prompt_version = ?, "
+        "redteam_model = ?, redteam_documents = ?, redteam_trace = ?, "
+        "redteamed_at = datetime('now') WHERE id = ?",
+        (
             summary,
             prompt_version,
             model,
@@ -254,6 +381,7 @@ def list_bills(
     risk: str | None = None,
     status: str | None = None,
     q: str | None = None,
+    verfassung: bool = False,
     page: int = 1,
     page_size: int = 20,
 ) -> tuple[list[dict], int]:
@@ -264,9 +392,10 @@ def list_bills(
     over the risk-bearing categories only, so they reconcile with ``risk``, and
     ``findings_verfassung`` for the categories excluded from it.
 
-    Filtered optionally by ``risk``, ``status``, and/or a title substring ``q``
+    Filtered optionally by ``risk``, ``status``, a title substring ``q``
     (SQLite LIKE — case-insensitive for ASCII only, so umlauts match
-    case-sensitively). Ordered newest first (by ``aktualisiert`` then
+    case-sensitively) and/or ``verfassung`` (only bills with a finding in the
+    categories excluded from ``risk``). Ordered newest first (by ``aktualisiert`` then
     ``datum``). Returns ``(rows, total)``.
     """
     where = []
@@ -280,6 +409,13 @@ def list_bills(
     if q:
         where.append("b.titel LIKE ? ESCAPE '\\'")
         params.append(f"%{_like_escape(q)}%")
+    cats = ", ".join("?" for _ in _NON_RISK_BEARING_CATEGORIES)
+    if verfassung:
+        where.append(
+            "EXISTS (SELECT 1 FROM findings v WHERE v.bill_id = b.id "
+            f"AND v.category IN ({cats}))"
+        )
+        params.extend(_NON_RISK_BEARING_CATEGORIES)
     where_sql = ("WHERE " + " AND ".join(where)) if where else ""
 
     total = conn.execute(
@@ -291,7 +427,6 @@ def list_bills(
     # Placeholders for the non-risk-bearing category names, repeated once per
     # aggregate below. They precede the WHERE params because sqlite3 binds
     # positionally and the SELECT list comes first.
-    cats = ", ".join("?" for _ in _NON_RISK_BEARING_CATEGORIES)
     cat_params = list(_NON_RISK_BEARING_CATEGORIES) * 4
     rows = conn.execute(
         f"""
@@ -317,30 +452,94 @@ def list_bills(
     return [dict(r) for r in rows], total
 
 
-def get_bill(conn: sqlite3.Connection, bill_id: str) -> dict | None:
-    """Return a bill with ``findings`` and ``related_documents``, or ``None``.
+def bill_ids(conn: sqlite3.Connection) -> list[str]:
+    """Every bill's id, newest first (the order of ``list_bills``)."""
+    rows = conn.execute(
+        "SELECT id FROM bills ORDER BY aktualisiert DESC, datum DESC, id DESC"
+    ).fetchall()
+    return [r["id"] for r in rows]
 
-    ``analysis_documents`` is parsed into a list (``[]`` when none recorded).
+
+def get_bill(conn: sqlite3.Connection, bill_id: str) -> dict | None:
+    """Return a bill with ``findings``, ``exploits`` and ``related_documents``, or ``None``.
+
+    ``analysis_documents`` and ``redteam_documents`` are parsed into lists
+    (``[]`` when none recorded), and each exploit's ``schritte`` likewise. Each
+    finding carries ``location``: where its quote stands, or ``None``. The
+    ``id`` of a finding or exploit lasts only until its bill's next replace.
     """
     row = conn.execute("SELECT * FROM bills WHERE id = ?", (bill_id,)).fetchone()
     if row is None:
         return None
     bill = dict(row)
-    raw_documents = bill.get("analysis_documents")
-    bill["analysis_documents"] = json.loads(raw_documents) if raw_documents else []
+    for key in ("analysis_documents", "redteam_documents"):
+        bill[key] = json.loads(bill[key]) if bill.get(key) else []
+    location_columns = ", ".join(column for column, _ in _LOCATION_COLUMNS.values())
     finding_rows = conn.execute(
-        "SELECT severity, category, title, description, quote "
+        f"SELECT id, severity, category, title, description, quote, {location_columns} "
         "FROM findings WHERE bill_id = ? ORDER BY id",
         (bill_id,),
     ).fetchall()
-    bill["findings"] = [dict(f) for f in finding_rows]
+    bill["findings"] = [
+        {
+            **{key: f[key] for key in ("id", "severity", "category", "title", "description", "quote")},
+            "location": (
+                {key: f[column] for key, (column, _) in _LOCATION_COLUMNS.items()}
+                if f["quote_page"] is not None
+                else None
+            ),
+        }
+        for f in finding_rows
+    ]
+    exploit_rows = conn.execute(
+        f"SELECT id, schritte_json, {', '.join(_EXPLOIT_COLUMNS)} "
+        "FROM exploits WHERE bill_id = ? ORDER BY id",
+        (bill_id,),
+    ).fetchall()
+    bill["exploits"] = [
+        {"id": e["id"], **{col: e[col] for col in _EXPLOIT_COLUMNS},
+         "schritte": json.loads(e["schritte_json"])}
+        for e in exploit_rows
+    ]
     bill["related_documents"] = get_bill_documents(conn, bill_id)
     return bill
 
 
+def get_feedback_target(conn: sqlite3.Connection, kind: str, target_id: int) -> dict | None:
+    """What a piece of feedback is about: one finding or exploit plus the run that produced it.
+
+    ``kind`` is ``"finding"`` or ``"exploit"``. The result is self-contained,
+    because the row itself is gone after the bill's next analysis.
+    """
+    if kind == "finding":
+        sql = (
+            "SELECT b.id AS bill_id, b.dokumentnummer, f.category, f.severity, f.title, f.quote, "
+            "b.prompt_version, b.model, b.analyzed_at "
+            "FROM findings f JOIN bills b ON b.id = f.bill_id WHERE f.id = ?"
+        )
+    else:
+        sql = (
+            "SELECT b.id AS bill_id, b.dokumentnummer, e.muster AS category, e.severity, "
+            "e.titel AS title, e.quote, b.redteam_prompt_version AS prompt_version, "
+            "b.redteam_model AS model, b.redteamed_at AS analyzed_at "
+            "FROM exploits e JOIN bills b ON b.id = e.bill_id WHERE e.id = ?"
+        )
+    row = conn.execute(sql, (target_id,)).fetchone()
+    return dict(row) if row else None
+
+
 def counts(conn: sqlite3.Connection) -> dict:
-    """Aggregate bill counts by risk plus ``unanalysiert`` and ``total``."""
+    """Aggregate bill counts by risk plus ``unanalysiert`` and ``total``.
+
+    ``verfassung`` counts the bills with a finding in the categories excluded
+    from ``risk``; it overlaps the risk counts.
+    """
     result = {"hoch": 0, "mittel": 0, "niedrig": 0, "unanalysiert": 0, "total": 0}
+    cats = ", ".join("?" for _ in _NON_RISK_BEARING_CATEGORIES)
+    result["verfassung"] = conn.execute(
+        f"SELECT COUNT(DISTINCT bill_id) FROM findings WHERE category IN ({cats})",
+        _NON_RISK_BEARING_CATEGORIES,
+    ).fetchone()[0]
     for row in conn.execute(
         "SELECT risk, COUNT(*) AS n FROM bills GROUP BY risk"
     ).fetchall():

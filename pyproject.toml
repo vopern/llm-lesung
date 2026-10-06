@@ -3,6 +3,8 @@ name = "laws"
 version = "0.1.0"
 description = "LLM-Lesung — AI analysis of German Bundestag draft bills"
 requires-python = ">=3.13"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "httpx",
     "pypdf",

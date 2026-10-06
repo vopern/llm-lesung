@@ -228,3 +228,7 @@ Claude API usage is the only variable cost: roughly $0.10–0.40 per bill, about
 a full first run over the current Wahlperiode (~340 bills). After that only new or changed
 bills are analyzed — a handful per sitting week, well under $5/month. Hosting is one small
 EC2 instance, ~$13/month.
+
+## License
+
+[MIT](LICENSE)

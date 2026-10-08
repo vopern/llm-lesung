@@ -7,11 +7,14 @@
 # count — no policy changes, no Omnibus additions, no adaptation to later law.
 # Each case was checked by a second, independent review against both texts.
 #
-# The committee's Beschlussempfehlung is the ground truth, so it must not be in
-# the input of a run scored against this file: score draft-only runs.
+# The committee's Beschlussempfehlung is the ground truth, so a recall run reads
+# the draft alone. A precision run reads the draft with its Beschlussempfehlungen
+# (pinned in inputs.yaml) and scores every case as a repaired defect that must
+# not be reported.
 #
 # Fields as in cases-lektor.yaml; every positive carries an anchor on the
-# defective wording. Checked by: uv run python -m eval.testset lint
+# defective wording, and repaired_by names the Beschlussempfehlung that repaired
+# it. Checked by: uv run python -m eval.testset lint
 
 - id: L-E1634-a
   suite: lektor
@@ -26,6 +29,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/1634"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/537 vom 23.06.2025 (21. Wahlperiode, Sechstes Gesetz zur Änderung des
@@ -58,6 +62,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2090"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1493 (21. Wahlperiode) führt mit Artikel 1 das neue
@@ -94,6 +99,7 @@
   expected_severity: null
   requires_context: eu-recht
   forbidden_claim: null
+  repaired_by: "21/2107"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1087 (21. Wahlperiode) ist das Gesetz zur Ausführung von
@@ -132,6 +138,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2109"
   split: dev
   story: |
     Der Entwurf BT-Drs. 21/781(neu) der Fraktionen CDU/CSU und SPD, textidentisch mit dem
@@ -168,6 +175,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2594"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1494 vom 08.09.2025 (21. Wahlperiode) wandelt das
@@ -197,6 +205,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2594"
   split: dev
   story: |
     Derselbe Regierungsentwurf BT-Drs. 21/1494 vom 08.09.2025 regelt in § 4a Absatz 1 Satz 2 Nummer 5
@@ -230,6 +239,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2594"
   split: dev
   story: |
     § 4c KSpTG-E im selben Entwurf BT-Drs. 21/1494 vom 08.09.2025 ermächtigt die Bundesregierung durch
@@ -258,6 +268,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2594"
   split: dev
   story: |
     § 4 Absatz 1 Satz 1 KSpTG-E im selben Entwurf BT-Drs. 21/1494 vom 08.09.2025 unterwirft nur die
@@ -290,6 +301,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2597"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1496 vom 08.09.2025 fügt mit Art. 1 Nr. 2 einen neuen
@@ -327,6 +339,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2597"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1496 (21. Wahlperiode, eingebracht 08.09.2025) verpflichtet
@@ -358,6 +371,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/2622"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1937 (21. Wahlperiode, 01.10.2025) setzt die Richtlinie (EU)
@@ -391,6 +405,7 @@
   expected_severity: niedrig
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2622"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1937 (01.10.2025) ändert in Artikel 5 auch das
@@ -423,6 +438,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2635"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1506 vom 8.9.2025 (21. Wahlperiode) ist das Zweite Gesetz
@@ -456,6 +472,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2668"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1938 (21. Wahlperiode) ändert das Tierarzneimittelgesetz
@@ -496,6 +513,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2751"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1865 (21. Wahlperiode, eingebracht 29.09.2025) ändert das
@@ -528,6 +546,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/2751"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1865 (21. Wahlperiode, eingebracht 29.09.2025) fügt mit
@@ -564,6 +583,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/2751"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1865 (21. Wahlperiode, eingebracht 29.09.2025) fügt mit
@@ -600,6 +620,7 @@
   expected_severity: niedrig
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/2753"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1866 (21. Wahlperiode, eingebracht 29.09.2025), das Dritte
@@ -632,6 +653,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/3076"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1853, Entwurf eines Wehrdienst-Modernisierungsgesetzes (WDModG),
@@ -661,6 +683,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3101"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/1928 (21. Wahlperiode) ist das Gesetz zur Beschleunigung des
@@ -694,6 +717,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3101"
   split: test
   story: |
     Im selben Entwurf BT-Drs. 21/1928 regelt § 8 GeoBG-E ein eigenständiges Planfeststellungsverfahren
@@ -729,6 +753,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3104"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1974 vom 06.10.2025 (Steueränderungsgesetz 2025) fasst in Artikel 5
@@ -760,6 +785,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3106"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1926 (21. Wahlperiode) ändert das
@@ -796,6 +822,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3106"
   split: dev
   story: |
     Im selben Regierungsentwurf BT-Drs. 21/1926 ersetzt Artikel 1 Nummer 21 § 20 SÜG vollständig;
@@ -829,6 +856,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/3106"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1926 führt in Artikel 1 Nummer 5 Buchstabe c einen neuen § 4
@@ -868,6 +896,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3327"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1855 vom 29.9.2025 (21. Wahlperiode) ist das Dritte
@@ -900,6 +929,7 @@
   expected_severity: null
   requires_context: eu-recht
   forbidden_claim: null
+  repaired_by: "21/3345"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1856 vom 29.09.2025 (21. Wahlperiode) setzt die Richtlinie (EU)
@@ -931,6 +961,7 @@
   expected_severity: null
   requires_context: eu-recht
   forbidden_claim: null
+  repaired_by: "21/3352"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2475 vom 29.10.2025 (21. Wahlperiode) verpflichtet in Art. 1 Nr. 5, § 3
@@ -964,6 +995,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3352"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2475 vom 29.10.2025 (21. Wahlperiode) erlaubt in Art. 1 Nr. 11
@@ -998,6 +1030,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3352"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2475 vom 29.10.2025 (21. Wahlperiode) verbietet in Art. 1 Nr. 17, § 13
@@ -1030,6 +1063,7 @@
   expected_severity: niedrig
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/3634"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2996 (21. Wahlperiode, eingebracht November 2025) setzt die
@@ -1069,6 +1103,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/3904"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/3192 vom 10.12.2025 zur Umsetzung der Richtlinie (EU) 2023/1544
@@ -1102,6 +1137,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4318"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/3055 vom 03.12.2025 (21. Wahlperiode) ändert das
@@ -1139,6 +1175,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4318"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/3055 vom 03.12.2025 (21. Wahlperiode) ändert das
@@ -1178,6 +1215,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4321"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1850 (GEAS-Anpassungsfolgegesetz) ändert in Artikel 2 die
@@ -1212,6 +1250,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/4326"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2506 (21. Wahlperiode, eingebracht 03.11.2025) fügt mit
@@ -1245,6 +1284,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4328"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3543 vom 12.01.2026 (21. Wahlperiode), das
@@ -1288,6 +1328,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4497"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3510 (Fondsrisikobegrenzungsgesetz) fügt in Art. 1 Nr. 48 einen
@@ -1321,6 +1362,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4497"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3510 (Fondsrisikobegrenzungsgesetz) ändert in Art. 1 Nr. 50
@@ -1352,6 +1394,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4497"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3510 (Fondsrisikobegrenzungsgesetz) streicht in Art. 1 Nr. 47
@@ -1385,6 +1428,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4497"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3510 (Fondsrisikobegrenzungsgesetz) ändert das
@@ -1417,6 +1461,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/4815"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3737 vom 21.01.2026 (21. Wahlperiode) ändert unter anderem die
@@ -1452,6 +1497,7 @@
   expected_severity: null
   requires_context: eu-recht
   forbidden_claim: null
+  repaired_by: "21/4979"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3505 (21. Wahlperiode, 07.01.2026) fügt in Art. 1 Nr. 39 einen
@@ -1487,6 +1533,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4983"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/2999 (21. Wahlperiode) schafft mit Artikel 1 das neue Gesetz
@@ -1525,6 +1572,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4984"
   split: dev
   story: |
     Der Koalitionsentwurf BT-Drs. 21/4744 (Fraktionen CDU/CSU und SPD, 21. Wahlperiode) führt mit
@@ -1560,6 +1608,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4994"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3544 (21. Wahlperiode) ist das Gesetz zur Durchführung der
@@ -1597,6 +1646,7 @@
   expected_severity: hoch
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/4996"
   split: test
   story: |
     Der Regierungsentwurf eines Altersvorsorgereformgesetzes (BT-Drs. 21/4088, 21. Wahlperiode) führt eine
@@ -1630,6 +1680,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/5525"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1934 vom 1.10.2025 (21. Wahlperiode) ist das Gesetz zur
@@ -1667,6 +1718,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/5529"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/4550 vom 12.03.2026 (21. Wahlperiode; gemeinsam mit
@@ -1703,6 +1755,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/5530"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/4083 vom 11.02.2026 (21. Wahlperiode), das Zweite Gesetz zur
@@ -1741,6 +1794,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/5530"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/4083 vom 11.02.2026 (21. Wahlperiode) führt in Art. 1 Nr. 8
@@ -1770,9 +1824,10 @@
     ist positiv, weil beide widersprüchlichen Vorschriften (§ 37b Absatz 8 Nummer 4 BImSchG und §
     21 Absatz 1 der 37. BImSchV) vom selben Entwurf neu gefasst werden und die Beschlussempfehlung
     den Widerspruch ausdrücklich benennt. Er braucht Bestandsrecht als Kontext, weil der
-    vermittelnde Mechanismus über das unveränderte, im Entwurf nicht abgedruckte Zusammenspiel von
-    § 3 Absatz 1 und § 14 der geltenden 37. BImSchV läuft, das erst die pauschale Anerkennung nach
-    § 21 Absatz 1 zur Anrechnung auf die THG-Quote verknüpft; aus dem Entwurfstext allein ist nur
+    vermittelnde Mechanismus über § 14 der geltenden 37. BImSchV läuft, den der Entwurf weder ändert
+    noch abdruckt: Er erkennt die Nachweise nach § 21 für die Anrechnung nach § 3 Absatz 1 an (den
+    der Entwurf selbst neu fasst) und verknüpft so erst die pauschale Anerkennung nach § 21 Absatz 1
+    mit der Anrechnung auf die THG-Quote; aus dem Entwurfstext allein ist nur
     erkennbar, dass eine Ausschluss- und eine Anerkennungsvorschrift unterschiedliche Maßstäbe für
     Vor-Ort-Kontrollen anlegen, nicht der genaue Übertragungsweg.
   source: "Entwurf 21/4083 (Art. 1 Nr. 8 Buchstabe c, § 37b Absatz 8 Nummer 4 BImSchG; Art. 2 Nr. 14, § 21 Absatz 1 der 37. BImSchV) und Beschlussempfehlung 21/5530 (Begründung 'Zu Artikel 2, § 14') im Volltext verglichen."
@@ -1790,6 +1845,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/5546"
   split: dev
   story: |
     Der Fraktionsentwurf der CDU/CSU und SPD BT-Drs. 21/5321 vom 14.04.2026 (21. Wahlperiode, 2.
@@ -1821,6 +1877,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/5809"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/4082 (21. Wahlperiode) ist das Gesetz zur Einführung der
@@ -1853,6 +1910,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/5809"
   split: dev
   story: |
     Derselbe Entwurf BT-Drs. 21/4082 schafft mit Art. 2 einen neuen § 1684 Abs. 6 BGB-E, der dem
@@ -1890,6 +1948,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/6049"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/3620 vom 14.01.2026, Entwurf eines Gesetzes für den
@@ -1924,6 +1983,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6051"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/5141 vom 01.04.2026 (21. Wahlperiode) — das Ökodesign-Mantelgesetz —
@@ -1956,6 +2016,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6051"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/5141 vom 01.04.2026 (21. Wahlperiode) definiert in Art. 1 § 2 Absatz 1
@@ -1990,6 +2051,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6076"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/4084 vom 11.2.2026 (21. Wahlperiode) ist das
@@ -2025,6 +2087,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6076"
   split: dev
   story: |
     Im Regierungsentwurf BT-Drs. 21/4084 vom 11.2.2026 (ApoVWG) bestimmt Art. 9 Satz 1, dass das
@@ -2063,6 +2126,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6393"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/4081 vom 11.02.2026 zur besseren Verhinderung missbräuchlicher
@@ -2096,6 +2160,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/6979"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/5874 (21. Wahlperiode) führt das antragslose Kindergeld ein
@@ -2135,6 +2200,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/7004"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/4080 vom 11.02.2026 (21. Wahlperiode), das Gesetz zur
@@ -2174,6 +2240,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: "21/7004"
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/4080 vom 11.02.2026 (21. Wahlperiode), das Gesetz zur
@@ -2209,6 +2276,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: "21/7006"
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/5921 vom 13.05.2026 (21. Wahlperiode), das Sportfördergesetz, bestimmt

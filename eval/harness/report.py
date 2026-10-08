@@ -1,5 +1,10 @@
 """Score a harness run against its case set: a summary and the detailed results.
 
+A recall run scores the selected cases as they are. A precision run
+(``--beschlussempfehlung``) scores every case with ``repaired_by`` as repaired
+(kind ``behoben``): ``clear`` when no finding lands on its anchor, ``touched``
+when one does.
+
 Offline and free. Verdicts are the mechanical passage verdicts of
 ``eval/testset/score.py`` (``hit`` / ``near`` / ``miss`` for positives,
 ``touched`` / ``clear`` for negatives), plus what a run itself can end in:
@@ -31,7 +36,8 @@ from pathlib import Path
 from eval.quotecheck import squash
 from eval.testset import config as testset_config
 from eval.testset.lint import TEXTS, documents, load, load_manifest
-from eval.testset.score import POSITIVE, _pct, locate, score_case, summarize
+from eval.testset.score import (POSITIVE, REPAIRED, _pct, locate, repaired_summary, score_case,
+                                 summarize)
 
 from . import config, html, tasks
 from .tasks import Task
@@ -39,14 +45,16 @@ from .tasks import Task
 # Every case set name of every task, for ``--cases``.
 ALL_CASE_SETS = sorted({name for t in tasks.TASKS.values() for name in t.case_sets})
 
-# Only cases the draft alone can settle. A case that needs Bestandsrecht, EU law
-# or outside facts measures pipeline reach, which an Entwurf-only run cannot have.
-CONTEXT = "none"
+# Which cases a run scores, by ``requires_context``. ``none``: cases the draft
+# alone can settle. ``bestandsrecht``: cases that need the existing law, run on
+# the draft alone (baseline) or with their pinned norms fed (oracle). EU law and
+# outside facts have no pinned context and are not run.
+CONTEXTS = ["none", "bestandsrecht"]
 
 # Case fields a reader of the results needs next to the verdict.
 EXPECTATION_FIELDS = ("id", "kind", "expected_passage", "anchor", "expected_defect",
                       "expected_category", "expected_severity", "requires_context",
-                      "forbidden_claim", "story", "source")
+                      "forbidden_claim", "repaired_by", "story", "source")
 
 
 def case_set(task: Task, name: str | None) -> str:
@@ -58,9 +66,15 @@ def case_set(task: Task, name: str | None) -> str:
     return name
 
 
-def load_cases(task: Task, case_set: str) -> list[dict]:
-    """The cases of a case set that require no context beyond the draft."""
-    return [c for c in load(task.case_sets[case_set]) if c["requires_context"] == CONTEXT]
+def load_cases(task: Task, case_set: str, context: str = "none",
+               repaired: bool = False) -> list[dict]:
+    """The cases of a case set that require ``context``; with ``repaired``,
+    every case with ``repaired_by`` instead, whatever its context, as kind
+    ``behoben``."""
+    cases = load(task.case_sets[case_set])
+    if repaired:
+        return [c | {"kind": REPAIRED} for c in cases if c.get("repaired_by")]
+    return [c for c in cases if c["requires_context"] == context]
 
 
 def load_samples(out: Path) -> dict[str, dict]:
@@ -103,7 +117,7 @@ def build(task: Task, cases: list[dict], samples: dict[str, dict], manifest: dic
             continue
         status = record["status"]
         run = {"status": status,
-               **{k: record.get(k) for k in ("prompt_version", "model", "effort", "max_turns", "risk",
+               **{k: record.get(k) for k in ("input_set", "prompt_version", "model", "effort", "max_turns", "risk",
                                              "cost_usd", "num_turns", "seconds",
                                              "tool_calls", "rescued_by")}}
         if status != "ok":
@@ -156,7 +170,7 @@ def by_category(rows: list[dict]) -> dict[str, dict]:
 
 
 def summarize_run(task: Task, rows: list[dict], results: list[dict], case_set: str,
-                  tag: str, near: int) -> dict:
+                  tag: str, near: int, context: str = "none", repaired: bool = False) -> dict:
     runs = [d["run"] for d in results if d["run"]]
     findings = [f for r in runs for f in r.get("findings", [])]
     return {
@@ -164,8 +178,11 @@ def summarize_run(task: Task, rows: list[dict], results: list[dict], case_set: s
         "tag": tag,
         "case_set": case_set,
         "cases_file": task.case_sets[case_set].name,
-        "input_set": "entwurf",
-        "requires_context": CONTEXT,
+        # What the samples read; more than one means a mixed run directory.
+        "input_set": ", ".join(sorted({r["input_set"] for r in runs
+                                       if r.get("input_set")})) or "–",
+        "requires_context": "all" if repaired else context,
+        "measures": "precision" if repaired else "recall",
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "prompt_versions": dict(Counter(r["prompt_version"] for r in runs)),
         "models": dict(Counter(r["model"] for r in runs)),
@@ -194,21 +211,29 @@ def summarize_run(task: Task, rows: list[dict], results: list[dict], case_set: s
     }
 
 
-def report_name(case_set: str, split: str) -> str:
-    """``beschlussempfehlungen`` for every split, ``beschlussempfehlungen-dev`` for one."""
-    return case_set if split == "all" else f"{case_set}-{split}"
+def report_name(case_set: str, split: str, context: str = "none",
+                repaired: bool = False) -> str:
+    """``beschlussempfehlungen`` for every split, ``beschlussempfehlungen-dev`` for one;
+    ``beschlussempfehlungen-bestandsrecht-dev`` for the cases that need existing law,
+    ``beschlussempfehlungen-beschlussempfehlung-dev`` for a precision run."""
+    name = (f"{case_set}-beschlussempfehlung" if repaired
+            else case_set if context == "none" else f"{case_set}-{context}")
+    return name if split == "all" else f"{name}-{split}"
 
 
 def write_report(out: Path, task: Task, case_set: str, tag: str,
-                 near: int = testset_config.NEAR_CHARS, split: str = "all") -> dict:
+                 near: int = testset_config.NEAR_CHARS, split: str = "all",
+                 context: str = "none", repaired: bool = False) -> dict:
     """Score the run in ``out`` on one split (or all) and write both files.
 
-    Samples of documents outside the split stay on disk and are ignored.
+    Samples of documents outside the split or context stay on disk and are ignored.
     """
-    cases = [c for c in load_cases(task, case_set) if split == "all" or c["split"] == split]
+    cases = [c for c in load_cases(task, case_set, context, repaired)
+             if split == "all" or c["split"] == split]
     rows, results = build(task, cases, load_samples(out), load_manifest(), near=near)
-    summary = summarize_run(task, rows, results, case_set, tag, near) | {"split": split}
-    name = report_name(case_set, split)
+    summary = (summarize_run(task, rows, results, case_set, tag, near, context, repaired)
+               | {"split": split})
+    name = report_name(case_set, split, context, repaired)
     out.mkdir(parents=True, exist_ok=True)
     (out / f"summary-{name}.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -227,8 +252,20 @@ def _print(summary: dict, out: Path, name: str) -> None:
     print(f"runs {summary['runs']}  rescued {summary['rescued']}  cost ${summary['cost_usd']:.2f}  "
           f"findings {summary['findings']['total']} "
           f"({summary['findings']['unlocated']} unlocated)")
+    if repaired := summary["measures"] == "precision":
+        if any("beschlussempfehlung" not in i for i in summary["input_set"].split(", ")):
+            print(f"WARNING: precision report over samples that read {summary['input_set']}")
     verdicts = POSITIVE + ["oversize", "failed"]
     for split, entry in summary["recall"].items():
+        if repaired:
+            for context in ("all", "none", "context"):
+                e = entry.get(REPAIRED, {}).get(context) or repaired_summary([])
+                counts = " ".join(f"{v}={e['counts'].get(v, 0)}"
+                                  for v in ("clear", "touched", "oversize", "failed", "not_run"))
+                print(f"{split:5} repaired  {context:8} {counts}  same category "
+                      f"{e['touched_same_category']}  precision {_pct(e['precision'])}"
+                      f"  by category {_pct(e['precision_category'])}")
+            continue
         for context in ("all", "none", "context"):
             e = entry[context]
             counts = " ".join(f"{v}={e['counts'].get(v, 0)}" for v in verdicts)
@@ -256,14 +293,23 @@ def main(argv: list[str]) -> int:
                         "<prompt version>-<model>[-effort-<level>][-turns-<n>]")
     parser.add_argument("--split", choices=["dev", "test", "all"], default="all")
     parser.add_argument("--near", type=int, default=testset_config.NEAR_CHARS)
+    parser.add_argument("--context", choices=CONTEXTS, default="none",
+                        help="score the cases that require this context")
+    parser.add_argument("--oracle", action="store_true",
+                        help="the run fed the pinned Bestandsrecht (names the run directory)")
+    parser.add_argument("--beschlussempfehlung", action="store_true",
+                        help="precision run: the run fed the Beschlussempfehlungen; score "
+                        "every case with repaired_by as repaired")
     args = parser.parse_args(argv)
 
     task = tasks.get(args.task)
     tag = args.tag or config.default_tag(task, args.model or task.model,
-                                         args.effort or task.effort, args.max_turns)
+                                         args.effort or task.effort, args.max_turns,
+                                         oracle=args.oracle, committee=args.beschlussempfehlung)
     out = config.run_dir(task.name, tag)
     if not (out / "samples").is_dir():
         print(f"no samples in {out}")
         return 1
-    write_report(out, task, case_set(task, args.cases), tag, args.near, args.split)
+    write_report(out, task, case_set(task, args.cases), tag, args.near, args.split, args.context,
+                 args.beschlussempfehlung)
     return 0

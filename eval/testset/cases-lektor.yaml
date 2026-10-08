@@ -10,6 +10,7 @@
 #          repair law says so, and why the case is positive or negative
 # source   one sentence on how the case was mined
 # split    per document: dev or test (frozen, see eval/README.md)
+# repaired_by  the Beschlussempfehlung that repaired the defect (Drucksache), or null
 # Checked by: uv run python -m eval.testset lint
 
 # --- Teil A: BVerfG decisions -------------------------------------------------
@@ -27,6 +28,7 @@
   expected_severity: null
   requires_context: external-facts
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 20/300 vom 13.12.2021 (20. Wahlperiode) ist das Gesetz über die
@@ -58,6 +60,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 20/300 (20. Wahlperiode) ist das Gesetz über die Feststellung eines
@@ -90,6 +93,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 20/300 (20. Wahlperiode) ist das Gesetz über die Feststellung eines
@@ -122,6 +126,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 19/30399 (19. Wahlperiode), das „Gesetz zur Herstellung materieller
@@ -154,6 +159,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 18/11163 (18. Wahlperiode) ist das 2017 verabschiedete Gesetz zur
@@ -187,6 +193,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 18/11163 (18. Wahlperiode) ist das 2017 verabschiedete Gesetz zur
@@ -217,6 +224,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Einführung eines Bundes-Klimaschutzgesetzes der Fraktionen
@@ -251,6 +259,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Bekämpfung von Kinderehen der Fraktionen CDU/CSU und SPD
@@ -285,6 +294,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 20/3877 vom 10.10.2022 (20. Wahlperiode), das Zweite Gesetz
@@ -324,6 +334,7 @@
   expected_severity: hoch
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/1497 (21. Wahlperiode, eingebracht 08.09.2025) ist das
@@ -361,6 +372,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/2475 vom 29.10.2025 (21. Wahlperiode) ändert das
@@ -396,6 +408,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 21/5923 (21. Wahlperiode) setzt die Richtlinie (EU) 2024/1799 zur
@@ -425,6 +438,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Verweiskette von § 479a BGB-E über Anhang II der Richtlinie (EU) 2024/1799 sei ein fehlerhafter oder ins Leere gehender Verweis — die Kette ist vollständig, die dynamische Verweisung in der Begründung ausdrücklich gewählt, und bloße Unverständlichkeit für Laien ist Stilkritik"
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 21/5923 (21. Wahlperiode) setzt die Richtlinie (EU) 2024/1799 zur
@@ -458,6 +472,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Das Fehlen einer Zusätzlichkeits-Anforderung oder einer Klima-/KTF-Zweckbindung in Art. 143h GG-E sei ein handwerklicher Mangel — der Entwurf verspricht beides nirgends, die Bindung war eine politische Gestaltungsfrage"
+  repaired_by: null
   split: test
   story: |
     Der Gesetzentwurf zur Änderung des Grundgesetzes (Art. 109, 115, 143h) von SPD und
@@ -493,6 +508,7 @@
   expected_severity: hoch
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf des Wehrdienstmodernisierungsgesetzes (BT-Drs. 21/1853, 21. Wahlperiode) wurde
@@ -528,6 +544,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Beibehaltung der Jahresfrist für Gold, Kunst und Oldtimer verletze Art. 3 Abs. 1 GG — die Begründung nennt einen Differenzierungsgrund, der Gleichheitssatz-Maßstab des Prompts verlangt einen Ausschluss ohne erkennbaren Grund"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf der Fraktion Bündnis 90/Die Grünen „zum Schließen einer Gerechtigkeitslücke
@@ -561,6 +578,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Anwendungsregel des § 52 Abs. 31 EStG-E sei lückenhaft oder bewirke eine unzulässige Rückwirkung — sie erfasst nur nach dem 31.12.2025 erworbene Kryptowerte und ist am Maßstab von BVerfG 2 BvL 14/02 begründet"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf der Fraktion Bündnis 90/Die Grünen „zum Schließen einer Gerechtigkeitslücke
@@ -591,6 +609,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "§ 3 Abs. 2 PAngG-E sanktioniere die unbestimmten AFIR-Maßstäbe „angemessen“ und „nicht diskriminierend“ — bußgeldbewehrt sind nur konkrete Anzeige- und Informationspflichten aus Art. 5 Abs. 4 und 5 AFIR"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Änderung des Preisangabenrechts zur Sanktionierung von Verstößen
@@ -622,6 +641,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Einführung eines antragslosen Kindergeldes (BT-Drs.
@@ -653,6 +673,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Voraussetzung einer inländischen Erwerbstätigkeit widerspreche dem Entbürokratisierungsziel — das Ziel ist ausdrücklich auf Fälle ohne Risiko ungerechtfertigter Auszahlungen begrenzt und die Voraussetzung mit dem EU-Koordinierungsrecht begründet"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Einführung eines antragslosen Kindergeldes (BT-Drs.
@@ -683,6 +704,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Einwilligung in den biometrischen Abgleich sei im realen Abfertigungsablauf faktisch unfreiwillig und das Gesetz deshalb verfassungswidrig — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Ermöglichung der digitalen Fluggastabfertigung (BT-Drs.
@@ -716,6 +738,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Ermöglichung der digitalen Fluggastabfertigung (BT-Drs.
@@ -743,6 +766,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Ermöglichung der digitalen Fluggastabfertigung (BT-Drs.
@@ -769,6 +793,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Sechsten Gesetzes zur Änderung des Staatsangehörigkeitsgesetzes (BT-Drs.
@@ -799,6 +824,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Vollsanktionen verletzten das menschenwürdige Existenzminimum bzw. die Maßstäbe des BVerfG-Sanktionsurteils 1 BvL 7/16 und seien deshalb verfassungswidrig — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Der Entwurf eines Dreizehnten Gesetzes zur Änderung des SGB II (BT-Drs. 21/3541, 21.
@@ -833,6 +859,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Zulassung fossiler Heizungen über 2044 hinaus widerspreche dem Klimaneutralitätsziel 2045 oder verletze Art. 20a GG — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf zur Änderung des Gebäudeenergiegesetzes und weiterer Vorschriften im
@@ -869,6 +896,7 @@
   expected_severity: hoch
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf des Schuldnerberatungsdienstegesetzes (SchuBerDG, BT-Drs. 21/1847, 21.
@@ -900,6 +928,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf des Länder- und Kommunalentlastungsgesetzes (LKEG, BT-Drs. 21/6560, 21.
@@ -930,6 +959,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Erstreckung der Berichtspflicht auf das laufende Geschäftsjahr 2025 sei eine verfassungswidrige Rückwirkung — es ist unechte Rückwirkung, die Begründung wägt sie ab — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf des CSRD-Umsetzungsgesetzes (BT-Drs. 21/1857, 21. Wahlperiode,
@@ -969,6 +999,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf des Mindeststeueranpassungsgesetzes (MinStAnpG, BT-Drs. 21/1865,
@@ -999,6 +1030,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf eines Dritten Gesetzes zur Änderung des UWG (BT-Drs. 21/1855, 21.
@@ -1029,6 +1061,7 @@
   expected_severity: niedrig
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf des Intelligente-Verkehrssysteme-Gesetzes (IVSG, BT-Drs. 21/2999,
@@ -1060,6 +1093,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Darstellung der Beteiligung im Exekutiven Fußabdruck sei falsch oder widerspreche dem tatsächlichen Verfahren — das ist am Dokument nicht prüfbar, und die Konsultation zum Referentenentwurf fand statt"
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf des Intelligente-Verkehrssysteme-Gesetzes (IVSG, BT-Drs. 21/2999,
@@ -1089,6 +1123,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf des Geothermie-Beschleunigungsgesetzes (GeoBG, BT-Drs. 21/1928, 21.
@@ -1120,6 +1155,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf des Bundeswehr-Beschaffungsbeschleunigungsgesetzes (BwBBG, BT-Drs. 21/1931,
@@ -1154,6 +1190,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "§ 3 Abs. 1 DADG-E übertrage dem Bund die Aufsicht über Landesbehörden oder verletze die bundesstaatliche Kompetenzordnung — die Norm betrifft nur nicht-öffentliche Stellen und stützt sich auf Art. 87 Abs. 3 GG"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf des Data-Act-Durchführungsgesetzes (DADG, BT-Drs. 21/2998, 21.
@@ -1185,6 +1222,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Reform der Vaterschaftsanfechtung (BT-Drs. 21/2997, 21.
@@ -1220,6 +1258,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Fiktion verletze Art. 3 Abs. 3 Satz 2 GG oder die UN-BRK, weil sie den Anspruch auf angemessene Vorkehrungen im Privatsektor entwerte — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Novelle des Behindertengleichstellungsgesetzes (BT-Drs. 21/5140,
@@ -1255,6 +1294,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Frist 2045 sei zu spät oder verbindliche Zwischenschritte fehlten (vollstaendigkeit/datum) — das ist eine politische Fristenwahl; auch die Frist 2045 steht unter dem Vorbehalt des Satzes 1"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Novelle des Behindertengleichstellungsgesetzes (BT-Drs. 21/5140,
@@ -1284,6 +1324,7 @@
   expected_severity: niedrig
   requires_context: external-facts
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf eines Gesetzes zur weiteren Digitalisierung der Zwangsvollstreckung
@@ -1314,6 +1355,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Aktualisierung des SAIO-Verweises in § 21 PflSchG-E ändere das Erhebungsverfahren grundlegend und ohne Übergangsfrist — § 75 PflSchG-E ist eine Übergangsregel, und das bisherige Verfahren läuft nach der Bundesrats-Stellungnahme selbst bis Ende 2027"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf eines Gesetzes zur Anpassung des Pflanzenschutzgesetzes an
@@ -1345,6 +1387,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die gesetzliche Vorprägung der Abwägung zugunsten der Verkehrsvorhaben verletze Art. 20a GG — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf des Infrastruktur-Zukunftsgesetzes (BT-Drs. 21/4099, 21.
@@ -1379,6 +1422,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Verpackungsdurchführungsgesetzes (VerpackDG, BT-Drs. 21/5346, 21.
@@ -1415,6 +1459,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Verpackungsdurchführungsgesetzes (VerpackDG, BT-Drs. 21/5346, 21.
@@ -1444,6 +1489,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Ausnahme jüdischer Religionsgemeinschaften verletze den Gleichheitssatz — die Begründung nennt einen sachlichen Grund (die Zahlungen beruhen überwiegend nicht auf vorkonstitutionellen Dotationen) — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Die AfD-Fraktion brachte am 07.04.2026 den Entwurf eines Gesetzes über die Grundsätze zur
@@ -1480,6 +1526,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Die AfD-Fraktion brachte am 07.04.2026 den Entwurf eines Gesetzes über die Grundsätze zur
@@ -1509,6 +1556,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Bundesrat brachte den Entwurf eines Gesetzes zur Verbesserung der Möglichkeiten zur
@@ -1546,6 +1594,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Das Boykottverbot aus parteipolitischen Gründen sei Sonderrecht gegen eine bestimmte Meinung und deshalb verfassungswidrig — weder ein Gericht noch eine amtliche Stelle hat das festgestellt zu diesem Entwurf"
+  repaired_by: null
   split: dev
   story: |
     Die AfD-Fraktion brachte am 24.03.2026 den Entwurf eines Gesetzes zur Ächtung politisch
@@ -1583,6 +1632,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Vermutung nach § 437 Abs. 2 StPO-E verletze Unschuldsvermutung, nemo tenetur oder Schuldprinzip — nach BVerfGE 110, 1 und 156, 354 gelten diese für die Einziehung als Maßnahme eigener Art nicht — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Auf Initiative Berlins, Hessens und Sachsens brachte der Bundesrat den Entwurf eines
@@ -1620,6 +1670,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die §§ 98d/98e StPO-E seien verfassungswidrig, weil ein Richtervorbehalt fehle oder die Eingriffsschwellen den BVerfG-Maßstäben zur automatisierten Datenanalyse nicht genügten — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Die Bundesregierung legte am 01.07.2026 den Entwurf eines Gesetzes zur Änderung der
@@ -1644,35 +1695,6 @@
     Behauptung.
   source: "GFF (netzpolitik.org) und BRAK; §§ 98d/98e samt Anordnungsregel und Schwellen im Primärtext geprüft."
 
-- id: L-D8
-  suite: lektor
-  doc: "21/6510"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6510.txt, sha256: "cd3ece79fc0704296826025f19013ec1680986686690525e8c866477912e4d1e"}
-  kind: negativ
-  expected_passage: "Regelung zur Mitwirkung der Versorgungsträger bei der vertraglichen Ausgleichung (Einzelnorm nicht ermittelt)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Der Entwurf setze eine nur einmalige Mitwirkung der Versorgungsträger im schuldrechtlichen Versorgungsausgleich voraus und übersehe spätere Abänderungsverfahren — diese Annahme steht nicht in der Drucksache, und der Entwurf regelt die Abänderung selbst"
-  split: dev
-  story: |
-    Die Bundesregierung legte am 15.06.2026 den Entwurf eines Gesetzes zur Änderung des
-    Versorgungsausgleichsrechts vor (Drucksache 21/6510); er wurde am 09.07.2026 überwiesen.
-    Der Deutsche Juristinnenbund kritisierte in seiner Stellungnahme st26-04 vom 09.03.2026
-    zum Referentenentwurf vom 05.02.2026, der Entwurf gehe „unrichtig davon aus, dass
-    Versorgungsträger im schuldrechtlichen Versorgungsausgleich nur einmalig mitwirken
-    müssen“. In der eingebrachten Drucksache findet sich diese Annahme nicht: „einmalig“ steht
-    nur als Spaltenkopf der Erfüllungsaufwandstabellen, und der Entwurf ändert § 227 FamFG, um
-    die Abänderung schuldrechtlicher Entscheidungen und Vereinbarungen zu ermöglichen. Ein
-    Befund, der Entwurf übersehe die erneute Mitwirkung, wäre ein Fehlalarm; eine unabhängige
-    Kritik an der Schätzung des Erfüllungsaufwands wäre es nicht. Der Fall zählt zur
-    Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm,
-    falsch ist nur die genannte Behauptung.
-  source: "djb-Stellungnahme st26-04 (09.03.2026, zum Referentenentwurf); Erfüllungsaufwand und § 227 FamFG-E im Primärtext geprüft."
-
 - id: L-D9
   suite: lektor
   doc: "21/6809"
@@ -1686,6 +1708,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Größenschwelle des § 4d Abs. 2 TierSchG-E sei ein Vollständigkeits- oder Widerspruchsmangel, weil nur rund 230 Betriebe erfasst werden — der Entwurf nennt die Reichweite selbst, begründet die Schwelle und erlaubt Anordnungen für kleinere Betriebe"
+  repaired_by: null
   split: dev
   story: |
     Die Bundesregierung legte am 01.07.2026 den Entwurf eines Fünften Gesetzes zur Änderung
@@ -1715,6 +1738,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Die Bundesregierung legte am 02.04.2025 den Entwurf eines Gesetzes zur Modernisierung des
@@ -1747,6 +1771,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Höchstlöschfrist von 100 Jahren sei zusammen mit der Widerspruchslösung unverhältnismäßig und deshalb verfassungswidrig — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Die Bundesregierung legte am 13.05.2026 den Entwurf eines Gesetzes zur Stärkung von
@@ -1781,6 +1806,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Die Bundesregierung legte am 03.06.2026 den Entwurf eines Gesetzes zur Stärkung der Rechte
@@ -1813,6 +1839,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Begründung wolle mehr Beiordnungen, die Kostenschätzung weise aber keine zusätzlichen Fälle aus (widerspruch) — der Entwurf schätzt 1.900 bis 3.000 zusätzliche Anträge pro Jahr; die Nullwerte betreffen den Erfüllungsaufwand der Bürger"
+  repaired_by: null
   split: dev
   story: |
     Die Bundesregierung legte am 03.06.2026 den Entwurf eines Gesetzes zur Stärkung der Rechte
@@ -1844,6 +1871,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Bundesrat brachte auf Initiative Hessens den Entwurf eines Gesetzes zur Verbesserung
@@ -1878,6 +1906,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der Sicherungsunterbringungsbefehl nach § 463 Abs. 6a StPO-E sei verfassungswidrig, weil er Freiheitsentziehung vor Rechtskraft der Krisenintervention erlaube — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: test
   story: |
     Der Bundesrat brachte auf Initiative Niedersachsens einen Entwurf zur Änderung der
@@ -1899,38 +1928,6 @@
     Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
   source: "Primärtext mit Begründung (Anlehnung an § 453c StPO) und Stellungnahme der Bundesregierung geprüft; Initiative Niedersachsen laut DIP."
 
-- id: L-D16
-  suite: lektor
-  doc: "21/6135"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6135.txt, sha256: "fa33087bc83bbd0dfb8cfd357e976b2f232491f3a5c4b6a8446ccfa4dd207c94"}
-  kind: negativ
-  expected_passage: "Gesamter Entwurf — Ermächtigungsgrundlage für die Ausweisung roter/gelber Gebiete"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: bestandsrecht
-  forbidden_claim: "Der Entwurf sei unvollständig, weil er die vom BVerwG (10 CN 1.25) verworfene Gebietsausweisung nach § 13a DüV nicht repariere — die Neuregelung ist nach Bundesrat und Bundesregierung Sache des Verordnungsgebers, und das Dokument enthält keinen Hinweis darauf"
-  split: dev
-  story: |
-    Die Bundesregierung legte am 26.05.2026 den Entwurf eines Zweiten Gesetzes zur Änderung
-    des Düngegesetzes vor (Drucksache 21/6135); er wurde am 11.06.2026 überwiesen. Das
-    Bundesverwaltungsgericht hatte am 24.10.2025 (10 CN 1.25) die Ausweisung „roter“ und
-    „gelber“ Gebiete nach § 13a Abs. 1 DüV beanstandet. Der Entwurf geht darauf nicht ein. Der
-    Bundesrat stellte in seiner gesondert gedruckten Stellungnahme (Drucksache 21/6811) fest,
-    § 13a Abs. 1 DüV genüge nicht den Anforderungen des Grundgesetzes und es obliege dem
-    Bundesverordnungsgeber, das zu beheben; die Bundesregierung stimmte teilweise zu, ein
-    paralleler Erlass einer Gebietsausweisungsverordnung sei aber zeitlich nicht zu schaffen.
-    Die Reparatur liegt also auf Verordnungsebene, nicht in einer Regelung, die dieses Gesetz
-    voraussetzt. Eine frühere Recherchebehauptung, der Grundsatz eines nachhaltigen Umgangs
-    mit Nährstoffen sei gestrichen worden, ist ebenfalls widerlegt: Er wurde von § 11a Abs. 1
-    nach § 3 Abs. 2a DüngG-E verschoben. Ein Vollständigkeitsbefund zur fehlenden Reparatur
-    wäre ein Fehlalarm; er setzt zudem Wissen außerhalb des Dokuments voraus. Der Fall zählt
-    zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "BVerwG 10 CN 1.25; Stellungnahme des Bundesrates und Gegenäußerung in 21/6811 im Volltext geprüft; der Entwurf erwähnt Urteil und § 13a DüV nicht."
-
 - id: L-D17
   suite: lektor
   doc: "21/7733"
@@ -1944,6 +1941,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Bundesrat brachte am 26.08.2026 den Entwurf eines Gesetzes zur Strafbewehrung der
@@ -1983,6 +1981,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Die Bundesregierung legte am 12.08.2026 den Entwurf eines Gesetzes zur Änderung des
@@ -2019,6 +2018,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die pauschale Einstufung jedes unerlaubten Erwerbs, Besitzes oder Führens halbautomatischer Kurzwaffen als Verbrechen sei unverhältnismäßig oder verletze das Schuldprinzip und sei deshalb verfassungswidrig — weder ein Gericht noch eine amtliche Stelle hat das festgestellt"
+  repaired_by: null
   split: dev
   story: |
     Der Bundesrat beschloss am 10.07.2026 auf Initiative Berlins einen Entwurf zur Änderung
@@ -2042,37 +2042,6 @@
 
 # --- Negatives: loud controversy, no defect in the text ------------------------
 
-- id: L-C9
-  suite: lektor
-  doc: "21/5871"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-5871.txt, sha256: "6e1ffc6ce52a6c2a436fdba3a7dd698b2a843ca2106a4933edc0bf7fab2e59c4"}
-  kind: negativ
-  expected_passage: "Streichung der Haftungsprivilegierung nach § 8 Nr. 1 StVG für Elektrokleinstfahrzeuge"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das Gesetz lasse die Sturzgefahr durch abgestellte E-Scooter für blinde und sehbehinderte Menschen ungeregelt"
-  split: test
-  story: |
-    Der Entwurf eines Gesetzes zur Haftung bei Unfällen mit Elektrokleinstfahrzeugen im
-    Straßenverkehr (BT-Drs. 21/5871, 21. Wahlperiode) wurde am 09.07.2026 unverändert
-    angenommen (CDU/CSU, SPD und Linke dafür, AfD dagegen, Grüne Enthaltung). Er streicht für
-    E-Scooter die Haftungsprivilegierung langsam fahrender Fahrzeuge nach § 8 Nr. 1 StVG,
-    Halter haften künftig wie bei Kraftfahrzeugen. Die GdP (mit anderen Verbänden am
-    25.11.2025: „Neue E-Scooter-Regeln gefährden Fußgängerinnen und Fußgänger“) und der
-    Blinden- und Sehbehindertenverband kritisierten die parallele Reform der
-    Elektrokleinstfahrzeuge-Verordnung und der StVO: herumliegende E-Scooter blieben ein
-    Sturzrisiko für blinde und sehbehinderte Menschen. Der SoVD begrüßte den Haftungsentwurf
-    ausdrücklich und nannte abgestellte Scooter nur als verbleibendes Problem. Die Kritik
-    betrifft also ein anderes Instrument und benennt keine Lücke in der Haftungsnorm selbst.
-    Deshalb ist es ein Negativfall, und zwar ein Grenzfall: Der Analyzer soll „Gesetz X löst
-    Problem Y nicht“ von einer konkreten Normlücke unterscheiden. requires_context ist none,
-    weil erwartet wird, dass allein aus dem Dokument kein Fund entsteht.
-  source: "GdP (25.11.2025) und DBSV zur eKFV-/StVO-Reform, SoVD-Stellungnahme zum Haftungsentwurf; Beschluss laut Bundestags-Textarchiv."
-
 - id: L-C10
   suite: lektor
   doc: "21/5688"
@@ -2080,12 +2049,13 @@
   text: {file: 21-5688.txt, sha256: "78161646e6c269805fea7a94d382407222bd3021d0cbe48337e497edd009b9d1"}
   kind: negativ
   expected_passage: "Rücknahme der Luftverkehrsteuer-Erhöhung 2024"
-  anchor: null
+  anchor: "§ 11 Absatz 1 wird wie folgt geändert: 1. In Nummer 1 wird die Angabe „15,53 Euro“ durch die Angabe „13,03 Euro“ ersetzt. 2. In Nummer 2 wird die Angabe „39,34 Euro“ durch die Angabe „33,01 Euro“ ersetzt. 3. In Nummer 3 wird die Angabe „70,83 Euro“ durch die Angabe „59,43 Euro“ ersetzt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Senkung der Luftverkehrsteuer widerspreche den Klimazielen"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Zweiten Gesetzes zur Änderung des Luftverkehrsteuergesetzes (BT-
@@ -2107,12 +2077,13 @@
   text: {file: 21-6004.txt, sha256: "edd30a3fcfd156849a949bdd16e4966cad10f93b8300b310392cc273f13aab41"}
   kind: negativ
   expected_passage: "Aussetzung der Diätenanpassung nach § 11 Abs. 4 AbgG für 2026"
-  anchor: null
+  anchor: "Das Anpassungsverfahren gemäß § 11 Absatz 4 des Abgeordnetengesetzes wird für das Jahr 2026 ausgesetzt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der Entwurf sei wegen der konkurrierenden Vorlagen oder wegen der Verfassungswidrigkeit des Anpassungsautomatismus defekt"
+  repaired_by: null
   split: dev
   story: |
     Zwei Entwürfe der 21. Wahlperiode verfolgten dasselbe Ziel, die automatische
@@ -2143,12 +2114,13 @@
   text: {file: 21-6330.txt, sha256: "e882796b44c62dfe45ff5c6e9143fc8982a1852797bbadb728bbf068828fa845"}
   kind: negativ
   expected_passage: "Abweichung von der Diätenanpassung nach § 11 Abs. 4 AbgG für 2026"
-  anchor: null
+  anchor: "In Abweichung von der Anpassung gemäß § 11 Absatz 4 des Abgeordnetengesetzes beträgt die Abgeordnetenentschädigung nach § 11 Absatz 1 des Abgeordnetengesetzes für den Monat August 2026 11 336,46 Euro."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der Entwurf sei wegen der konkurrierenden Vorlagen oder wegen der Verfassungswidrigkeit des Anpassungsautomatismus defekt"
+  repaired_by: null
   split: dev
   story: |
     Zwei Entwürfe der 21. Wahlperiode verfolgten dasselbe Ziel, die automatische
@@ -2186,6 +2158,7 @@
   expected_severity: mittel
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Das Anpassungsverfahrensabweichungsgesetz 2026 der Fraktionen CDU/CSU und SPD (BT-Drs.
@@ -2200,38 +2173,6 @@
     requires_context none, weil Überschrift, Satz 1 und § 2 im selben Dokument stehen.
   source: "Beschlussempfehlung 21/6851 (Maßgabe Nr. 3); §§ 2 und 3 im Primärtext geprüft."
 
-- id: L-C16
-  suite: lektor
-  doc: "21/6130"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6130.txt, sha256: "635491b45781ecab3c6c4fc07dfde47a08c4a09f589d091eea3514ba4d683fe4"}
-  kind: negativ
-  expected_passage: "GKV-Beitragssatzstabilisierung, Leistungsausschlüsse"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Kurzfristige Änderungsanträge oder die Leistungsausschlüsse (Cannabisblüten, Homöopathie, Hautkrebs-Screening) seien ein Defekt des Entwurfstexts"
-  split: dev
-  story: |
-    Der Entwurf eines Gesetzes zur Stabilisierung der Beitragssätze in der gesetzlichen
-    Krankenversicherung (BT-Drs. 21/6130, 21. Wahlperiode, 26.05.2026) wurde am 10.07.2026 vom
-    Bundestag beschlossen (318:284:4); der Bundesrat verzichtete am selben Tag auf den
-    Vermittlungsausschuss. In der Anhörung vom 22.06.2026 kritisierten mehr als 90
-    Fachverbände die Leistungsausschlüsse (Cannabisblüten, Homöopathie, anlassloses
-    Hautkrebs-Screening). Dazu kam eine Verfahrensrüge: rund 300 Seiten kurzfristiger
-    Änderungsanträge mit einer 278-seitigen Synopse unmittelbar vor der Ausschusssitzung, die
-    der Abgeordnete Dahmen „chaotisches Gesetzgebungsverfahren“ nannte. Eilanträge zweier
-    Abgeordneter (2 BvE 4/26 und 2 BvQ 47/26) blieben am 09.07.2026 erfolglos (Aktenzeichen
-    laut LTO); die Pressemitteilung des BVerfG nennt keine Aktenzeichen, und das Verfahren ist
-    nicht mit dem gleichzeitigen Organstreit 2 BvE 3/26 zum Gebäudemodernisierungsgesetz zu
-    verwechseln. Es ist ein Negativfall: Eine sogar gerichtlich geltend gemachte
-    Verfahrensrüge ist kein Textdefekt, und die Kritik an den Leistungsausschlüssen ist
-    Zielstreit. requires_context ist none, weil erwartet wird, dass allein aus dem Dokument
-    kein Fund entsteht.
-  source: "Erfolglose Eilanträge 2 BvE 4/26 und 2 BvQ 47/26 (LTO), Beschluss laut BMG, Anhörung laut Bundestags-Textarchiv."
-
 - id: L-C31
   suite: lektor
   doc: "21/1508"
@@ -2245,6 +2186,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Art. 2 koppele Grundrechtseinschränkungen an künftige WHO-Entscheidungen"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zu den Änderungen vom 1. Juni 2024 der Internationalen
@@ -2275,6 +2217,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die verbindliche Netzanschlusszusage nach § 8 sei als unverhältnismäßig hohe Teilnahmehürde ein Textdefekt"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf eines Gesetzes zur Sicherung der Versorgungssicherheit Strom und zur
@@ -2296,60 +2239,6 @@
     entsteht.
   source: "Bundesratsrüge in 21/6563; Beschlussempfehlung 21/6998 führt § 8 als unverändert, Primärtext geprüft."
 
-- id: L-C33-1897
-  suite: lektor
-  doc: "21/1897"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-1897.txt, sha256: "86f5b4d5ed2e86994d1d2d2ef8b9f365fd3d5f6a9a3f7790fd691cb2212417ae"}
-  kind: negativ
-  expected_passage: "Ratifikation des EU-Investitionsschutzabkommens mit Vietnam"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die ISDS-Schiedsverfahren des Abkommens seien ein Defekt des Ratifikationsgesetzes"
-  split: dev
-  story: |
-    Der Regierungsentwurf zum Investitionsschutzabkommen zwischen der EU und ihren
-    Mitgliedstaaten und Vietnam vom 30. Juni 2019 (Drucksache 21/1897, 29.09.2025) ist ein
-    reines Vertragsgesetz nach Art. 59 Abs. 2 GG. Eine Websuche vom 29.08.2026 fand NGO-Kritik
-    an den Investor-Staat-Schiedsverfahren (ISDS), die das Abkommen vorsieht. Diese Kritik
-    richtet sich gegen den ausgehandelten Vertragsinhalt, nicht gegen den Ratifikationstext,
-    der handwerklich nur die Zustimmung erteilt. Deshalb ist der Entwurf ein Negativfall: der
-    Analyzer soll die Schiedsverfahren nicht als Defekt des Gesetzes melden. Das
-    Streitbeilegungskapitel steht im Vertragstext der Drucksache, die NGO-Kritik berichtete
-    die taz; der Bundestag stimmte am 13.11.2025 zu. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur
-    die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (NGO-Kritik laut taz), Streitbeilegungskapitel im Primärtext vorhanden."
-
-- id: L-C33-1898
-  suite: lektor
-  doc: "21/1898"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-1898.txt, sha256: "f2aea51e8a11dfc0ef7902f810ab5de65c9536cf67b938862a667008458988c3"}
-  kind: negativ
-  expected_passage: "Ratifikation des EU-Investitionsschutzabkommens mit Singapur"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die ISDS-Schiedsverfahren des Abkommens seien ein Defekt des Ratifikationsgesetzes"
-  split: dev
-  story: |
-    Der Regierungsentwurf zum Investitionsschutzabkommen zwischen der EU und ihren
-    Mitgliedstaaten und Singapur vom 19. Oktober 2018 (Drucksache 21/1898, 29.09.2025) ist
-    das Schwesterstück zum parallel eingebrachten Vietnam-Abkommen. Auch hier fand eine
-    Websuche vom 29.08.2026 NGO-Kritik an den Investor-Staat-Schiedsverfahren (ISDS). Der
-    Streit betrifft den Vertragsinhalt, nicht das Vertragsgesetz, das lediglich die
-    Zustimmung nach Art. 59 Abs. 2 GG herbeiführt; ein Normdefekt ergibt sich daraus nicht.
-    Die Kritik wurde nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist
-    nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (NGO-Kritik am Vertragsinhalt), nicht am Primärtext geprüft."
-
 - id: L-C33-2512
   suite: lektor
   doc: "21/2512"
@@ -2357,12 +2246,13 @@
   text: {file: 21-2512.txt, sha256: "0823984de98aeac5e12c2cd717a55dde12ae5dd7e4932a458b2b0353846e1456"}
   kind: negativ
   expected_passage: "Krankenhausanpassungsgesetz — Erreichbarkeitsvorgaben und Ermessensspielräume"
-  anchor: null
+  anchor: "der Abstand zwischen den am weitesten voneinander entfernt liegenden Gebäudepunkten des jeweiligen Krankenhausstandortes und des Kooperationspartners nicht mehr als 2 000 Meter Luftlinie beträgt"
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die starre 2.000-Meter-Regel oder die weiten Ermessensspielräume seien ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Das Krankenhausreformanpassungsgesetz (KHAG, Regierungsentwurf, Drucksache 21/2512 vom
@@ -2376,31 +2266,6 @@
     falsch ist nur die genannte Behauptung.
   source: "Bundesrats-Stellungnahme (laut GÖRG) und GKV-Stellungnahme zur Anhörung; Regel im Primärtext geprüft."
 
-- id: L-C33-2510
-  suite: lektor
-  doc: "21/2510"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-2510.txt, sha256: "e09378bf1e00db8e1abddf025054ac2e9a8e33e19d8174bfdaed083025b65116"}
-  kind: negativ
-  expected_passage: "KRITIS-Dachgesetz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das Gesetz bleibe als Defekt hinter der EU-Resilienzrichtlinie zurück"
-  split: test
-  story: |
-    Das KRITIS-Dachgesetz (Regierungsentwurf, Drucksache 21/2510 vom 03.11.2025) setzt die EU-
-    Resilienzrichtlinie (EU) 2022/2557 in einem neuen Stammgesetz um. Die AG KRITIS
-    kritisierte, das Gesetz bleibe hinter dem Anspruch der Richtlinie zurück. Das ist eine
-    Zieldebatte über das Schutzniveau und benennt keine konkrete Norm, die die Richtlinie
-    verfehlt oder falsch umsetzt. Der Analyzer soll daher kein Zurückbleiben hinter der
-    Richtlinie als Defekt melden. Die Kritik wurde nicht am Primärtext geprüft. Der Fall zählt
-    zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (Zieldebatte, AG KRITIS), nicht am Primärtext geprüft."
-
 - id: L-C33-1757
   suite: lektor
   doc: "21/1757"
@@ -2408,12 +2273,13 @@
   text: {file: 21-1757.txt, sha256: "e7aedb6181db51e5bad55f2f755a88d65aa310bc0e27e475cf970323524123f3"}
   kind: negativ
   expected_passage: "§ 265a StGB — Entkriminalisierung des Fahrens ohne Fahrschein"
-  anchor: null
+  anchor: "§ 265a wird gestrichen."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Entkriminalisierung sei als solche ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Die Fraktion Die Linke brachte am 24.09.2025 den Entwurf zur Straffreiheit für Fahren
@@ -2426,109 +2292,6 @@
     kein Fehlalarm, falsch ist nur die genannte Behauptung.
   source: "Symptom-Websuche vom 29.08.2026 (rechtspolitischer Zielstreit), nicht am Primärtext geprüft."
 
-- id: L-C33-575
-  suite: lektor
-  doc: "21/575"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-575.txt, sha256: "f570c2ff2ed6142b0fd1c8fb51c31378ad6359aed4187db0c059e00564aba5e3"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zu Art. 143h GG"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Abkehr vom Klimaneutralitätsziel und die verfassungsrechtliche Absicherung der Rücknahme von Klimaschutzmaßnahmen seien als solche ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Änderung des Grundgesetzes (Art. 143h, Klimaschutzfolgenbereinigung)
-    vom 24.06.2025 (Drucksache 21/575) soll die verfassungsrechtliche Grundlage für die
-    Rücknahme von Klimaschutzmaßnahmen schaffen. Er wurde parallel zum einfachgesetzlichen
-    Klimaschutzfolgenbereinigungsgesetz eingebracht und vom Bundestag am 13.11.2025 abgelehnt.
-    Die Auseinandersetzung ist ein reiner Zielstreit über die Klimapolitik, keine Kritik an
-    der handwerklichen Fassung. Grundlage ist eine Websuche vom 29.08.2026, nicht am
-    Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in
-    derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-576
-  suite: lektor
-  doc: "21/576"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-576.txt, sha256: "2e3ca777367741b5154eeb094c9ee64f842cb534caa70ac96ab659fa7d59a275"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zur Klimaschutzfolgenbereinigung"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Das Klimaschutzfolgenbereinigungsgesetz der AfD-Fraktion vom 24.06.2025 (Drucksache
-    21/576) will klimapolitische Gesetze aufheben, darunter das Projekt-Mechanismen-Gesetz,
-    und die Energieinfrastruktur wiederherstellen. Es ist das einfachgesetzliche Gegenstück
-    zur gleichzeitig eingebrachten Grundgesetzänderung (Art. 143h) und wurde abgelehnt. Die
-    Kontroverse betrifft das politische Ziel, nicht die Formulierung der Normen. Grundlage
-    ist eine Websuche vom 29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur
-    Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-570
-  suite: lektor
-  doc: "21/570"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-570.txt, sha256: "11bd8642dd78ed90af991b93b77f52e1af34ab9a69e2bce1cefea27909575737"}
-  kind: negativ
-  expected_passage: "Umsetzung der Batterieverordnung"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Anpassung gehe als Defekt über die Vorgaben der Batterieverordnung hinaus"
-  split: dev
-  story: |
-    Das Batterierecht-EU-Anpassungsgesetz (Entwurf der Fraktionen CDU/CSU und SPD, Drucksache
-    21/570 vom 24.06.2025) passt das deutsche Recht an die Batterieverordnung (EU) 2023/1542
-    an und löst das Batteriegesetz ab. In der Anhörung (gemeinsam mit dem inhaltsgleichen
-    Regierungsentwurf 21/1150) kritisierten von der Union benannte Sachverständige, die
-    Anpassung gehe „weit über die Vorgaben der EU-Batterieverordnung hinaus“. Das ist
-    Umfangkritik an einer politischen Entscheidung, die der Entwurf selbst offenlegt (er
-    beziffert eigens den über das EU-Recht hinausgehenden Erfüllungsaufwand), kein
-    Umsetzungsfehler. Die Kritik wurde nicht am Primärtext geprüft. Der Fall zählt zur
-    Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm,
-    falsch ist nur die genannte Behauptung.
-  source: "hib und Bundestags-Textarchiv zur Anhörung; der Entwurf beziffert den über das EU-Recht hinausgehenden Erfüllungsaufwand selbst."
-
-- id: L-C33-777
-  suite: lektor
-  doc: "21/777"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-777.txt, sha256: "26a34ed5a14dc8284b0bee5a97a70eeca6567bb0bb9668bfb095962c994f3caf"}
-  kind: negativ
-  expected_passage: "Begrenzung von Agrokraftstoffen (Grüne)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Der Zielkonflikt der Begrenzung sei ein Normdefekt"
-  split: dev
-  story: |
-    Die Fraktion Bündnis 90/Die Grünen brachte am 07.07.2025 einen Entwurf zur Änderung des
-    Bundes-Immissionsschutzgesetzes ein (Drucksache 21/777), der die Anrechnung von
-    Agrokraftstoffen aus Nahrungs- und Futterpflanzen auf die THG-Quote bis 2030 schrittweise
-    auf 0,0 Prozent absenkt. Es ist ein Zielkonflikt zwischen Klima-, Ernährungs- und
-    Agrarinteressen; der Bundestag lehnte den Entwurf am 12.09.2025 auf Beschlussempfehlung
-    des Umweltausschusses (Drucksache 21/1592) ab. Ein handwerklicher Mangel wurde dabei nicht
-    benannt. Grundlage ist eine Websuche vom 29.08.2026, nicht am Primärtext geprüft. Der Fall
-    zählt zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Bundestags-Textarchiv und hib (Ablehnung 12.09.2025, Beschlussempfehlung 21/1592); Absenkungspfad im Primärtext geprüft."
-
 - id: L-C33-4146
   suite: lektor
   doc: "21/4146"
@@ -2536,12 +2299,13 @@
   text: {file: 21-4146.txt, sha256: "bab40a49b8b2be3f3e7fa5e8a68a995a3ce355c30506ffe8ea013db39b481557"}
   kind: negativ
   expected_passage: "§ 7a UmwRG-E (Amtsermittlung nur auf Vorbringen) und § 7 Abs. 6 UmwRG-E (Wegfall der aufschiebenden Wirkung)"
-  anchor: null
+  anchor: "Das Gericht erforscht den Sachverhalt von Amts wegen nur, soweit dies durch ein entsprechendes Vorbringen der Beteiligten oder durch andere konkrete Anhaltspunkte veranlasst ist."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Begrenzung der gerichtlichen Amtsermittlung (§ 7a) oder der Wegfall der aufschiebenden Wirkung (§ 7 Abs. 6) seien verfassungswidrig, insbesondere als Umkehr der Beweis- oder Darlegungslast"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Änderung des Umwelt-Rechtsbehelfsgesetzes und weiterer
@@ -2560,80 +2324,6 @@
     Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
   source: "hib zur Anhörung vom 25.03.2026 (Wernsmann, Heß, Schmidt); §§ 6, 7 Abs. 6 und 7a im Primärtext geprüft."
 
-- id: L-C33-4266
-  suite: lektor
-  doc: "21/4266"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4266.txt, sha256: "87eec276c1d14de245e17403289746ce8151c5feeffeb95c72f1f56155d229d6"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zum NGO-Klagerecht"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: test
-  story: |
-    Der AfD-Entwurf zum Entzug des Klagerechts für staatsfinanzierte
-    Nichtregierungsorganisationen (Drucksache 21/4266 vom 24.02.2026) will Verbänden, die
-    staatliche Mittel erhalten, die Verbandsklage etwa nach Umwelt-Rechtsbehelfsgesetz und
-    Verbraucherrechtedurchsetzungsgesetz nehmen. Die Kontroverse ist ein Zielstreit über die
-    Rolle von NGOs, nicht über die Formulierung des Entwurfs. Grundlage ist eine Websuche
-    vom 29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist
-    nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-4297
-  suite: lektor
-  doc: "21/4297"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4297.txt, sha256: "c51a770f686b3af754e5aad3efedc5a64953aa978d30d46020a875d9ed572807"}
-  kind: negativ
-  expected_passage: "Produkthaftungsreform"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die gewählte Umsetzungstiefe (1:1 statt ambitioniert) sei ein Defekt"
-  split: dev
-  story: |
-    Der Regierungsentwurf zur Modernisierung des Produkthaftungsrechts (Drucksache 21/4297 vom
-    25.02.2026) setzt die neue Produkthaftungsrichtlinie (EU) 2024/2853 in einem neuen
-    Stammgesetz um. In der Anhörung vom 13.04.2026 galt die 1:1-Umsetzung teils als zu
-    weitgehend, teils als zu unambitioniert. Die gewählte Umsetzungstiefe ist eine politische
-    Entscheidung, kein Defekt. Die Kritik wurde nicht am Primärtext geprüft. Der Fall zählt
-    zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (Streit über Umsetzungstiefe), nicht am Primärtext geprüft."
-
-- id: L-C33-3491
-  suite: lektor
-  doc: "21/3491"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-3491.txt, sha256: "dafdc970233609b29ae97c3a6704f4e9a708e2886462aa6771d398cb149486c1"}
-  kind: negativ
-  expected_passage: "Nordsee-Gasabkommen"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die weitere Gasförderung sei ein Defekt des Vertragsgesetzes"
-  split: test
-  story: |
-    Der Regierungsentwurf zum deutsch-niederländischen Abkommen vom 27. August 2025 über die
-    Erschließung grenzüberschreitender Kohlenwasserstofflagerstätten in der Nordsee
-    (Drucksache 21/3491 vom 06.01.2026) ist ein Vertragsgesetz. Die Deutsche Umwelthilfe
-    kritisierte laut Websuche vom 29.08.2026 die damit ermöglichte weitere Gasförderung. Das
-    ist Kritik am klimapolitischen Ziel des Abkommens, nicht am Vertragsgesetz, das nur die
-    Zustimmung nach Art. 59 Abs. 2 GG erteilt. Die Kritik wurde nicht am Primärtext geprüft.
-    Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache
-    wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (DUH-Zielkritik), nicht am Primärtext geprüft."
-
 - id: L-C33-1849
   suite: lektor
   doc: "21/1849"
@@ -2641,12 +2331,13 @@
   text: {file: 21-1849.txt, sha256: "7ae057e9439872a0edcfc34e34e59cb4c8a1168d5c1157cd0a6ed5904efe49dc"}
   kind: negativ
   expected_passage: "Anhebung des Zuständigkeitsstreitwerts auf 10.000 €"
-  anchor: null
+  anchor: "Nummer 1 wird die Angabe „fünftausend“ durch die Angabe „zehntausend“ ersetzt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Streitwertanhebung senke das Rechtsschutzniveau und sei deshalb ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Änderung des Zuständigkeitsstreitwerts der Amtsgerichte
@@ -2667,12 +2358,13 @@
   text: {file: 21-3948.txt, sha256: "d248cdeb0e2941e6e2ddf4efc5e216fb19bc902e40699661749bdb4c34d1f33c"}
   kind: negativ
   expected_passage: "Art. 7 (FlRV) — Verzicht auf die öffentliche Beglaubigung der Eigentümererklärung (§ 8 Abs. 2 Satz 2 Nr. 3 FlRV)"
-  anchor: null
+  anchor: "in den Fällen des § 7 Absatz 1 Nummer 3 die Erklärung des Eigentümers, dass er dem Flaggenwechsel für die Dauer des Nutzungsrechts des Ausrüsters zustimmt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der Verzicht auf die öffentliche Beglaubigung der Eigentümererklärung sei ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf zur Änderung flaggen-, schiffsregister- und seefischereirechtlicher
@@ -2692,13 +2384,14 @@
   drucksachetyp: Gesetzentwurf
   text: {file: 21-5141.txt, sha256: "bdfe96ea8f9f6fcfcead5ea0123d6fd7c01f7614a8b9845237cbe36fc038e9d8"}
   kind: negativ
-  expected_passage: "Ökodesign-Durchführung"
-  anchor: null
+  expected_passage: "Stellungnahme des Bundesrates Nr. 4, Begründung zu Nummer 2 — vorübergehendes Verbot während einer Produktprüfung (§ 7 Abs. 3 Nr. 5 EVPG)"
+  anchor: "Die in § 7 Absatz 3 Nummer 5 EVPG geregelte Befugnis, das Inverkehrbringen, die Inbetriebnahme oder die Bereitstellung eines Produkts für den Zeitraum einer notwendigen Prüfung vorübergehend zu untersagen"
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der Entwurf sei fehlerhaft, weil er das vom Bundesrat gewünschte vorübergehende Vermarktungsverbot aus Zweckmäßigkeitsgründen nicht vorsehe — ohne Auseinandersetzung mit der Gegenäußerung, nach der die Befugnis unionsrechtlich über Art. 14 Abs. 4 Buchst. h VO (EU) 2019/1020 und § 7 MüG besteht"
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf zur Modernisierung der nationalen Umsetzung europäischer Regelungen
@@ -2724,12 +2417,13 @@
   text: {file: 21-319.txt, sha256: "a5401651118c6f3d6fc2001c71f4a20b3dbc81d7ac20fcc578e14b0b8c41cb40"}
   kind: negativ
   expected_passage: "Art. 1 Nr. 1 Buchst. a, § 1 Abs. 1 Satz 2 TKG-E — befristete Feststellung des überragenden öffentlichen Interesses"
-  anchor: null
+  anchor: "Die Verlegung und die Änderung von Telekommunikationslinien zum Ausbau von öffentlichen Telekommunikationsnetzen liegen bis zum Ablauf des 31. Dezember 2030 im überragenden öffentlichen Interesse."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Feststellung des überragenden öffentlichen Interesses in § 1 Abs. 1 Satz 2 TKG-E sei ein Versehen oder Redaktionsfehler"
+  repaired_by: null
   split: dev
   story: |
     Das TKG-Änderungsgesetz 2025 (Entwurf der Fraktionen CDU/CSU und SPD, Drucksache 21/319
@@ -2746,264 +2440,6 @@
     derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
   source: "Symptom-Websuche vom 29.08.2026; § 1 Abs. 1 Satz 2 TKG-E, Vorblatt und Begründung im Primärtext geprüft; Beschluss laut DIP."
 
-- id: L-C33-333
-  suite: lektor
-  doc: "21/333"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-333.txt, sha256: "4749c6f36607e7c8cc9a6396c9cd67147735b18ca0c583afb8b8fb37f18680f4"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zur Strafmündigkeit ab 12"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur besseren Bekämpfung der Kriminalität von Kindern, Jugendlichen und
-    Heranwachsenden (Drucksache 21/333 vom 03.06.2025) will die Strafmündigkeit auf das
-    vollendete 12. Lebensjahr absenken. Die Kontroverse ist ein rechtspolitischer Zielstreit
-    über den Umgang mit Kinderdelinquenz. Ein handwerklicher Fehler im Text wurde dabei
-    nicht benannt. Grundlage ist eine Websuche vom 29.08.2026, nicht am Primärtext geprüft.
-    Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache
-    wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Symptom-Websuche vom 29.08.2026 (rechtspolitischer Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-3194
-  suite: lektor
-  doc: "21/3194"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-3194.txt, sha256: "258ce6bc79cf41198caa60c64eb320ffdd5766c964a890f549dd9ee7b29ecf4e"}
-  kind: negativ
-  expected_passage: "Londoner Protokoll — CO2-Export"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Zulassung des CO2-Exports sei ein Normdefekt"
-  split: dev
-  story: |
-    Der Regierungsentwurf zu den Entschließungen LP.3(4) und LP.5(14) über die Änderung von
-    Artikel 6 des Londoner Protokolls (Drucksache 21/3194 vom 10.12.2025) soll den
-    grenzüberschreitenden Export von CO2 zur Speicherung im Meeresuntergrund völkerrechtlich
-    ermöglichen. Laut Websuche vom 29.08.2026 lehnten Umweltverbände den CO2-Export ab,
-    während die Organisation Bellona ihn begrüßte. Das ist ein reiner Zielkonflikt über die
-    Klimapolitik, kein Defekt des Vertragsgesetzes. Die Kritik wurde nicht am Primärtext
-    geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in derselben
-    Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Umweltverbände dagegen, Bellona dafür), nicht am Primärtext geprüft."
-
-- id: L-C33-3195
-  suite: lektor
-  doc: "21/3195"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-3195.txt, sha256: "939f5ec20f33c4f3bfb5df510faaedc68e18ff6f60fcaaf19e9d4616692aed64"}
-  kind: negativ
-  expected_passage: "Hohe-See-Einbringungsgesetz — CO2-Export"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Zulassung des CO2-Exports sei ein Normdefekt"
-  split: dev
-  story: |
-    Der Regierungsentwurf eines Ersten Gesetzes zur Änderung des Hohe-See-
-    Einbringungsgesetzes (Drucksache 21/3195 vom 10.12.2025) schafft die innerstaatlichen
-    Voraussetzungen für die Speicherung von CO2 im Meeresuntergrund und für dessen Export;
-    er gehört zum gleichzeitig eingebrachten Vertragsgesetz zum Londoner Protokoll.
-    Umweltverbände lehnten den CO2-Export laut Websuche vom 29.08.2026 ab, Bellona begrüßte
-    ihn. Der Streit betrifft das politische Ziel, nicht die handwerkliche Fassung. Die
-    Kritik wurde nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist
-    nur die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (reiner Zielkonflikt), nicht am Primärtext geprüft."
-
-- id: L-C33-4084
-  suite: lektor
-  doc: "21/4084"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4084.txt, sha256: "9c83758bbbe3aaff9beaf938ff29ab59d3ad0634a9ba558f38754c5a90847948"}
-  kind: negativ
-  expected_passage: "Apothekenversorgung-Weiterentwicklungsgesetz (ApoVWG)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Apothekenbefugnisse oder die ausgebliebene Vergütungserhöhung seien ein Normdefekt"
-  split: dev
-  story: |
-    Das Apothekenversorgung-Weiterentwicklungsgesetz (ApoVWG, Regierungsentwurf, Drucksache
-    21/4084 vom 11.02.2026) soll vor allem ländliche Apotheken stärken und ihnen weitere
-    Aufgaben wie Schutzimpfungen übertragen. Der Umfang der neuen Apothekenbefugnisse war
-    umstritten, die Kassenärztliche Bundesvereinigung lehnte Impfungen und die Abgabe
-    verschreibungspflichtiger Arzneimittel ohne Rezept ab, und die Apothekerschaft beklagte
-    die ausgebliebene Erhöhung des Fixums. Die Fixum-Forderung steht auch als Bitte des
-    Bundesrates (Nr. 30) in der Drucksache selbst, benennt aber keinen Mangel des
-    Regelungstexts. Das ist ein Verteilungsstreit zwischen Berufsgruppen, kein Fehler im
-    Normtext. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in derselben
-    Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Bundestags-Textarchiv, hib und KBV-Stellungnahme; Bundesrats-Stellungnahme Nr. 30 im Primärtext geprüft."
-
-- id: L-C33-4347
-  suite: lektor
-  doc: "21/4347"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4347.txt, sha256: "a1019019ab93826165f68cbc26f2033432dbd8ff33b7ea6b1247f5d9964027ad"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zu Art. 64 GG (Trennung von Amt und Mandat)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: test
-  story: |
-    Der AfD-Entwurf zur Änderung des Grundgesetzes (Art. 64, Trennung von Amt und Mandat) vom
-    26.02.2026 (Drucksache 21/4347) will unter Berufung auf die Gewaltenteilung verhindern,
-    dass Regierungsmitglieder zugleich Bundestagsabgeordnete sind. Er wurde am selben Tag wie
-    weitere AfD-Entwürfe zur Aufhebung des Gesetzes über die Parlamentarischen Staatssekretäre
-    und des Polizeibeauftragtengesetzes eingebracht. Die Kontroverse ist ein Zielstreit über
-    das Regierungssystem, kein handwerklicher Mangel. Grundlage ist eine Websuche vom
-    29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger,
-    echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte
-    Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-4348
-  suite: lektor
-  doc: "21/4348"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4348.txt, sha256: "a18711ad98f0bbdce8763f374db8fd7204c3b8c7a9248abaa7a565cd861ce4be"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zur Aufhebung des Parlamentarische-Staatssekretäre-Gesetzes"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Aufhebung des Gesetzes über die Rechtsverhältnisse der
-    Parlamentarischen Staatssekretäre vom 26.02.2026 (Drucksache 21/4348) will dieses Amt
-    abschaffen. Er gehört zu einer Reihe gleichzeitig eingebrachter AfD-Entwürfe zur
-    Trennung von Regierungsamt und Mandat. Die Auseinandersetzung ist ein politischer
-    Zielstreit, kein Streit über die Formulierung. Grundlage ist eine Websuche vom
-    29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger,
-    echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte
-    Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-4349
-  suite: lektor
-  doc: "21/4349"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4349.txt, sha256: "77bfbc563238c4d83f4d2825e1bf86fb1c54af8c72fc55feced8b7ed14210882"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zur Aufhebung des Polizeibeauftragtengesetzes"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Aufhebung des Polizeibeauftragtengesetzes vom 26.02.2026 (Drucksache
-    21/4349) will das Amt des Polizeibeauftragten des Bundes beim Deutschen Bundestag wieder
-    abschaffen, weil es aus Sicht der Einbringer ein generelles Misstrauen gegenüber
-    Polizeibeamten verstärke. Die Kontroverse ist ein Zielstreit über parlamentarische
-    Polizeikontrolle. Ein handwerklicher Fehler wurde nicht benannt. Grundlage ist eine
-    Websuche vom 29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur
-    die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-4346
-  suite: lektor
-  doc: "21/4346"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4346.txt, sha256: "610cc504f556863a82500909873498077f5dfeacdbe63f7847bc2fd601c7517b"}
-  kind: negativ
-  expected_passage: "Schutz der Bundesbeamten vor politischer Verfolgung"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zum Schutz der Bundesbeamten vor politischer Verfolgung und zur Stärkung
-    des Rechtsschutzes gegen den Dienstherrn vom 26.02.2026 (Drucksache 21/4346) will die 2023
-    beschlossene Verschärfung des Bundesdisziplinargesetzes zurücknehmen. Hintergrund ist ein
-    Vertrauensstreit darüber, ob das 2023 zur schnelleren Entfernung von Verfassungsfeinden
-    verschärfte Disziplinarrecht gegen politisch unliebsame Beamte instrumentalisiert werden
-    könnte. Das ist eine politische Auseinandersetzung, keine Kritik an der Normformulierung.
-    Grundlage ist eine Websuche vom 29.08.2026, nicht am Primärtext geprüft. Der Fall zählt
-    zur Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein
-    Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Vertrauensstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-6178
-  suite: lektor
-  doc: "21/6178"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6178.txt, sha256: "9cedabfb29da83598ed5415c53979dceba2b0cba5db8f44e92d8211433207091"}
-  kind: negativ
-  expected_passage: "Zweites AGG-Änderungsgesetz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die zu geringe Reichweite der Reform sei ein Normdefekt"
-  split: dev
-  story: |
-    Der Regierungsentwurf eines Zweiten Gesetzes zur Änderung des Allgemeinen
-    Gleichbehandlungsgesetzes (Drucksache 21/6178 vom 01.06.2026) passt unter anderem das
-    zivilrechtliche Benachteiligungsverbot in § 19 AGG an, verlängert die Frist zur
-    Geltendmachung von zwei auf vier Monate, schafft eine Schlichtungsstelle und setzt
-    EU-Richtlinien um, auch mit Blick auf ein EU-Vertragsverletzungsverfahren. Die
-    Antidiskriminierungsbeauftragte Ferda Ataman (06.05.2026) und der SoVD (zum
-    Referentenentwurf) kritisierten, die Reform reiche nicht weit genug; ein Beitrag auf Legal
-    Tribune Online kritisierte sie aus der Gegenrichtung als Bürokratiesteigerung. Zu geringe
-    Reichweite ist eine politische Bewertung, kein Normdefekt. Der Fall zählt zur Präzision:
-    ein unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist
-    nur die genannte Behauptung.
-  source: "Pressemitteilung der Antidiskriminierungsstelle (06.05.2026), SoVD-Stellungnahme zum Referentenentwurf, LTO-Beitrag (Gegenrichtung)."
-
-- id: L-C33-6587
-  suite: lektor
-  doc: "21/6587"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6587.txt, sha256: "47b12186ec258b2560dadda81c32b3622d756a850ace72f0a59b0d88cf520381"}
-  kind: negativ
-  expected_passage: "Wärmeplanungsgesetz-Änderung"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die kurze Konsultationsfrist sei ein Defekt des Entwurfstexts"
-  split: dev
-  story: |
-    Der Regierungsentwurf zur Änderung des Wärmeplanungsgesetzes (Drucksache 21/6587 vom
-    22.06.2026) soll die Wärmeplanung vor allem für kleine Kommunen mit bis zu 15 000
-    Einwohnern vereinfachen. Die kommunalen Spitzenverbände und der DIHK rügten die extrem
-    kurze Frist, die ihnen zur Stellungnahme zum Entwurf eingeräumt wurde. Diese
-    Verfahrenskritik benennt keine Norm des Entwurfs und betrifft nicht den Text. Der Analyzer
-    soll die kurze Konsultationsfrist daher nicht als Defekt des Entwurfs melden. Die Kritik
-    wurde nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter
-    Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte
-    Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (Verfahrenskritik ohne benannte Norm), nicht am Primärtext geprüft."
-
 - id: L-C33-17
   suite: lektor
   doc: "21/17"
@@ -3011,12 +2447,13 @@
   text: {file: 21-17.txt, sha256: "b7cf13b1f672a5614ea4b68f52d1974e4637c30f1459c80087f5a52e528facd0"}
   kind: negativ
   expected_passage: "Verlängerung der Mietpreisbremse"
-  anchor: null
+  anchor: "In Satz 4 wird die Angabe „2025“ durch die Angabe „2029“ ersetzt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Verlängerung sei als solche ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Der Gesetzentwurf des Bundesrates zur Verlängerung der Mietpreisbremse (Drucksache 21/17
@@ -3031,184 +2468,6 @@
     Behauptung.
   source: "Fortsetzungs-Sweep vom 29.08.2026 (geteiltes Sachverständigenecho), nicht am Primärtext geprüft."
 
-- id: L-C33-1384
-  suite: lektor
-  doc: "21/1384"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-1384.txt, sha256: "3ba1e346993abad15f9807537160f84c791aa3b22d3be52a0108cadeb95c5502"}
-  kind: negativ
-  expected_passage: "Frühzeitige Integration von Asylbewerbern"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die integrationspolitische Richtung des Entwurfs sei ein Normdefekt"
-  split: test
-  story: |
-    Der Gesetzentwurf des Bundesrates zur frühzeitigen Integration von Asylbewerbern in den
-    Arbeitsmarkt (Drucksache 21/1384 vom 27.08.2025) bringt den Entwurf 20/14729 aus der
-    vorigen Wahlperiode erneut ein und ändert § 61 AsylG, damit Asylbewerber grundsätzlich
-    schon nach drei Monaten Zugang zum Arbeitsmarkt erhalten. Die Kontroverse ist ein
-    migrationspolitischer Richtungsstreit, kein Streit über die Formulierung. Bei der Websuche
-    vom 29.08.2026 vermischten die Treffer teils andere zeitgleich diskutierte Vorhaben zum
-    selben Thema, sodass die Kritik nicht sicher dieser Drucksache zuzuordnen ist. Die Kritik
-    wurde nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter
-    Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte
-    Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026; Suchtreffer vermischten teils andere Vorhaben."
-
-- id: L-C33-7252
-  suite: lektor
-  doc: "21/7252"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7252.txt, sha256: "9765602c0286c6a03d9773ae2def221db4292995bed946f1e500945249e8498a"}
-  kind: negativ
-  expected_passage: "Volksabstimmungen"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Stärkung der Demokratie durch Einführung von Volksabstimmungen auf
-    Bundesebene (Drucksache 21/7252 vom 22.07.2026) will das Grundgesetz um bundesweite
-    Volksentscheide ergänzen. Die Kontroverse ist ein rechtspolitischer Zielstreit über
-    direkte Demokratie; ein konkreter Textfehler wurde nicht benannt. Grundlage ist eine
-    Websuche vom 29.08.2026, nicht am Primärtext geprüft. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist
-    nur die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (rechtspolitischer Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-7253
-  suite: lektor
-  doc: "21/7253"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7253.txt, sha256: "6191ea865cbe9fa49f20a085be5e248837c7c5ecb2edd8689ecf42c1b0c5f50f"}
-  kind: negativ
-  expected_passage: "Paralleljustiz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Strafbarkeit der Betätigung auf dem Gebiet der Paralleljustiz
-    (Drucksache 21/7253 vom 22.07.2026) will unter Verweis auf Berichte über sogenannte
-    Friedensrichter in Clan-Konflikten einen neuen Straftatbestand schaffen. Der Streit
-    betrifft den kriminalpolitischen Nutzen eines neuen Straftatbestands; ein konkreter
-    Symbolpolitik-Vorwurf ließ sich nicht belegen. Das ist eine Bewertung des politischen
-    Nutzens, keine Kritik an der handwerklichen Fassung. Die Kritik wurde nicht am Primärtext
-    geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in derselben
-    Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "hib zum Entwurf; Symbolpolitik-Vorwurf nicht belegt, nicht am Primärtext geprüft."
-
-- id: L-C33-7260
-  suite: lektor
-  doc: "21/7260"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7260.txt, sha256: "bc995e835be1ccf64c41330229962634d58c23c2cd4813bcf04ffb1147db1ee6"}
-  kind: negativ
-  expected_passage: "AfD-Entwurf zum Kinderschutz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Stärkung des strafrechtlichen Kinderschutzes und zur Verschärfung der
-    Sanktionen bei schweren sexuellen Übergriffen (Drucksache 21/7260 vom 22.07.2026) will
-    unter anderem die Mindeststrafe beim schweren sexuellen Missbrauch von Kindern (§ 176c
-    Abs. 1 StGB) von zwei auf fünf Jahre anheben und überführt den bisherigen Absatz 3 als
-    Nummer 5 in Absatz 1. Die Debatte darüber ist ein rechtspolitischer Zielstreit. Ein Defekt
-    im Normtext wurde nicht benannt. Grundlage ist eine Websuche vom 29.08.2026, nicht am
-    Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in
-    derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "hib zum Entwurf; Zielstreit, Symbolpolitik-Vorwurf nicht belegt."
-
-- id: L-C33-7347
-  suite: lektor
-  doc: "21/7347"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7347.txt, sha256: "62037751ff386c66e324253de6597c3d1a57d85b27a205290f61fa8386f1345d"}
-  kind: negativ
-  expected_passage: "Wiederholungstäter"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Der AfD-Entwurf zur Strafverschärfung bei Wiederholungstätern (Drucksache 21/7347 vom
-    27.07.2026) will wiederholt straffällig gewordene Täter härter bestrafen. Die
-    Kontroverse ist ein rechtspolitischer Zielstreit über Strafschärfung und ihren Nutzen,
-    kein Streit über die Formulierung. Grundlage ist eine Websuche vom 29.08.2026, nicht am
-    Primärtext geprüft. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in
-    derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Fortsetzungs-Sweep vom 29.08.2026 (rechtspolitischer Zielstreit), nicht am Primärtext geprüft."
-
-- id: L-C33-7403
-  suite: lektor
-  doc: "21/7403"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7403.txt, sha256: "7e652c7b1074be3fd985ccf37227a2b7e02e65615c5501cc68d22b173b7d95cf"}
-  kind: negativ
-  expected_passage: "Luftverkehrsgesetz — zurückgenommene Lärmschutzreform"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Rücknahme der Lärmschutzreform sei ein Normdefekt"
-  split: dev
-  story: |
-    Der Regierungsentwurf eines Siebzehnten Gesetzes zur Änderung des Luftverkehrsgesetzes
-    (Drucksache 21/7403 vom 29.07.2026) ergänzt nach eigener Darstellung Regelungen zum
-    Fluglärmschutz, etwa zur Durchsetzung von Betriebsbeschränkungszeiten und zur Beteiligung
-    der Fluglärmkommissionen. Die Bundesvereinigung gegen Fluglärm kritisierte am 26.05.2026,
-    gegenüber dem Referentenentwurf von 2025 seien unter anderem Pflichten der DFS zur
-    Berücksichtigung des Fluglärms und weitergehende Beteiligungsrechte der
-    Fluglärmkommissionen entfallen; auch der Bundesrat forderte in seiner abgedruckten
-    Stellungnahme mehr Lärmschutz. Das ist Kritik an der politischen Reichweite des Entwurfs,
-    kein Normdefekt. Lärmabhängige Entgelte stehen entgegen einem Teil der Kritik weiter im
-    Entwurf (§ 19b Abs. 1). Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in
-    derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "Bundesvereinigung gegen Fluglärm (26.05.2026) und Bundesrats-Stellungnahme in der Drucksache; § 19b im Primärtext geprüft."
-
-- id: L-C33-7404
-  suite: lektor
-  doc: "21/7404"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7404.txt, sha256: "a9fbc6312688b0bd90924fb886acf642136e12e5f8987de53b8303347e09549a"}
-  kind: negativ
-  expected_passage: "Fahrlehrergesetz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die zu kurze Anhörungsfrist sei ein Defekt des Entwurfstexts"
-  split: dev
-  story: |
-    Der Regierungsentwurf zur Änderung des Fahrlehrergesetzes und anderer
-    straßenverkehrsrechtlicher Gesetze (Drucksache 21/7404 vom 29.07.2026) soll die
-    Fahrschulausbildung entbürokratisieren und modernisieren, um den Führerscheinerwerb
-    günstiger zu machen. Die Verbändeanhörung zum Referentenentwurf lief vom 04. bis
-    11.05.2026; die Bundesvereinigung der Fahrlehrerverbände nannte das eine „extrem kurze
-    Rückmeldefrist“, ähnlich äußerten sich kommunale Spitzenverbände und GdP. Das ist Kritik
-    am Gesetzgebungsverfahren, nicht am Entwurfstext. Der Fall zählt zur Präzision: ein
-    unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur
-    die genannte Behauptung.
-  source: "Stellungnahmen der Bundesvereinigung der Fahrlehrerverbände, kommunaler Spitzenverbände und GdP zur Verbändeanhörung (04.–11.05.2026)."
-
 - id: L-C33-7570
   suite: lektor
   doc: "21/7570"
@@ -3216,12 +2475,13 @@
   text: {file: 21-7570.txt, sha256: "767d5a2d5de65a762db5200bad5507711d45d5e7b0e7c5fc3a6a6f51583a52fb"}
   kind: negativ
   expected_passage: "Transplantationsgesetz — Widerspruchsregelung"
-  anchor: null
+  anchor: "der Entnahme nicht widersprochen und die Entscheidung über eine Entnahme nicht einer namentlich benannten Person seines Vertrauens übertragen hatte"
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Widerspruchsregelung sei als solche ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Der fraktionsübergreifende Gruppenantrag eines Vierten Gesetzes zur Änderung des
@@ -3235,49 +2495,20 @@
     Behauptung.
   source: "Fortsetzungs-Sweep vom 29.08.2026 (bekannter Grundsatzstreit, kein spezifischer Normfehler auffindbar)."
 
-- id: L-C33-7732
-  suite: lektor
-  doc: "21/7732"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-7732.txt, sha256: "2af585d5dd9da93c485158774600981627955e557c2945313705f8be793b95c7"}
-  kind: negativ
-  expected_passage: "BDSG-Änderung — Bündelung der Datenschutzaufsicht (One-Stop-Shop, Einer-für-Alle)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Der Entwurf lockere den Datenschutz materiell (etwa durch Wegfall der Pflicht zur Benennung von Datenschutzbeauftragten) — er regelt nur die Organisation der Aufsicht; die Lockerungskritik betraf ein anderes Vorhaben"
-  split: test
-  story: |
-    Der Gesetzentwurf des Bundesrates zur Änderung des Bundesdatenschutzgesetzes (Drucksache
-    21/7732 vom 26.08.2026) will die föderale Datenschutzaufsicht bündeln, unter anderem mit
-    einem nationalen One-Stop-Shop, einer gestärkten Datenschutzkonferenz und einem
-    Einer-für-Alle-Prinzip, nach dem die Prüfung einer Aufsichtsbehörde für andere bindend
-    ist. Materielle Lockerungen des Datenschutzes enthält er nicht. Die Kritik von
-    Datenschutzbeauftragten an „Lockerungen“ galt einem anderen Vorhaben, dem geplanten
-    Wegfall der Benennungspflicht für betriebliche Datenschutzbeauftragte nach § 38 Abs. 1
-    BDSG. Die in der Drucksache abgedruckte Stellungnahme der Bundesregierung wirft zu dem
-    Entwurf Fragen der unionsrechtlich geforderten Unabhängigkeit und der Mischverwaltung auf;
-    ein darauf gestützter kompetenz- oder verfassungsrisiko-Befund wäre ein unabhängiger Fund,
-    kein Fehlalarm. Falsch ist nur die Behauptung materieller Lockerungen. Der Fall zählt zur
-    Präzision: ein unabhängiger, echter Textfund in derselben Drucksache wäre kein Fehlalarm,
-    falsch ist nur die genannte Behauptung.
-  source: "Primärtext mit Stellungnahme der Bundesregierung geprüft; die Lockerungskritik (u. a. ULD) betrifft § 38 BDSG in einem anderen Vorhaben."
-
 - id: L-C33-7561
   suite: lektor
   doc: "21/7561"
   drucksachetyp: Gesetzentwurf
   text: {file: 21-7561.txt, sha256: "10d241b127a29946ac6914c5d12041727fe6fecf4ca5c94d0f60691a84bd923f"}
   kind: negativ
-  expected_passage: "Ärztliche Zwangsmaßnahmen im Betreuungsrecht — § 319 FamFG"
-  anchor: null
+  expected_passage: "Art. 2 Nr. 5, § 319 Abs. 2 FamFG-E — die einzige Änderung des § 319"
+  anchor: "§ 319 Absatz 2 wird durch den folgenden Absatz 2 ersetzt"
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Der „Ort“ der Vor-Ort-Besichtigung in § 319 Abs. 1 FamFG-E sei unklar"
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf zur Änderung der Regelung über ärztliche Zwangsmaßnahmen im
@@ -3292,92 +2523,6 @@
     in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
   source: "Am Primärtext geprüft: die NRV-Kritik (14.04.2026) betrifft den Referentenentwurf, im eingebrachten Entwurf ändert Art. 2 § 319 nur in Absatz 2."
 
-- id: L-C33-6588
-  suite: lektor
-  doc: "21/6588"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6588.txt, sha256: "6d681391691120c22c860fa876c2292aae8b1493a4e3f4b8f91b1674e0b5a224"}
-  kind: negativ
-  expected_passage: "Städtebau- und Raumordnungsrechts-Modernisierung — Vorkaufsrecht (§ 24 BauGB-E)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das Vorkaufsrecht werde auf Käufer aus der Organisierten Kriminalität oder gegen die freiheitliche demokratische Grundordnung ausgeweitet"
-  split: test
-  story: |
-    Der Regierungsentwurf zur Modernisierung des Städtebau- und Raumordnungsrechts (Drucksache
-    21/6588 vom 22.06.2026) ändert unter anderem das Baugesetzbuch. Der Referentenentwurf vom
-    April 2026 sah ein gemeindliches Vorkaufsrecht gegenüber Käufern aus der Organisierten
-    Kriminalität oder gegen die freiheitliche demokratische Grundordnung vor (beck-aktuell,
-    13.04.2026); im Kabinettsentwurf ist es entfallen. Die Volltextprüfung zeigte, dass es
-    eine solche Regelung im Entwurf nicht gibt: § 24 BauGB-E erweitert unter anderem den
-    Vorkaufsrechtstatbestand bei Schrottimmobilien auf Mängel im Sinne des § 177 Abs. 3 BauGB
-    und ergänzt kaufähnliche Vertragsgestaltungen, § 28a ist neu, ein Vorkaufsrecht gegen
-    bestimmte Käufergruppen gibt es aber nicht. Ein Analyzer, der es behauptet, halluziniert
-    eine Norm aus dem Referentenentwurf. Der Fall zählt zur Präzision: ein unabhängiger,
-    echter Textfund in derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte
-    Behauptung.
-  source: "Am Primärtext widerlegt; das Vorkaufsrecht gegen OK-Käufer stand nur im Referentenentwurf (beck-aktuell, 13.04.2026)."
-
-- id: L-D5-5319
-  suite: lektor
-  doc: "21/5319"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-5319.txt, sha256: "5927fddcdf3194cc680a425a2334112262e5e0236ea382035d6b1585facdde1b"}
-  kind: negativ
-  expected_passage: "Tempolimit im StVG"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das Tempolimit sei als solches ein Normdefekt"
-  split: test
-  story: |
-    Die Fraktion BÜNDNIS 90/DIE GRÜNEN brachte am 14.04.2026 den Entwurf eines Gesetzes zur
-    Änderung des Straßenverkehrsgesetzes (Tempolimit) ein (Drucksache 21/5319), begründet
-    unter anderem mit der Ölpreiskrise nach dem Krieg im Nahen Osten. Der Bundestag lehnte ihn
-    am 09.07.2026 in namentlicher Abstimmung mit 467 zu 137 Stimmen ab (Beschlussempfehlung
-    21/6734). Die Debatte war laut, aber rein politisch: Klimaschutz und Verkehrssicherheit
-    gegen Technologieoffenheit; eine Kritik an konkreten Normen wurde bei der Prüfung am
-    14.07.2026 nicht gefunden. Der Entwurf gehört zu einer Gruppe von Vorlagen, bei denen
-    trotz lauter Kontroverse keine Kritik an einer konkreten Norm benannt wurde. Der Fall ist
-    negativ: Er zählt für die Präzision, erwartet wird kein Befund, und gewertet wird nur, ob
-    die Analyse die hier benannte Kritik als Defekt ausgibt. Kontext außerhalb des Dokuments
-    ist nicht nötig, weil ein Negativfall auf Dokumentebene beurteilt wird. Speziell darf das
-    Tempolimit als politische Entscheidung nicht als Normdefekt gemeldet werden.
-  source: "Bundestags-Textarchiv (namentlich abgelehnt), rein politischer Streit; geprüft am 14.07.2026."
-
-- id: L-D5-4454
-  suite: lektor
-  doc: "21/4454"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-4454.txt, sha256: "fd7946fdf3fcaf43796ef5a54018bb0dc0c8761b53566c78c74388ef97a3310a"}
-  kind: negativ
-  expected_passage: "BRH-Unabhängigkeitsgesetz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Kontroverse um die Postenbesetzung am Bundesrechnungshof sei ein Defekt des Entwurfstexts"
-  split: dev
-  story: |
-    Die AfD-Fraktion brachte am 03.03.2026 den Entwurf eines Gesetzes zur Änderung des
-    Bundesrechnungshofgesetzes (BRH-Unabhängigkeitsgesetz) ein (Drucksache 21/4454); der
-    Bundestag lehnte ihn am 23.04.2026 ab. Die öffentliche Kontroverse drehte sich um eine
-    Postenbesetzung am Bundesrechnungshof (den Fall Geywitz), nicht um den Entwurfstext; bei
-    der Prüfung am 14.07.2026 wurde keine Normkritik gefunden. Der Entwurf gehört zu einer
-    Gruppe von Vorlagen, bei denen trotz lauter Kontroverse keine Kritik an einer konkreten
-    Norm benannt wurde. Der Fall ist negativ: Er zählt für die Präzision, erwartet wird kein
-    Befund, und gewertet wird nur, ob die Analyse die hier benannte Kritik als Defekt ausgibt.
-    Kontext außerhalb des Dokuments ist nicht nötig, weil ein Negativfall auf Dokumentebene
-    beurteilt wird. Speziell darf der Streit um die Personalie nicht als Defekt des Entwurfs
-    ausgegeben werden.
-  source: "Bundestags-Textarchiv; Kontroverse betrifft die Postenbesetzung, nicht den Entwurf."
-
 - id: L-D5-5423
   suite: lektor
   doc: "21/5423"
@@ -3385,12 +2530,13 @@
   text: {file: 21-5423.txt, sha256: "e8d104ac008b2288d6d61f05450e0c36abaf13cfd34d1b5c10e65efd4562e1a1"}
   kind: negativ
   expected_passage: "Art. 54 GG — Direktwahl des Bundespräsidenten"
-  anchor: null
+  anchor: "(1) Der Bundespräsident wird in allgemeiner, unmittelbarer, freier, gleicher und geheimer Wahl gewählt."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die verfassungsstrukturellen Bedenken gegen die Direktwahl seien ein Normdefekt"
+  repaired_by: null
   split: test
   story: |
     Die AfD-Fraktion brachte am 16.04.2026 den Entwurf eines Gesetzes zur Änderung des
@@ -3407,64 +2553,6 @@
     der Weg, die Wahl anders zu regeln.
   source: "Websuche vom 14.07.2026; kein Normfehler benannt."
 
-- id: L-D5-5388
-  suite: lektor
-  doc: "21/5388"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-5388.txt, sha256: "1c0ac98fe340aa024418a4ec3ccdb27f76e198de5432f1e65f87bd2973809be6"}
-  kind: negativ
-  expected_passage: "Windenergieflächenbedarfsabschaffungsgesetz (AfD)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die Aufhebung des Windenergieflächenbedarfsgesetzes sei geboten, weil es in die Planungshoheit der Länder eingreife oder die Flächenziele sachwidrig verteile — beides ist die politische Begründung des Entwurfs, kein Normdefekt"
-  split: test
-  story: |
-    Die AfD-Fraktion brachte am 16.04.2026 den Entwurf eines Gesetzes zur Abschaffung des
-    Windenergieflächenbedarfsgesetzes ein (Drucksache 21/5388). Der Entwurf ist ideologisch
-    umstritten; die Antragsteller greifen den Eingriff in die Planungshoheit der Länder an.
-    Ein gemeinsamer Sachstand der Wissenschaftlichen Dienste (WD 3 – 3000 – 039/24, WD 5 –
-    3000 – 061/24) hält die Verteilung der Flächenziele für „sachlich begründet und damit
-    nicht willkürlich“; bei der Prüfung am 14.07.2026 wurde kein Normfehler des Entwurfs
-    gefunden. Der Entwurf gehört zu einer Gruppe von Vorlagen, bei denen trotz lauter
-    Kontroverse keine Kritik an einer konkreten Norm benannt wurde; fehlende Folgeänderungen
-    in Normen, die das Windenergieflächenbedarfsgesetz zitieren (etwa § 249 BauGB), wären ein
-    unabhängiger Fund. Der Fall ist negativ: Er zählt für die Präzision, erwartet wird kein
-    Befund, und gewertet wird nur, ob die Analyse die hier benannte Kritik als Defekt ausgibt.
-    Kontext außerhalb des Dokuments ist nicht nötig, weil ein Negativfall auf Dokumentebene
-    beurteilt wird. Speziell darf die politische Begründung des Entwurfs nicht als Normdefekt
-    übernommen werden.
-  source: "WD-Sachstand WD 3 – 3000 – 039/24 / WD 5 – 3000 – 061/24; Entwurfsbegründung im Primärtext geprüft."
-
-- id: L-D5-5476
-  suite: lektor
-  doc: "21/5476"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-5476.txt, sha256: "a02d8ec0c8b5be292a8b4151cc5cd4747196ca2496e67bdb2b386a19d5cd7476"}
-  kind: negativ
-  expected_passage: "Massenmigrationsbewältigungsgesetz (AfD)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: dev
-  story: |
-    Die AfD-Fraktion brachte am 21.04.2026 den Entwurf eines Gesetzes zur Änderung des
-    Bürgerlichen Gesetzbuchs und des Asylgesetzes (Massenmigrationsbewältigungsgesetz) ein
-    (Drucksache 21/5476); er wurde überwiesen. Die Debatte war politisch scharf, doch Presse
-    und Parlamentsberichte benannten bei der Prüfung am 14.07.2026 keinen konkreten Fehler an
-    einem Paragraphen. Der Entwurf gehört zu einer Gruppe von Vorlagen, bei denen trotz lauter
-    Kontroverse keine Kritik an einer konkreten Norm benannt wurde. Der Fall ist negativ: Er
-    zählt für die Präzision, erwartet wird kein Befund, und gewertet wird nur, ob die Analyse
-    die hier benannte Kritik als Defekt ausgibt. Kontext außerhalb des Dokuments ist nicht
-    nötig, weil ein Negativfall auf Dokumentebene beurteilt wird. Speziell darf das politische
-    Ziel des Entwurfs nicht als Normdefekt gemeldet werden.
-  source: "Bundestags-Textarchiv; kein konkreter Paragraphenfehler presse-benannt."
-
 - id: L-D5-5480
   suite: lektor
   doc: "21/5480"
@@ -3472,12 +2560,13 @@
   text: {file: 21-5480.txt, sha256: "1011fdcae66879d026f4f8790314e1d8f5af9e0d39caf3208a14f4adcc7d6b5b"}
   kind: negativ
   expected_passage: "Konsensbasiertes Sexualstrafrecht („Nur Ja heißt Ja“)"
-  anchor: null
+  anchor: "Wer eine sexuelle Handlung an einer anderen Person vornimmt oder von ihr vornehmen lässt oder diese Person zur Vornahme oder Duldung sexueller Handlungen an oder von einem Dritten bestimmt, ohne dass diese Person dem zugestimmt hat"
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die wirkungsbezogene Kritik am Zustimmungsmodell sei ein Normdefekt"
+  repaired_by: null
   split: dev
   story: |
     Die Fraktion BÜNDNIS 90/DIE GRÜNEN brachte am 21.04.2026 einen Entwurf zur Änderung des
@@ -3496,96 +2585,6 @@
     Normdefekt ausgegeben werden; eine Beweislastumkehr enthält der Entwurf nicht.
   source: "Tagesspiegel; wirkungsbezogene Kritik ohne Normfehler, geprüft am 14.07.2026."
 
-- id: L-D5-6334
-  suite: lektor
-  doc: "21/6334"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6334.txt, sha256: "cb44b854e9351c541581883d683301ed33f2fab48026db67e985f2dd9a385f9b"}
-  kind: negativ
-  expected_passage: "CO2-Preis-Abschaffungsgesetz (AfD)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Das politische Ziel des Entwurfs sei ein Normdefekt"
-  split: test
-  story: |
-    Die AfD-Fraktion brachte am 09.06.2026 den Entwurf eines Gesetzes zur Aufhebung des
-    Treibhausgas-Emissionshandelsgesetzes und des Brennstoffemissionshandelsgesetzes
-    (CO2-Preis-Abschaffungsgesetz) ein (Drucksache 21/6334). Der Bundestag lehnte ihn am
-    25.06.2026 ohne Aussprache ab (Beschlussempfehlung 21/6694); die oft zitierte Abstimmung
-    444 zu 138 vom 04.12.2025 betraf einen AfD-Antrag gegen das Heizungsgesetz. Die Debatte
-    war laut, der SPD-Abgeordnete Thews warf den Antragstellern in der Plenardebatte vom
-    11.06.2026 „Lügen“ vor, doch weder ein Norm- noch ein Verfassungsdefekt wurde benannt. Der
-    Text hat eigene Angriffspunkte, etwa die Aufhebung „mit Ablauf des 30.06.2026“ in einer
-    Drucksache vom 09.06.2026 und die eingeräumte Kollision mit EU-Recht; ein Befund dazu wäre
-    unabhängig. Der Entwurf gehört zu einer Gruppe von Vorlagen, bei denen trotz lauter
-    Kontroverse keine Kritik an einer konkreten Norm benannt wurde. Der Fall ist negativ: Er
-    zählt für die Präzision, erwartet wird kein Befund, und gewertet wird nur, ob die Analyse
-    die hier benannte Kritik als Defekt ausgibt. Kontext außerhalb des Dokuments ist nicht
-    nötig, weil ein Negativfall auf Dokumentebene beurteilt wird. Speziell darf das politische
-    Ziel, die CO2-Bepreisung abzuschaffen, nicht als Normdefekt gemeldet werden.
-  source: "DIP (Ablehnung 25.06.2026, Beschlussempfehlung 21/6694) und Plenarprotokoll 21/83; laute Kontroverse ohne benannten Norm- oder Verfassungsdefekt."
-
-- id: L-D5-6333
-  suite: lektor
-  doc: "21/6333"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6333.txt, sha256: "6ed1b7f124dab8a3c26927f00fcb75b988e7a798534ecdde1a98c5cad3769107"}
-  kind: negativ
-  expected_passage: "Gas-/Wärme-Umsatzsteuersenkungsgesetz (AfD)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die fiskalischen Ausfälle seien ein Normdefekt"
-  split: test
-  story: |
-    Die AfD-Fraktion brachte am 09.06.2026 den Entwurf eines Gesetzes zur dauerhaften
-    Ermäßigung der Umsatzsteuer auf Gas und Wärme ein (Drucksache 21/6333); er wurde am
-    25.06.2026 abgelehnt (Beschlussempfehlung 21/6679). Der Entwurf beziffert den
-    Steuerausfall selbst auf rund 9 Mrd. Euro pro Jahr; die SPD kritisierte ein
-    „Milliardenloch ohne Gegenfinanzierung“. Eine Kritik an Normen wurde nicht gefunden. Der
-    Entwurf gehört zu einer Gruppe von Vorlagen, bei denen trotz lauter Kontroverse keine
-    Kritik an einer konkreten Norm benannt wurde; er hat ein Schwesterstück zur Energie- und
-    Stromsteuer mit demselben Muster. Der Fall ist negativ: Er zählt für die Präzision,
-    erwartet wird kein Befund, und gewertet wird nur, ob die Analyse die hier benannte Kritik
-    als Defekt ausgibt. Kontext außerhalb des Dokuments ist nicht nötig, weil ein Negativfall
-    auf Dokumentebene beurteilt wird. Speziell dürfen die Einnahmeausfälle der
-    Umsatzsteuersenkung nicht als Normdefekt gemeldet werden.
-  source: "Bundestags-Textarchiv und DIP (Beschlussempfehlung 21/6679); rein fiskalische Kritik, Ausfallschätzung aus dem Entwurf."
-
-- id: L-D5-6332
-  suite: lektor
-  doc: "21/6332"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6332.txt, sha256: "efafadc961a9ebf1c4de7768969b7a4cba17b4cd359d7168f06260c23c295c05"}
-  kind: negativ
-  expected_passage: "Energie-/Stromsteuersenkungsgesetz (AfD)"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Die fiskalischen Ausfälle seien ein Normdefekt"
-  split: test
-  story: |
-    Die AfD-Fraktion brachte am 09.06.2026 den Entwurf eines Gesetzes zur flächendeckenden
-    Absenkung der Energie- und Stromsteuersätze ein (Drucksache 21/6332); er wurde am
-    25.06.2026 abgelehnt (Beschlussempfehlung 21/6679). Der Entwurf beziffert die Entlastung
-    selbst auf rund 21 Mrd. Euro pro Jahr, die Kritik war rein fiskalisch; eine Kritik an
-    Normen wurde nicht gefunden. Der Entwurf gehört zu einer Gruppe von Vorlagen, bei denen
-    trotz lauter Kontroverse keine Kritik an einer konkreten Norm benannt wurde; er folgt
-    demselben Muster wie der gleichzeitig eingebrachte AfD-Entwurf zur Umsatzsteuer auf Gas
-    und Wärme. Der Fall ist negativ: Er zählt für die Präzision, erwartet wird kein Befund,
-    und gewertet wird nur, ob die Analyse die hier benannte Kritik als Defekt ausgibt. Kontext
-    außerhalb des Dokuments ist nicht nötig, weil ein Negativfall auf Dokumentebene beurteilt
-    wird. Speziell dürfen die Einnahmeausfälle der Energie- und Stromsteuersenkung nicht als
-    Normdefekt gemeldet werden.
-  source: "hib und DIP (Beschlussempfehlung 21/6679); rein fiskalische Kritik, Entlastungsvolumen aus dem Entwurf."
-
 - id: L-D5-6328
   suite: lektor
   doc: "21/6328"
@@ -3593,12 +2592,13 @@
   text: {file: 21-6328.txt, sha256: "1388b0069965d1fb6f14c44d58f793cdce7ceedae4e197a763e120c51bad2a30"}
   kind: negativ
   expected_passage: "Abschaffung von § 188 StGB (AfD)"
-  anchor: null
+  anchor: "3. § 188 wird gestrichen."
   expected_defect: null
   expected_category: null
   expected_severity: null
   requires_context: none
   forbidden_claim: "Die Unbestimmtheit des § 188 StGB sei ein Defekt dieses Abschaffungsentwurfs"
+  repaired_by: null
   split: test
   story: |
     Die AfD-Fraktion brachte am 09.06.2026 den Entwurf eines Gesetzes zur Abschaffung des §
@@ -3618,59 +2618,3 @@
     zugeschrieben werden.
   source: "anwalt.de; die Unbestimmtheits-Kritik betrifft die Bestandsnorm, nicht den Abschaffungsentwurf."
 
-- id: L-D5-6377
-  suite: lektor
-  doc: "21/6377"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6377.txt, sha256: "5035d5cbc7f30341ff4eafe9ad59de843dea75bef486348ee915dca75d0f4416"}
-  kind: negativ
-  expected_passage: "Vermögensabschöpfung Cum-Ex"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Der Entwurf sei zu unambitioniert oder verfehle das Ziel der Bekämpfung von Steuerkriminalität und habe deshalb einen handwerklichen Fehler"
-  split: dev
-  story: |
-    Der Bundesrat brachte am 10.06.2026 den Entwurf eines Gesetzes zur Stärkung der
-    Vermögensabschöpfung bei Cum-/Ex-Leerverkaufsgeschäften sowie bei Einziehungsbeteiligten
-    ein (Drucksache 21/6377); er wurde dem Bundestag zugeleitet. Die Stellungnahme der
-    Bundesregierung in der Drucksache wendet sich gegen eine isolierte vorgezogene Umsetzung.
-    Eine Kritik, der Entwurf sei zu unambitioniert (308 Mio. Euro Mehreinnahmen, fehlender
-    Begriff „Steuerkriminalität“), betraf nicht diese Drucksache, sondern das
-    Zollfinanzgerechtigkeitsgesetz und eine Kleine Anfrage dazu. Die Übergangsregel des
-    Entwurfs erfasst auch bereits laufende Verfahren; ein Rückwirkungsbefund dazu wäre ein
-    unabhängiger Fund, kein Fehlalarm. Ambitionskritik ist kein handwerklicher Fehler an einer
-    konkreten Vorschrift. Der Fall zählt zur Präzision: ein unabhängiger, echter Textfund in
-    derselben Drucksache wäre kein Fehlalarm, falsch ist nur die genannte Behauptung.
-  source: "hib zu 21/6377 ohne Ambitionskritik; die 308-Mio.-Kritik betrifft das Zollfinanzgerechtigkeitsgesetz; Stellungnahme der Bundesregierung im Primärtext geprüft."
-
-- id: L-D5-6134
-  suite: lektor
-  doc: "21/6134"
-  drucksachetyp: Gesetzentwurf
-  text: {file: 21-6134.txt, sha256: "830c8731e296a7e7acab56d6d0f4e01e7028c2914d413c3e0f1a4686228547ce"}
-  kind: negativ
-  expected_passage: "Cyberresilienz-Verordnung-Durchführungsgesetz"
-  anchor: null
-  expected_defect: null
-  expected_category: null
-  expected_severity: null
-  requires_context: none
-  forbidden_claim: "Der Fokus auf Einzelkomponenten statt Systemsicherheit sei ein Normdefekt"
-  split: dev
-  story: |
-    Die Bundesregierung legte am 26.05.2026 den Entwurf eines Gesetzes zur Durchführung der
-    Verordnung (EU) 2024/2847 (Cyberresilienz-Verordnung) vor (Drucksache 21/6134); er wurde
-    überwiesen. Zum Referentenentwurf kritisierte der Bundesverband Neue Energiewirtschaft
-    (bne, 09.04.2026), der Ansatz konzentriere sich auf Einzelkomponenten statt auf
-    Systemsicherheit; die OSB Alliance (02.04.2026) bemängelte die Berücksichtigung des
-    Open-Source-Ökosystems mit Bezug auf §§ 65 und 67 BSIG-E, und die AG KRITIS hielt den
-    Erfüllungsaufwand für zu hoch angesetzt. Eine Pressekontroverse gab es nicht; es ist
-    typisches Feedback aus der Verbändeanhörung und ein Grenzfall. Der Fokus der Durchführung
-    auf Produkte folgt der Verordnung selbst. Der Fall ist negativ: Er zählt für die
-    Präzision, erwartet wird kein Befund, und gewertet wird nur, ob die Analyse die hier
-    benannte Kritik als Defekt ausgibt. Speziell darf der Fokus auf Einzelkomponenten statt
-    Systemsicherheit nicht als Normdefekt ausgegeben werden.
-  source: "Stellungnahmen von bne (09.04.2026), OSB Alliance (02.04.2026) und AG KRITIS zum Referentenentwurf; Grenzfall."

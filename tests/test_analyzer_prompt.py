@@ -70,6 +70,22 @@ def test_user_message_appends_beschlussempfehlungen_verbatim_in_order():
     assert message.endswith(second)
 
 
+def test_user_message_appends_bestandsrecht_after_beschlussempfehlungen():
+    excerpts = [("AufenthG", "§ 44a", "2025-06-23", "§ 44a Titel\n(1) Satz."),
+                ("StAG", "§ 10", "2025-06-23", "§ 10 Titel")]
+    assert build_message("Titel", "21/1", "Entwurf.", None, []) == _DRAFT_ONLY
+    message = build_message("Titel", "21/1", "Entwurf.", [("21/5", "BE.")], excerpts)
+    be = '<beschlussempfehlung nummer="21/5">\nBE.\n</beschlussempfehlung>'
+    first = ('<geltende-fassung gesetz="AufenthG" norm="§ 44a" stand="2025-06-23">\n'
+             "§ 44a Titel\n(1) Satz.\n</geltende-fassung>")
+    second = '<geltende-fassung gesetz="StAG" norm="§ 10" stand="2025-06-23">\n§ 10 Titel\n</geltende-fassung>'
+    assert message.index(be) < message.index(analyzer.BESTANDSRECHT_NOTICE) < message.index(first)
+    assert message.index(first) < message.index(second) and message.endswith(second)
+    alone = build_message("Titel", "21/1", "Entwurf.", bestandsrecht=excerpts)
+    assert alone.startswith(_DRAFT_ONLY + "\n\n" + analyzer.BESTANDSRECHT_NOTICE)
+    assert analyzer.BESCHLUSSEMPFEHLUNG_NOTICE not in alone
+
+
 def test_analyzer_never_truncates(monkeypatch):
     sent = []
 

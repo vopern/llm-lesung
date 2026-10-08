@@ -43,6 +43,20 @@ BESCHLUSSEMPFEHLUNG_NOTICE = (
     "Maßgabe der Beschlussempfehlung bereits behebt."
 )
 
+# Placed before the excerpts of existing law the draft amends or cites: what
+# they are for and what may not be concluded from them.
+BESTANDSRECHT_NOTICE = (
+    "Es folgen Auszüge aus dem geltenden Recht, das der Entwurf ändert oder in "
+    "Bezug nimmt, jeweils mit dem Stand, den der Auszug wiedergibt. Prüfe jeden "
+    "Änderungsbefehl und jede Verweisung des Entwurfs gegen diesen Wortlaut: Gibt "
+    "es die angesprochene Gliederungseinheit, steht dort die zu ersetzende "
+    "Angabe, kollidieren Einfügungen und Umnummerierungen? Frage auch, welche "
+    "bestehenden Verweisungen ins Leere gehen und welche unveränderten Vorschriften "
+    "durch den Entwurf ihren Anwendungsbereich ändern. Die Auszüge sind eine "
+    "Auswahl: Melde nichts, was nur daraus folgt, dass eine Vorschrift hier nicht "
+    "abgedruckt ist. quote stammt weiterhin wörtlich aus dem Entwurf."
+)
+
 SYSTEM_PROMPT = """\
 Du bist ein erfahrener juristischer Lektor für Gesetzentwürfe des Deutschen \
 Bundestags. Prüfe den Entwurf auf handwerkliche Fehler und klar \
@@ -189,12 +203,15 @@ def build_message(
     dokumentnummer: str,
     text: str,
     context_docs: list[tuple[str, str]] | None = None,
+    bestandsrecht: list[tuple[str, str, str, str]] | None = None,
 ) -> str:
-    """The user message: the Entwurf, then each Beschlussempfehlung verbatim.
+    """The user message: the Entwurf, each Beschlussempfehlung, then existing law, verbatim.
 
     ``context_docs`` is a list of ``(dokumentnummer, text)`` in the order the
-    Beschlussempfehlungen were issued. The pipeline and the eval harness both
-    build their message here, so an eval measures the shipped input.
+    Beschlussempfehlungen were issued; ``bestandsrecht`` a list of
+    ``(gesetz, norm, stand, text)`` excerpts. Without either, the message is
+    the Entwurf alone. The pipeline and the eval harness both build their
+    message here, so an eval measures the shipped input.
     """
     message = (
         "Analysiere den folgenden Gesetzentwurf des Deutschen Bundestags.\n\n"
@@ -204,13 +221,20 @@ def build_message(
         f"{text}\n"
         "</entwurfstext>"
     )
-    if not context_docs:
-        return message
-    blocks = "".join(
-        f'\n\n<beschlussempfehlung nummer="{nummer}">\n{be_text}\n</beschlussempfehlung>'
-        for nummer, be_text in context_docs
-    )
-    return f"{message}\n\n{BESCHLUSSEMPFEHLUNG_NOTICE}{blocks}"
+    if context_docs:
+        blocks = "".join(
+            f'\n\n<beschlussempfehlung nummer="{nummer}">\n{be_text}\n</beschlussempfehlung>'
+            for nummer, be_text in context_docs
+        )
+        message = f"{message}\n\n{BESCHLUSSEMPFEHLUNG_NOTICE}{blocks}"
+    if bestandsrecht:
+        blocks = "".join(
+            f'\n\n<geltende-fassung gesetz="{gesetz}" norm="{norm}" stand="{stand}">'
+            f"\n{norm_text}\n</geltende-fassung>"
+            for gesetz, norm, stand, norm_text in bestandsrecht
+        )
+        message = f"{message}\n\n{BESTANDSRECHT_NOTICE}{blocks}"
+    return message
 
 
 def analyze_bill(

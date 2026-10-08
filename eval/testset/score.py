@@ -16,8 +16,12 @@ Per case:
 ``miss``        the run has findings, none of them on or near the anchor.
 ``touched``     negative or inverse case: a finding sits on or near the passage
                 of the forbidden claim — a candidate false positive to read,
-                not a counted one.
-``clear``       negative or inverse case: nothing on or near that passage.
+                not a counted one. A repaired case (kind ``behoben``) is a
+                positive scored on a run that read the Beschlussempfehlung
+                which repaired it; ``touched`` there means the run re-reported
+                a repaired defect, and ``category_match`` says whether the
+                finding's category is the defect's.
+``clear``       negative, inverse or repaired case: nothing on or near that passage.
 ``fired``       unanchored negative whose draft offers nothing to find
                 (``quiet_negatives``): the run reported something anyway.
 ``quiet``       the same, and the run reported nothing.
@@ -45,6 +49,8 @@ from .lint import FILES, TEXTS, documents, load
 
 POSITIVE = ["hit", "near", "miss", "unanchored", "not_run"]
 NEGATIVE = ["touched", "clear", "fired", "quiet", "unanchored", "not_run"]
+# A positive case scored on a run that read the Beschlussempfehlung repairing it.
+REPAIRED = "behoben"
 
 Span = tuple[int, int]
 
@@ -124,7 +130,7 @@ def score_case(case: dict, findings: list[dict], squashed: str,
     # ``index`` (position in the run's findings) is kept when the caller passes it.
     row["matched"] = [{k: f[k] for k in ("index", "category", "title") if k in f}
                       for f in level]
-    if positive:
+    if case["expected_category"] is not None:
         row["category_match"] = any(f["category"] == case["expected_category"] for f in level)
     return row
 
@@ -148,14 +154,40 @@ def score(cases: list[dict], runs: dict[tuple[str, str], list[dict]],
     return rows
 
 
+def repaired_summary(rows: list[dict]) -> dict:
+    """Repaired cases: how many the run left alone.
+
+    ``precision`` counts every ``touched`` as a re-report; ``precision_category``
+    only those whose finding has the defect's category.
+    """
+    counts = Counter(r["verdict"] for r in rows)
+    same = sum(r["verdict"] == "touched" and bool(r.get("category_match")) for r in rows)
+    scorable = counts["clear"] + counts["touched"]
+    return {
+        "counts": dict(counts),
+        "touched_same_category": same,
+        "scorable": scorable,
+        "precision": round(counts["clear"] / scorable, 3) if scorable else None,
+        "precision_category": round((scorable - same) / scorable, 3) if scorable else None,
+    }
+
+
 def summarize(rows: list[dict]) -> dict:
-    """Verdict counts and recall per split, positives also by context."""
+    """Verdict counts and recall per split, positives also by context; repaired
+    cases get a ``behoben`` block of their own, also by context."""
     out: dict[str, dict] = {}
     for split in sorted({r["split"] for r in rows}):
         in_split = [r for r in rows if r["split"] == split]
         pos = [r for r in in_split if r["kind"] == "positiv"]
+        repaired = [r for r in in_split if r["kind"] == REPAIRED]
         entry = {"negatives": dict(Counter(r["verdict"] for r in in_split
-                                           if r["kind"] != "positiv"))}
+                                           if r["kind"] not in ("positiv", REPAIRED)))}
+        if repaired:
+            entry[REPAIRED] = {
+                context: repaired_summary(subset) for context, subset in (
+                    ("all", repaired),
+                    ("none", [r for r in repaired if r["requires_context"] == "none"]),
+                    ("context", [r for r in repaired if r["requires_context"] != "none"]))}
         for context, subset in (("all", pos),
                                 ("none", [r for r in pos if r["requires_context"] == "none"]),
                                 ("context", [r for r in pos if r["requires_context"] != "none"])):

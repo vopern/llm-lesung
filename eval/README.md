@@ -31,15 +31,17 @@ answer decides whether they can stay as they are.
 
 ## Harness (`eval/harness`)
 
-Runs a shipped pass on the pinned test-set drafts, **Entwurf only**, with no database in the
-loop. `--task` picks the pass:
+Runs a shipped pass on the pinned test-set drafts with no database in the loop: for recall on
+the draft without Beschlussempfehlungen, for precision (`--beschlussempfehlung`) on the draft
+with them. `--task` picks the pass:
 
 | Task | Pass | Case files (`--cases`) | Finding |
 |---|---|---|---|
 | `lektor` (default) | `analyzer` — drafting defects | `beschlussempfehlungen` (default), `lektor` | a finding |
 | `angreifer` | `redteam` — what a bad-faith actor gets out of the draft | `angreifer` | an exploit, with actor, steps, gain, effort and the missing safeguard |
 
-Inputs come from the test set alone: the pinned text and the title in `testset/inputs.yaml`.
+Inputs come from the test set alone: the pinned text, the title and, for the oracle and the
+precision run, the pinned norms and Beschlussempfehlungen in `testset/inputs.yaml`.
 The message is built by the pass's own `build_message` and sent by its `run_query`, so a run
 measures the shipped prompt and input format. Both tasks follow the same input rule as the
 pipeline: the draft is sent whole, and one over `MAX_INPUT_CHARS` is recorded as `oversize`
@@ -59,10 +61,38 @@ reasoning effort; unset, it is the task's shipped effort (`ANALYSIS_EFFORT`,
 `REDTEAM_EFFORT`). Most of a call's time is thinking, so effort is the lever on time and cost —
 compare recall between runs before changing a pass.
 
-Only cases with `requires_context: none` are run and scored: a case that needs Bestandsrecht, EU
-law or outside facts cannot be settled from the draft alone, and a document whose cases all need
-context is not run. Samples are per document, so drafts shared by two case files are not run
-twice. A document with a sample is skipped unless `--force`.
+`--context` picks the cases a run selects documents by and scores; a document none of whose
+cases match is not run.
+
+| Mode | Flags | Cases | Input | Run directory |
+|---|---|---|---|---|
+| default | — | `requires_context: none` | the draft | `<task>-<tag>` |
+| baseline | `--context bestandsrecht` | `requires_context: bestandsrecht` | the draft | `<task>-<tag>`, shared with the default |
+| oracle | `--context bestandsrecht --oracle` (Lektor) | `requires_context: bestandsrecht` | the draft, then the document's pinned norms | `<task>-<tag>-oracle-bestandsrecht` |
+| precision | `--beschlussempfehlung` (Lektor) | every case with `repaired_by`, any context | the draft, then its pinned Beschlussempfehlungen, as the pipeline sends them | `<task>-<tag>-beschlussempfehlung` |
+
+The baseline is the number the oracle is compared with: same cases, draft alone. The oracle is an
+upper bound, because it hands the model exactly the norms that matter. Cases needing EU law or
+outside facts have no pinned context and are not run. Reports of a context run carry the context
+in their name (`report-<cases>-bestandsrecht[-<split>].html`).
+
+The precision run turns the committee-repair cases around: the run reads the Beschlussempfehlung
+that repaired each defect, so the analysis must not report it. Each case is scored as repaired
+(kind `behoben`): `clear` when no finding lands on or near its anchor, `touched` when one does,
+with `category_match` telling whether that finding has the defect's category. The summary's
+`behoben` block gives `precision` = clear / (clear + touched) and `precision_category`, which
+counts only same-category findings as re-reports, overall and by context. Recall and precision
+are separate measurements: a repaired case counts whether or not a recall run finds it.
+Reports carry `-beschlussempfehlung` in their name.
+
+Samples are per document, so drafts shared by two case files or two modes on the same input are
+not run twice. A document with a sample is skipped unless `--force`.
+
+```
+make eval-run EVAL_CONTEXT=bestandsrecht EVAL_SPLIT=dev                # baseline
+make eval-run EVAL_CONTEXT=bestandsrecht EVAL_ORACLE=1 EVAL_SPLIT=dev  # oracle
+make eval-run EVAL_BE=1 EVAL_SPLIT=dev                                 # precision
+```
 
 Output lands in `data/eval/runs/<task>-<prompt version>-<model>[-effort-<level>]/`:
 
@@ -82,8 +112,8 @@ Verdicts are the passage verdicts of `testset/score.py` plus `oversize`, `failed
 `not_run`. A `hit` says a finding quoted the anchored passage, not that it named the defect or
 attack: reading the matched finding against `expected_defect` stays a hand verdict. For the
 Angreifer, an unanchored negative is a draft that offers nothing to exploit: `fired` if the
-run reported any exploit, `quiet` if none — its one precision signal. The Lektor's unanchored
-negatives each forbid one specific claim and stay `unanchored`.
+run reported any exploit, `quiet` if none — its one precision signal. Every Lektor negative
+is anchored on the passage its forbidden claim would quote.
 
 Every call's message stream is written to `traces/<doc>.jsonl` as it arrives, by
 [`backend/tracelog.py`](../backend/tracelog.py) — the same tracer the pipeline uses —
@@ -114,8 +144,9 @@ repair law or criticism behind it and why it counts as positive or negative — 
 Lektor cases live in two files. `cases-lektor.yaml` holds press-documented
 controversies, rulings and repair laws. `cases-lektor-beschlussempfehlungen.yaml`
 holds drafting defects that the lead committee's Beschlussempfehlung repaired in
-the draft (positives only, every one anchored). A Beschlussempfehlung is that
-file's ground truth, so score it only on runs that read the draft alone.
+the draft (positives only, every one anchored); `repaired_by` names that
+Beschlussempfehlung. It is the file's ground truth, so recall runs read the draft
+alone, and the precision run reads it to check that repaired defects stay unreported.
 
 ```
 make eval-fetch    # download the pinned texts into testset/texts/ (once, network)
@@ -131,6 +162,19 @@ After the fetch, all free and offline.
   dserver.bundestag.de, extracts it with the pipeline's `extract_text` and writes
   it only if it matches the pin. Anchors and quotes are checked against these
   bytes, so a re-extraction cannot move a verdict silently.
+- **`texts/bestandsrecht/`** — the golden context of the `bestandsrecht` cases:
+  one file per norm (a whole §), **as it read on the draft's date**. The entries
+  live in `inputs.yaml` under the draft's `bestandsrecht` key (`gesetz`, `norm`,
+  `fassung`, `herkunft`, the `cases` it settles, `file`, `sha256`). gesetze-im-internet.de
+  serves only the current version, which often already contains the repair, so
+  these texts are pinned by hand. `herkunft` records the source and any later
+  amendment reverted, and `fetch` cannot recreate them. Lint checks every hash and
+  that every `bestandsrecht` case has at least one excerpt.
+- **`texts/beschlussempfehlung/`** — the Beschlussempfehlungen of the
+  committee-repair drafts, listed in `inputs.yaml` under the draft's
+  `beschlussempfehlungen` key (`doc`, `file`, `sha256`) in issue order — what the
+  pipeline reads with the draft. Fetchable like the drafts. Lint checks every hash
+  and that each case's `repaired_by` is among its draft's Beschlussempfehlungen.
 - **`anchor`** — a verbatim string from the pinned text, matched with
   `quotecheck.squash`; `null` where the defect is an absence with nothing to point at.
 - **`split`** — held per document (lint rejects a Drucksache whose cases straddle

@@ -18,16 +18,22 @@ EFFORTS = ["low", "medium", "high", "xhigh", "max"]
 
 
 def default_tag(task, model: str, effort: str | None = None,
-                max_turns: int | None = None) -> str:
-    """Prompt version, model, effort and turn limit: a run directory never mixes them.
+                max_turns: int | None = None, oracle: bool = False,
+                committee: bool = False) -> str:
+    """Prompt version, model, effort, turn limit and input set: a run directory never mixes them.
 
-    The task's own turn limit adds nothing to the name.
+    The task's own turn limit adds nothing to the name; neither does the draft
+    alone, so its samples serve every context run on the same settings.
     """
     tag = f"{task.prompt_version}-{model}"
     if effort is not None:
         tag += f"-effort-{effort}"
     if max_turns not in (None, task.max_turns):
         tag += f"-turns-{max_turns}"
+    if oracle:
+        tag += "-oracle-bestandsrecht"
+    if committee:
+        tag += "-beschlussempfehlung"
     return tag
 
 

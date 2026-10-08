@@ -57,8 +57,14 @@ EVAL_ONLY  ?=
 EVAL_TAG   ?=
 EVAL_EFFORT ?=
 EVAL_TURNS  ?=
+EVAL_CONTEXT ?=
+EVAL_ORACLE  ?=
+EVAL_BE      ?=
 EVAL_ARGS   = --task $(EVAL_TASK) $(if $(EVAL_CASES),--cases $(EVAL_CASES),) \
               $(if $(EVAL_TAG),--tag $(EVAL_TAG),) \
+              $(if $(EVAL_CONTEXT),--context $(EVAL_CONTEXT),) \
+              $(if $(EVAL_ORACLE),--oracle,) \
+              $(if $(EVAL_BE),--beschlussempfehlung,) \
               $(if $(EVAL_EFFORT),--effort $(EVAL_EFFORT),) \
               $(if $(EVAL_TURNS),--max-turns $(EVAL_TURNS),)
 

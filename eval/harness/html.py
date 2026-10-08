@@ -43,7 +43,9 @@ TEXT = {
             "here tells the two apart. A run with more findings is therefore not a better run."),
         "kind": {"positiv": "a defect the analysis should find",
                  "negativ": "a claim the analysis must not make",
-                 "invers": "a gap already closed — must not be reported as still open"},
+                 "invers": "a gap already closed — must not be reported as still open",
+                 "behoben": "a defect the Beschlussempfehlung in the input repaired — "
+                            "must not be reported"},
         "expected": "Expected finding",
     },
     "angreifer": {
@@ -61,6 +63,18 @@ TEXT = {
         "expected": "Expected attack",
     },
 }
+# A precision run: the draft with its Beschlussempfehlungen, every case repaired.
+PRECISION_NOTE = (
+    "This run read each draft together with its Beschlussempfehlungen, as the pipeline does. "
+    "Every case here is a drafting defect the committee repaired, so the analysis must not "
+    "report it. <i>clear</i> means no finding lands within {near} characters of the case's "
+    "anchor; <i>touched</i> means one does — a candidate re-report to read, since a finding "
+    "can say something else about the same passage. The category column shows whether that "
+    "finding has the defect's category, the stronger sign of a re-report. Findings that quote "
+    "the Beschlussempfehlung cannot be placed in the draft and never touch an anchor. "
+    "<b>This page measures precision on repaired defects only</b>, independent of whether a "
+    "run without the Beschlussempfehlung finds them; findings that match no case are not "
+    "scored.")
 CONTEXT = {"none": "none — the draft alone settles it",
            "bestandsrecht": "law outside the draft",
            "eu-recht": "EU law",
@@ -116,9 +130,19 @@ def _heading(summary: dict) -> tuple[str, str, str]:
         f"{summary['documents']} drafts",
         f"scored {summary['generated_at'][:10]}"])
     title = tasks.get(summary["task"]).title
+    context = summary.get("requires_context", "none")
+    if _precision(summary):
+        title = title.replace("evaluation", "precision evaluation")
+        cases += f" (repaired defects, input {summary['input_set']})"
+    elif context != "none":
+        cases += f" ({context} cases, input {summary['input_set']})"
     return (f"{title} · {cases} · {split} · {prompts} · {models}",
             f"{title}: {cases}, " + ("all splits" if split == "all" else f"{split} split"),
             config_line)
+
+
+def _precision(summary: dict) -> bool:
+    return summary.get("measures") == "precision"
 
 
 def _tiles(summary: dict) -> str:
@@ -127,6 +151,16 @@ def _tiles(summary: dict) -> str:
     entry = rec.get(split) if split != "all" else None
     items = []
     for name, e in ([(split, entry)] if entry else list(rec.items())):
+        if _precision(summary):
+            rep = e.get("behoben", {}).get("all", {})
+            items.append(page.tile(f'{page.pct(rep.get("precision"))} <small class="muted">/ '
+                                   f'{page.pct(rep.get("precision_category"))}</small>',
+                                   "ratio: clear / ratio: clear + touched in another category"))
+            items.append(page.meta_tile([(name, "split"),
+                                         (str(rep.get("scorable", 0)), "evaluated cases"),
+                                         (str(rep.get("touched_same_category", 0)),
+                                          "touched, same category")]))
+            continue
         pos = e["all"]
         items.append(page.tile(f'{page.pct(pos["strict"])} <small class="muted">/ '
                                f'{page.pct(pos["lenient"])}</small>',
@@ -192,6 +226,8 @@ def _case_doc(e: dict, text: dict) -> str:
              (text["expected"], page.esc(e["expected_defect"]))]
     if e.get("forbidden_claim"):
         rows.append(("Must not be claimed", page.esc(e["forbidden_claim"])))
+    if e.get("repaired_by"):
+        rows.append(("Repaired by", f"Beschlussempfehlung {page.esc(e['repaired_by'])}"))
     rows.append(("Anchor in the draft",
                  f'<blockquote>{page.esc(e["anchor"])}</blockquote>'
                  '<div class="small muted">A finding counts as a hit when its quote '
@@ -269,9 +305,12 @@ def render_run(results: dict) -> str:
             f'<div class="muted">{page.esc(config_line)}</div>'
             + _about(s["cases_file"], sum(len(d["expectations"]) for d in docs),
                      s.get("split", "all"))
-            + page.note("Reading the verdicts.", text["note"].format(near=s["near_chars"]))
+            + page.note("Reading the verdicts.",
+                        (PRECISION_NOTE if _precision(s) else text["note"]).format(
+                            near=s["near_chars"]))
             + _tiles(s)
-            + "<h2>Passage recall by expected category</h2>" + _category_table(s)
+            + ("" if _precision(s)
+               else "<h2>Passage recall by expected category</h2>" + _category_table(s))
             + f"<h2>Documents ({len(docs)})</h2>" + page.filters("details.doc", present)
             + "".join(_document(d, text) for d in docs)
             + "<h2>Run details</h2>"
@@ -302,10 +341,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--cases", choices=report.ALL_CASE_SETS,
                         help="which case file of the task; defaults to its first")
     parser.add_argument("--split", choices=["dev", "test", "all"], default="all")
+    parser.add_argument("--context", choices=report.CONTEXTS, default="none")
+    parser.add_argument("--beschlussempfehlung", action="store_true",
+                        help="the precision report of a run that read the Beschlussempfehlungen")
     args = parser.parse_args(argv)
 
     task = tasks.get(args.task)
-    name = report.report_name(report.case_set(task, args.cases), args.split)
+    name = report.report_name(report.case_set(task, args.cases), args.split, args.context,
+                              args.beschlussempfehlung)
     out = config.run_dir(task.name, args.tag)
     if not (out / f"results-{name}.json").is_file():
         print(f"no results-{name}.json in {out} (run `report --split {args.split}` first)")

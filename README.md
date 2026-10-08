@@ -113,6 +113,20 @@ A bill is red-teamed again only when its Gesetzentwurf changed or the adversaria
 version did. The exploits are stored separately from the findings and never enter a bill's
 risk.
 
+## Evaluation
+
+The project aims to build a set of evaluation cases that score the analysis for precision
+(are the findings real?) and recall (are known defects found?). The cases start out
+LLM-generated from two sources:
+
+- **Online sources**: press coverage, Constitutional Court rulings and expert criticism of
+  bills.
+- **Draft evolution**: defects that the committee fixed between the Gesetzentwurf and its
+  Beschlussempfehlung.
+
+Reader feedback on individual findings is meant to feed in later. The test set, the harness
+and the `make eval-*` targets are described in [`eval/README.md`](eval/README.md).
+
 ## Development
 
 ```bash

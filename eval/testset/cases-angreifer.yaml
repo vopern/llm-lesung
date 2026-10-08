@@ -26,6 +26,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 19/13437 vom 23.09.2019 (19. Wahlperiode) zur Änderung des
@@ -64,6 +65,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 19/4455 (19. Wahlperiode), das Gesetz zur Vermeidung von
@@ -100,6 +102,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 19/4455 (19. Wahlperiode), das Gesetz zur Vermeidung von
@@ -134,6 +137,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 14/23 vom 09.11.1998 (14. Wahlperiode), das Steuerentlastungsgesetz
@@ -171,6 +175,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Fraktionsentwurf von CDU/CSU und FDP BT-Drs. 17/15 vom 09.11.2009 (17. Wahlperiode),
@@ -203,6 +208,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Terminierte Absenkungsstufen der Vergütung erzeugten ein Zeitfenster, in dem sich das Vorziehen von Investitionen allein wegen des Stichtags rechne — der Entwurf stellt gerade deshalb auf eine monatliche Degression um und zieht das Inkrafttreten vor"
+  repaired_by: null
   split: test
   story: |
     Der Entwurf BT-Drs. 17/8877 vom 06.03.2012 (17. Wahlperiode) änderte den Rechtsrahmen für
@@ -235,6 +241,7 @@
   expected_severity: null
   requires_context: bestandsrecht
   forbidden_claim: "Die Bußgeldhaftung lasse sich weiterhin durch Verschmelzung oder Auflösung der bebußten Gesellschaft abschütteln (Wurstlücke offen)"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 18/10207 (18. Wahlperiode), die Neunte GWB-Novelle, wurde am
@@ -265,6 +272,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 18/8045 vom 07.04.2016 (18. Wahlperiode), das
@@ -300,6 +308,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: null
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf BT-Drs. 16/2712 vom 25.09.2006 (16. Wahlperiode), das Jahressteuergesetz 2007,
@@ -335,6 +344,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Jeder konstruierte Angriff — das Dokument enthält keinen Normtext, nur Vorblatt, Anschreiben und den Verweis auf die gleichlautende Drucksache 21/217"
+  repaired_by: null
   split: dev
   story: |
     Der Regierungsentwurf BT-Drs. 21/518 vom 19.06.2025 (21. Wahlperiode) betrifft das
@@ -365,6 +375,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Jeder konstruierte Angriff — die Aussetzung verteilt nichts, verpflichtet niemanden außerhalb des Parlaments und schafft keine Nachweislage"
+  repaired_by: null
   split: test
   story: |
     Der Entwurf der Fraktion Die Linke BT-Drs. 21/5588 vom 24.04.2026 (21. Wahlperiode), das
@@ -393,6 +404,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Politische Kritik am Ziel der Aufhebung, als Angriff formuliert"
+  repaired_by: null
   split: dev
   story: |
     Der AfD-Entwurf BT-Drs. 21/4348 vom 26.02.2026 (21. Wahlperiode) will das Gesetz über
@@ -418,6 +430,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Handwerkliche Mängel der Begründung, der Richtlinienvorrang oder die Inkrafttretensklausel als Angriff umetikettiert"
+  repaired_by: null
   split: dev
   story: |
     Der AfD-Entwurf BT-Drs. 21/2213 vom 14.10.2025 (21. Wahlperiode) will die Sommerzeit
@@ -448,6 +461,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Konstruierte Missbrauchsszenarien eines Diskriminierungsverbots — Kritik am politischen Ziel, kein Angriff"
+  repaired_by: null
   split: dev
   story: |
     Der Entwurf der Fraktion Bündnis 90/Die Grünen BT-Drs. 21/2027 vom 07.10.2025 (21.
@@ -480,6 +494,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Konstruierte Missbrauchsszenarien eines Diskriminierungsverbots — Kritik am politischen Ziel, kein Angriff"
+  repaired_by: null
   split: dev
   story: |
     Der Bundesratsentwurf BT-Drs. 21/3064 vom 03.12.2025 (21. Wahlperiode) ist ein Gesetz
@@ -511,6 +526,7 @@
   expected_severity: null
   requires_context: none
   forbidden_claim: "Jeder konstruierte Angriff — der Vertrag bindet nur die Vertragsparteien, meist in Absichtssprache, ohne Rechte, Pflichten, Fristen oder Beträge für externe Adressaten"
+  repaired_by: null
   split: test
   story: |
     Der Regierungsentwurf BT-Drs. 21/3945 vom 02.02.2026 (21. Wahlperiode) ist das

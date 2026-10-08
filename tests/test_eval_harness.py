@@ -162,11 +162,121 @@ def test_a_sample_supersedes_a_stale_failure(tmp_path, monkeypatch):
     assert report.load_samples(out)["21/537"]["status"] == "ok"
 
 
-def test_only_cases_without_context_are_run():
+def test_cases_are_selected_by_the_context_they_require():
     for task in tasks.TASKS.values():
         for case_set in task.case_sets:
             cases = report.load_cases(task, case_set)
             assert cases and {c["requires_context"] for c in cases} == {"none"}
+            context = report.load_cases(task, case_set, "bestandsrecht")
+            assert {c["requires_context"] for c in context} <= {"bestandsrecht"}
+
+
+def test_oracle_feeds_the_pinned_norms_after_the_draft(tmp_path, monkeypatch):
+    case = _doc(tmp_path)
+    excerpt = {"gesetz": "AufenthG", "norm": "§ 44a", "fassung": "2025-06-23",
+               "file": "bestandsrecht/AufenthG-44a.txt", "sha256": "abc"}
+    manifest = {case["doc"]: _manifest(case)[case["doc"]] | {"bestandsrecht": [excerpt]}}
+    assert "bestandsrecht" not in run.select([case], manifest, "all", None)[0]
+    document = run.select([case], manifest, "all", None, oracle=True)[0]
+    assert document["bestandsrecht"] == [excerpt]
+    sent = []
+    _fake_query(monkeypatch, [], sent)
+
+    record = run.run_one(LEKTOR, document, TEXT, "claude-x", "tag",
+                         excerpts=[(excerpt, "§ 44a Titel")])
+
+    assert sent == [(analyzer.build_message(
+        "Entwurf eines Gesetzes", "21/537", TEXT,
+        bestandsrecht=[("AufenthG", "§ 44a", "2025-06-23", "§ 44a Titel")]), "claude-x")]
+    assert record["input_set"] == "entwurf+bestandsrecht"
+    assert record["inputs"][1] == {"typ": "bestandsrecht", "gesetz": "AufenthG", "norm": "§ 44a",
+                                   "fassung": "2025-06-23", "file": excerpt["file"],
+                                   "sha256": "abc", "chars": len("§ 44a Titel")}
+    assert run.run_one(LEKTOR, document, TEXT, "claude-x", "tag")["input_set"] == "entwurf"
+
+
+def test_oversize_counts_the_pinned_norms(tmp_path, monkeypatch):
+    sent = []
+    _fake_query(monkeypatch, [], sent)
+    monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT))
+    excerpt = {"gesetz": "G", "norm": "§ 1", "fassung": "2025-01-01", "file": "f", "sha256": "s"}
+    record = run.run_one(LEKTOR, _document(_doc(tmp_path)), TEXT, "claude-x", "tag",
+                         excerpts=[(excerpt, "x")])
+    assert record["status"] == "oversize" and sent == []
+
+
+def test_oracle_runs_and_context_reports_are_named_apart():
+    assert config.default_tag(LEKTOR, "m", "high", oracle=True) == (
+        config.default_tag(LEKTOR, "m", "high") + "-oracle-bestandsrecht")
+    assert report.report_name("lektor", "all") == "lektor"
+    assert report.report_name("lektor", "dev", "bestandsrecht") == "lektor-bestandsrecht-dev"
+
+
+def test_precision_run_feeds_the_beschlussempfehlungen_the_pipeline_way(tmp_path, monkeypatch):
+    case = _doc(tmp_path, repaired_by="21/1634")
+    pin = {"doc": "21/1634", "file": "beschlussempfehlung/21-1634.txt", "sha256": "abc"}
+    manifest = {case["doc"]: _manifest(case)[case["doc"]] | {"beschlussempfehlungen": [pin]}}
+    assert "beschlussempfehlungen" not in run.select([case], manifest, "all", None)[0]
+    document = run.select([case], manifest, "all", None, committee=True)[0]
+    assert document["beschlussempfehlungen"] == [pin]
+    sent = []
+    _fake_query(monkeypatch, [], sent)
+
+    record = run.run_one(LEKTOR, document, TEXT, "claude-x", "tag",
+                         committee=[(pin, "Beschlussempfehlung")])
+
+    assert sent == [(analyzer.build_message(
+        "Entwurf eines Gesetzes", "21/537", TEXT,
+        context_docs=[("21/1634", "Beschlussempfehlung")]), "claude-x")]
+    assert record["input_set"] == "entwurf+beschlussempfehlung"
+    assert record["inputs"][1] == {"typ": "beschlussempfehlung", "doc": "21/1634",
+                                   "file": pin["file"], "sha256": "abc",
+                                   "chars": len("Beschlussempfehlung")}
+    monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT))
+    assert run.run_one(LEKTOR, document, TEXT, "claude-x", "tag",
+                       committee=[(pin, "x")])["status"] == "oversize"
+    assert len(sent) == 1
+
+
+def test_precision_runs_select_every_repaired_case_and_are_named_apart():
+    cases = report.load_cases(LEKTOR, "beschlussempfehlungen", repaired=True)
+    assert cases and {c["kind"] for c in cases} == {"behoben"}
+    assert all(c["repaired_by"] for c in cases)
+    assert {c["requires_context"] for c in cases} > {"none"}
+    assert report.load_cases(LEKTOR, "lektor", repaired=True) == []
+    assert config.default_tag(LEKTOR, "m", "high", committee=True) == (
+        config.default_tag(LEKTOR, "m", "high") + "-beschlussempfehlung")
+    assert report.report_name("beschlussempfehlungen", "dev", repaired=True) == (
+        "beschlussempfehlungen-beschlussempfehlung-dev")
+
+
+def test_precision_report_scores_repaired_cases_as_negatives(tmp_path, monkeypatch):
+    touched = _doc(tmp_path, repaired_by="21/1634", kind="behoben")
+    clear = touched | {"id": "L-T", "requires_context": "bestandsrecht",
+                       "anchor": "Dieses Gesetz tritt am Tag nach der Verkündung in Kraft"}
+    _fake_query(monkeypatch, [_finding("§ 10 Absatz 3 wird gestrichen.")], [])
+    out = tmp_path / "run"
+    pin = {"doc": "21/1634", "file": "f", "sha256": "s"}
+    _write_sample(out, "21-537.json", run.run_one(LEKTOR, _document(touched), TEXT, "claude-x",
+                                                  "tag", committee=[(pin, "BE")]))
+
+    rows, results = report.build(LEKTOR, [touched, clear], report.load_samples(out),
+                                 _manifest(touched), texts=tmp_path, near=100)
+    summary = report.summarize_run(LEKTOR, rows, results, "beschlussempfehlungen", "tag", 100,
+                                   repaired=True)
+
+    assert summary["measures"] == "precision" and summary["requires_context"] == "all"
+    assert summary["input_set"] == "entwurf+beschlussempfehlung"
+    entry = summary["recall"]["dev"]
+    assert entry["negatives"] == {} and entry["all"]["scorable"] == 0
+    assert entry["behoben"]["all"] == {
+        "counts": {"touched": 1, "clear": 1}, "touched_same_category": 1, "scorable": 2,
+        "precision": 0.5, "precision_category": 0.5}
+    assert entry["behoben"]["none"]["counts"] == {"touched": 1}
+    assert entry["behoben"]["context"]["counts"] == {"clear": 1}
+    page_html = html.render_run({"summary": summary | {"split": "dev"}, "documents": results})
+    assert "precision evaluation" in page_html and "Repaired by" in page_html
+    assert "Passage recall by expected category" not in page_html
 
 
 def test_report_on_one_split_ignores_samples_of_the_other(tmp_path, monkeypatch):
@@ -174,7 +284,7 @@ def test_report_on_one_split_ignores_samples_of_the_other(tmp_path, monkeypatch)
     (tmp_path / "21-9.txt").write_text(TEXT, encoding="utf-8")
     test = dev | {"id": "L-T", "doc": "21/9", "split": "test",
                   "text": {"file": "21-9.txt", "sha256": dev["text"]["sha256"]}}
-    monkeypatch.setattr(report, "load_cases", lambda task, case_set: [dev, test])
+    monkeypatch.setattr(report, "load_cases", lambda task, case_set, context="none", repaired=False: [dev, test])
     monkeypatch.setattr(report, "load_manifest", lambda: _manifest(dev) | _manifest(test))
     _fake_query(monkeypatch, [_finding("§ 10 Absatz 3 wird gestrichen.")], [])
     out = tmp_path / "run"
@@ -192,7 +302,7 @@ def test_report_on_one_split_ignores_samples_of_the_other(tmp_path, monkeypatch)
 
 def test_html_escapes_model_text_and_documents_every_case(tmp_path, monkeypatch):
     case = _doc(tmp_path)
-    monkeypatch.setattr(report, "load_cases", lambda task, case_set: [case])
+    monkeypatch.setattr(report, "load_cases", lambda task, case_set, context="none", repaired=False: [case])
     monkeypatch.setattr(report, "load_manifest", lambda: _manifest(case))
     _fake_query(monkeypatch, [_finding("§ 10 Absatz 3 wird gestrichen.") | {"title": "<script>x</script>"}], [])
     out = tmp_path / "run"
@@ -353,7 +463,7 @@ def test_angreifer_negative_without_anchor_is_fired_or_quiet(tmp_path, monkeypat
 
 def test_angreifer_report_uses_its_own_wording(tmp_path, monkeypatch):
     case = _angreifer_case(tmp_path)
-    monkeypatch.setattr(report, "load_cases", lambda task, case_set: [case])
+    monkeypatch.setattr(report, "load_cases", lambda task, case_set, context="none", repaired=False: [case])
     monkeypatch.setattr(report, "load_manifest", lambda: _manifest(case))
     _fake_redteam(monkeypatch, [_exploit("§ 10 Absatz 3 wird gestrichen.")], [])
     out = tmp_path / "run"

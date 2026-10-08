@@ -1,7 +1,8 @@
 """Recreate the pinned texts in ``texts/`` from the public Drucksache PDFs.
 
-Every ``{file, sha256}`` pin in the case files and ``inputs.yaml`` names a
-Drucksache by its file name (``21-1497.txt`` is BT-Drs. 21/1497). Its PDF is
+Every ``{file, sha256}`` pin in the case files and ``inputs.yaml`` (drafts and
+Beschlussempfehlungen) names a Drucksache by its file name (``21-1497.txt`` is
+BT-Drs. 21/1497). Its PDF is
 downloaded from dserver.bundestag.de, extracted with the pipeline's own
 ``extract_text`` and written only if the result matches the pinned hash. A file
 already present with the right hash is left alone.
@@ -28,7 +29,7 @@ _FILE = re.compile(r"(\d{1,2})-(\d{1,5})\.txt")
 
 def pdf_url(file: str) -> str:
     """dserver URL of the Drucksache a text file is named after."""
-    m = _FILE.fullmatch(file)
+    m = _FILE.fullmatch(Path(file).name)
     if not m:
         raise ValueError(f"{file}: not a Drucksache file name like 21-1497.txt")
     wp, nr = m.group(1), int(m.group(2))
@@ -39,7 +40,9 @@ def pins(cases: list[dict], manifest: dict[str, dict]) -> dict[str, str]:
     """Pinned sha256 per text file; a file pinned to two hashes raises."""
     found: dict[str, str] = {}
     texts = [c.get("text") for c in cases]
-    texts += [e.get("gesetzentwurf") for e in manifest.values() if isinstance(e, dict)]
+    for entry in manifest.values():
+        if isinstance(entry, dict):
+            texts += [entry.get("gesetzentwurf"), *(entry.get("beschlussempfehlungen") or [])]
     for text in texts:
         if not isinstance(text, dict):
             continue
@@ -62,6 +65,7 @@ def fetch(file: str, digest: str, texts: Path) -> str | None:
     if hashlib.sha256(data).hexdigest() != digest:
         return f"{file}: extracted text does not match the pinned sha256"
     path = texts / file
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(f".tmp-{os.getpid()}")
     tmp.write_bytes(data)
     os.replace(tmp, path)

@@ -23,7 +23,7 @@ TESTSET = GG_DATA_DIR / "testset.jsonl"
 PDF_CACHE_DIR = Path(os.environ.get("PDF_CACHE_DIR", "./data/pdf-cache"))
 
 # Model under test. Any id the Claude CLI accepts.
-GG_MODEL = os.environ.get("GG_MODEL", "claude-sonnet-5")
+GG_MODEL = os.environ.get("GG_MODEL", "claude-sonnet-5-5")
 
 # Parallel `claude -p` subprocesses and the per-call timeout in seconds.
 GG_CONCURRENCY = int(os.environ.get("GG_CONCURRENCY", "4"))

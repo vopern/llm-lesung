@@ -30,7 +30,8 @@ Per case:
 
 The stored Lektor analyses are scored here, against the pinned texts rather
 than whatever the pipeline read, so a quote from a different revision shows up
-as ``unlocated``; eval harness runs are scored by ``eval.harness report``:
+as ``unlocated``. A case whose repairing Beschlussempfehlung the stored analysis
+read is scored as repaired. Eval harness runs are scored by ``eval.harness report``:
 
     uv run python -m eval.testset score db
 """
@@ -93,7 +94,7 @@ def score_case(case: dict, findings: list[dict], squashed: str,
     """The verdict for one case against the findings of one run on its document.
 
     ``quiet_negatives``: an unanchored ``negativ`` case means the draft offers
-    nothing to find at all, so any finding is ``fired``. True for the Angreifer;
+    nothing to find at all, so any finding is ``fired``. True for the exploit task;
     a Lektor negative forbids one specific claim, which no position can check.
     """
     row = {k: case[k] for k in ("id", "kind", "split", "requires_context",
@@ -137,7 +138,11 @@ def score_case(case: dict, findings: list[dict], squashed: str,
 
 def score(cases: list[dict], runs: dict[tuple[str, str], list[dict]],
           texts: Path = TEXTS, near: int = config.NEAR_CHARS) -> list[dict]:
-    """One row per case per run; ``runs`` maps ``(suite, doc)`` to its runs."""
+    """One row per case per run; ``runs`` maps ``(suite, doc)`` to its runs.
+
+    A run's optional ``beschlussempfehlungen`` names the ones it read: a case
+    whose ``repaired_by`` is among them is scored as repaired (``behoben``).
+    """
     rows = []
     for (suite, file), group in documents(cases).items():
         doc_runs = runs.get((suite, group[0]["doc"]), [])
@@ -149,7 +154,9 @@ def score(cases: list[dict], runs: dict[tuple[str, str], list[dict]],
             continue
         squashed = squash((texts / file).read_text(encoding="utf-8"))
         for run in doc_runs:
-            rows += [score_case(c, run["findings"], squashed, near) | {"run": run["label"]}
+            read = set(run.get("beschlussempfehlungen", ()))
+            rows += [score_case(c | {"kind": REPAIRED} if c.get("repaired_by") in read else c,
+                                run["findings"], squashed, near) | {"run": run["label"]}
                      for c in group]
     return rows
 
@@ -206,10 +213,11 @@ def summarize(rows: list[dict]) -> dict:
 
 
 def db_runs(conn: sqlite3.Connection, docs: set[str]) -> dict[tuple[str, str], list[dict]]:
-    """The stored analysis of every Lektor document that has one."""
+    """The stored analysis of every Lektor document that has one, with the
+    Beschlussempfehlungen it read."""
     runs: dict[tuple[str, str], list[dict]] = {}
     bills = conn.execute(
-        "SELECT id, dokumentnummer, prompt_version, model FROM bills "
+        "SELECT id, dokumentnummer, prompt_version, model, analysis_documents FROM bills "
         "WHERE risk IS NOT NULL ORDER BY analyzed_at").fetchall()
     for bill in bills:
         if bill["dokumentnummer"] not in docs:
@@ -220,7 +228,10 @@ def db_runs(conn: sqlite3.Connection, docs: set[str]) -> dict[tuple[str, str], l
         # Ordered by analysis time, so a re-analysed Drucksache keeps its latest.
         runs[("lektor", bill["dokumentnummer"])] = [{
             "label": bill["dokumentnummer"], "prompt_version": bill["prompt_version"],
-            "model": bill["model"], "findings": findings}]
+            "model": bill["model"], "findings": findings,
+            "beschlussempfehlungen": [d["dokumentnummer"]
+                                      for d in json.loads(bill["analysis_documents"] or "[]")
+                                      if d.get("typ") == "beschlussempfehlung"]}]
     return runs
 
 
@@ -258,5 +269,11 @@ def main(argv: list[str]) -> int:
                   f"  lenient {_pct(e['lenient'])}  category {e['category_match']}")
         counts = " ".join(f"{v}={entry['negatives'].get(v, 0)}" for v in NEGATIVE)
         print(f"{split:8} negatives          {counts}")
+        for context in ("all", "none", "context"):
+            e = entry.get(REPAIRED, {}).get(context)
+            if e:
+                counts = " ".join(f"{v}={e['counts'].get(v, 0)}" for v in ("clear", "touched"))
+                print(f"{split:8} {REPAIRED:9} {context:8} {counts}  precision "
+                      f"{_pct(e['precision'])}  same category {e['touched_same_category']}")
     print(f"-> {path}")
     return 0

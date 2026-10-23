@@ -56,7 +56,7 @@ BODY = "USER MESSAGE WITH THE WHOLE DRAFT TEXT"
 
 def _header():
     return tracelog.header_for(
-        {"task": "angreifer", "doc": "21/5588", "tag": "v4-tag", "model": "claude-opus-4-8",
+        {"task": "exploit", "doc": "21/5588", "tag": "v4-tag", "model": "claude-opus-4-8",
          "prompt_version": "v4-prompt", "max_turns": 1}, BODY)
 
 

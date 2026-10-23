@@ -67,11 +67,13 @@ SDK): a local `claude login` (claude.ai subscription) works with no configuratio
 | `ANTHROPIC_API_KEY` | No | — | Set only to bill the pipeline against the Anthropic API instead of the local Claude Code login. |
 | `CLAUDE_CODE_OAUTH_TOKEN` | No | — | Subscription token from `claude setup-token`, for headless/container runs without a local login. |
 | `DIP_API_KEY` | No | built-in public key | Bundestag DIP API key. A working public key ships as the default. It rotates ~yearly; if it stops working, re-scrape it from [`dip.bundestag.de/dip-config.js`](https://dip.bundestag.de/dip-config.js), or request a personal key from `parlamentsdokumentation@bundestag.de`. |
-| `ANALYSIS_MODEL` | No | `claude-sonnet-5` | Claude model for analysis (override for cheaper/experimental runs). |
+| `ANALYSIS_MODEL` | No | `claude-sonnet-5-5` | Claude model for analysis (override for cheaper/experimental runs). |
 | `ANALYSIS_EFFORT` | No | `high` | Reasoning effort of the analysis call (`low`, `medium`, `high`, `xhigh`, `max`). |
 | `REDTEAM_MODEL` / `REDTEAM_EFFORT` | No | `ANALYSIS_MODEL` / `ANALYSIS_EFFORT` | Model and reasoning effort of the adversarial pass (Angreifer). |
+| `BESTANDSRECHT_CONTEXT` | No | `off` | `on` feeds the existing law the draft amends or cites after the draft (see below). |
 | `LLM_LESUNG_DB` | No | `./data/llm-lesung.db` | Path to the SQLite database file. |
-| `CONTACT_EMAIL` | No | — | Contact address shown on the About page; unset hides the contact section. |
+| `OPERATOR_FILE` | No | `./data/operator.json` | Operator details as JSON `{"name", "address": [lines], "email"}`, all optional (template: `operator-example.json`): name + address show the Impressum (footer link, Datenschutzerklärung), email the contact links. Missing file: none of these. `make push-operator` copies it to the instance. |
+| `HIGHLIGHTS_FILE` | No | `./data/highlights.json` | Hand-picked findings for the Fundstücke page, a JSON array (template: `highlights-example.json`) of `{"bill_id", "finding", "headline", "why", "added", "media": [{"outlet", "title", "url", "date"}]}`. `finding` is a copy of the finding (`{"severity", "category", "title", "quote", "analyzed_at"}`); the page links to it while the stored analysis has a finding with exactly that title and quote. The tab shows only while the file has entries. `make push-highlights` copies it to the instance. |
 
 `.env.example` lists the remaining tuning variables.
 
@@ -88,13 +90,24 @@ Flags:
 - `--limit N` — only fetch the first N bills from DIP (default: all, ~340).
 - `--force` — re-analyze every bill even if it appears unchanged.
 - `--skip-analysis` — stop after metadata + status refresh (no PDF download, no Claude call).
+- `--bestandsrecht` / `--no-bestandsrecht` — feed the existing law or not, overriding
+  `BESTANDSRECHT_CONTEXT` (`make pipeline BESTANDSRECHT=on`).
 
 Each analysis reads the Gesetzentwurf together with its Beschlussempfehlungen (the committee
 recommendations), so findings describe the draft as amended in committee. Inputs are never
 truncated: a bill whose documents sum to more than 1M characters is skipped and logged.
 
+With the Bestandsrecht context on, the analysis also reads the existing §§ the draft amends or
+cites, after the Beschlussempfehlungen: a cheap model call (`BESTANDSRECHT_MODEL`, a few cents)
+lists them, gesetze-im-internet.de supplies their text, and both are frozen per bill under
+`data/gii/frozen/`. They get the characters the documents leave of the 1M; over that only the
+amended §§ are fed, and if those do not fit either, the bill is analyzed without them. Each run
+logs the decision, and `bestandsrecht/<doc>.json` in the run folder lists what was selected,
+resolved and fed. The extra input raises the cost of each bill it applies to.
+
 Re-runs are idempotent: a bill is analyzed again only when its documents or the prompt version
-changed, and a failed analysis is retried on the next run. Daily is plenty — the Bundestag does
+changed, and a failed analysis is retried on the next run. Switching the Bestandsrecht context
+re-analyzes nothing by itself; use `--force`. Daily is plenty — the Bundestag does
 not move faster.
 
 ### Adversarial pass

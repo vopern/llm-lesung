@@ -6,8 +6,8 @@ allowed, and score the answers by string comparison — no LLM judge anywhere.
 
 ```bash
 make gg-build                                  # download the GG, build the test set
-make gg-run   GG_MODEL=claude-sonnet-5         # ask the model
-make gg-score GG_TAG=claude-sonnet-5-on        # score -> data/gg/report-<tag>.html
+make gg-run   GG_MODEL=claude-sonnet-5-5        # ask the model
+make gg-score GG_TAG=claude-sonnet-5-5-on       # score -> data/gg/report-<tag>.html
 ```
 
 or step by step: `uv run python -m eval.gg {fetch,build,run,score}`.

@@ -59,8 +59,8 @@ def test_lektor_negative_needs_anchor(tmp_path):
     negative = dict(_case(tmp_path, kind="negativ", forbidden_claim="x", anchor=None),
                     expected_defect=None, expected_category=None, expected_severity=None)
     assert lint.lint([negative], tmp_path) == ["L-C13: lektor negativ case without anchor"]
-    angreifer = negative | {"id": "R-C13", "suite": "angreifer"}
-    assert lint.lint([angreifer], tmp_path) == []
+    exploit = negative | {"id": "R-C13", "suite": "exploit"}
+    assert lint.lint([exploit], tmp_path) == []
 
 
 def test_positive_must_not_carry_forbidden_claim(tmp_path):
@@ -69,9 +69,9 @@ def test_positive_must_not_carry_forbidden_claim(tmp_path):
 
 
 def test_category_is_checked_against_the_suite(tmp_path):
-    case = _case(tmp_path, id="R-C13", suite="angreifer")
+    case = _case(tmp_path, id="R-C13", suite="exploit")
     errors = lint.lint([case], tmp_path)
-    assert errors == ["R-C13: expected_category 'vollstaendigkeit' unknown for angreifer"]
+    assert errors == ["R-C13: expected_category 'vollstaendigkeit' unknown for exploit"]
 
 
 def test_duplicate_id_prefix_and_orphan_text(tmp_path):
@@ -101,7 +101,7 @@ def test_committed_yaml_carries_the_canary(tmp_path):
 
 def test_manifest_entry_holds_only_titel_gesetzentwurf_and_optional_inputs(tmp_path):
     """Every draft is sent whole; an extra key such as sections is rejected."""
-    case = _case(tmp_path, id="R-X1", suite="angreifer", expected_category="schwellenwert")
+    case = _case(tmp_path, id="R-X1", suite="exploit", expected_category="schwellenwert")
     entry = {"titel": "T", "gesetzentwurf": case["text"]}
     assert lint.check_manifest({"21/537": entry}, [case], tmp_path) == []
     assert lint.check_manifest({"21/537": entry | {"sections": [[0, 5]]}}, [case], tmp_path) == [
@@ -114,15 +114,20 @@ def test_split_is_dev_or_test(tmp_path):
                for e in lint.check_case(_case(tmp_path, split="holdout"), tmp_path, {}))
 
 
+NEEDED = [{"id": "aufenthg_2004/__44a", "rolle": "nicht_genannt"},
+          {"id": "stag/__10", "rolle": "geaendert"}]
+
+
 def _pinned(texts, **overrides):
-    """A Bestandsrecht case on 21/537 and a manifest entry pinning one norm for it."""
-    case = _case(texts, requires_context="bestandsrecht")
+    """A Bestandsrecht case on 21/537 and a manifest entry pinning one paragraph for it."""
+    case = _case(texts, requires_context="bestandsrecht", bestandsrecht=NEEDED)
     (texts / "bestandsrecht").mkdir(exist_ok=True)
-    norm = "§ 44a Titel\n(1) Satz.\n"
-    (texts / "bestandsrecht" / "AufenthG-44a.txt").write_text(norm, encoding="utf-8")
-    excerpt = {"gesetz": "AufenthG", "norm": "§ 44a", "fassung": "2025-06-23",
-               "herkunft": "GII", "cases": ["L-C13"], "file": "bestandsrecht/AufenthG-44a.txt",
-               "sha256": hashlib.sha256(norm.encode()).hexdigest()} | overrides
+    paragraph = "§ 44a Titel\n(1) Satz.\n"
+    (texts / "bestandsrecht" / "AufenthG-44a.txt").write_text(paragraph, encoding="utf-8")
+    excerpt = {"id": "aufenthg_2004/__44a", "gesetz": "AufenthG", "paragraph": "§ 44a",
+               "fassung": "2025-06-23", "herkunft": "GII", "cases": ["L-C13"],
+               "file": "bestandsrecht/AufenthG-44a.txt",
+               "sha256": hashlib.sha256(paragraph.encode()).hexdigest()} | overrides
     manifest = {"21/537": {"titel": "T", "gesetzentwurf": case["text"], "bestandsrecht": [excerpt]}}
     return case, manifest
 
@@ -152,6 +157,29 @@ def test_every_bestandsrecht_case_needs_an_excerpt_and_every_file_one_entry(tmp_
         "L-C13: requires bestandsrecht but no excerpt in inputs.yaml",
         "bestandsrecht/AufenthG-44a.txt: text file used by no excerpt",
         "bestandsrecht/StAG-10.txt: text file used by no excerpt"]
+
+
+def test_a_bestandsrecht_case_lists_the_gii_paragraphs_it_needs(tmp_path):
+    assert lint.check_case(_case(tmp_path, requires_context="bestandsrecht",
+                                 bestandsrecht=NEEDED), tmp_path, {}) == []
+    assert lint.check_case(_case(tmp_path, requires_context="bestandsrecht"), tmp_path, {}) == [
+        "L-C13: requires bestandsrecht but lists no paragraphs under bestandsrecht"]
+    assert lint.check_case(_case(tmp_path, bestandsrecht=NEEDED), tmp_path, {}) == [
+        "L-C13: bestandsrecht without requires_context bestandsrecht"]
+    bad = [{"id": "AufenthG § 44a", "rolle": "verwiesen"}, {"id": "stag/__10", "rolle": "zitiert"},
+           {"id": "stag/__10", "rolle": "geaendert"}, {"id": "bgbeg/art_229__1"}]
+    assert lint.check_case(_case(tmp_path, requires_context="bestandsrecht", bestandsrecht=bad),
+                           tmp_path, {}) == [
+        "L-C13: bestandsrecht id 'AufenthG § 44a' is not a GII path like wehrpflg/__3",
+        "L-C13: bestandsrecht rolle 'zitiert' not in ['geaendert', 'nicht_genannt', 'verwiesen']",
+        "L-C13: bestandsrecht id stag/__10 listed twice",
+        "L-C13: bestandsrecht entry {'id': 'bgbeg/art_229__1'} must be {id, rolle}"]
+
+
+def test_a_pinned_excerpt_is_one_of_its_cases_needed_paragraphs(tmp_path):
+    case, manifest = _pinned(tmp_path, id="aufenthg_2004/__44b")
+    assert lint.check_bestandsrecht(manifest, [case], tmp_path) == [
+        "inputs.yaml: 21/537 bestandsrecht[0] id aufenthg_2004/__44b not among L-C13's bestandsrecht"]
 
 
 def test_missing_bestandsrecht_file_is_not_fetchable(tmp_path):

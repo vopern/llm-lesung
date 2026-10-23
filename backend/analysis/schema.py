@@ -5,9 +5,11 @@ These are the structured-output contract (Contract 3): Claude returns a
 vocabulary, so the pipeline can store them verbatim in the ``findings`` table.
 """
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, BeforeValidator, ConfigDict
+
+from backend.text import ascii_umlauts
 
 # Severity of a single finding and, by extension, the bill's overall risk.
 Severity = Literal["hoch", "mittel", "niedrig"]
@@ -43,7 +45,8 @@ class Finding(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     severity: Severity
-    category: Category
+    # The model sometimes writes "vollständigkeit" for the ASCII enum value.
+    category: Annotated[Category, BeforeValidator(lambda v: ascii_umlauts(v) if isinstance(v, str) else v)]
     title: str  # kurze deutsche Überschrift
     description: str  # deutsche Erläuterung, konkret, mit Bezug auf die Fundstelle
     quote: str | None  # wörtliches Zitat aus dem Entwurfstext (oder None)

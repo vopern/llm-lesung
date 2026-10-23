@@ -54,7 +54,7 @@
   text: {file: 20-300.txt, sha256: "ef739bb2cf8840935fc2f84f086439e34fb8bdf7eef519e9d759edc6cdf92714"}
   kind: positiv
   expected_passage: "Begründung (Notlage und Zuführung an den Energie- und Klimafonds) zu Art. 1 und 2 — Verwendung von Notlagenkrediten für den Klima-Ausgabenzweck"
-  anchor: "dem Energie- und Klimafonds zusätzliche Mittel in Höhe von 60 Milliarden Euro zugeführt werden"
+  anchor: "Die erneut hohe Zuweisung an den Energie- und Klimafonds ist erforderlich, um nachhaltige Finanzierungsmöglichkeiten zur Überwindung des Klimawandels"
   expected_defect: "Kein Veranlassungszusammenhang zwischen der erklärten Corona-Notlage und dem Klima-Ausgabenzweck (Art. 115 Abs. 2 Satz 6 GG)"
   expected_category: verfassungsrisiko
   expected_severity: null
@@ -86,8 +86,8 @@
   drucksachetyp: Gesetzentwurf
   text: {file: 20-300.txt, sha256: "ef739bb2cf8840935fc2f84f086439e34fb8bdf7eef519e9d759edc6cdf92714"}
   kind: positiv
-  expected_passage: "Art. 1 und 2 — Zuführung von 60 Mrd. € an den Energie- und Klimafonds im Zweiten Nachtrag 2021"
-  anchor: "dem Energie- und Klimafonds zusätzliche Mittel in Höhe von 60 Milliarden Euro zugeführt werden"
+  expected_passage: "Begründung zu Art. 1 und 2 — Zuführung von 60 Mrd. € an den Energie- und Klimafonds, kassenwirksam erst in den Folgejahren"
+  anchor: "erst in den Folgejahren kassenwirksam werden, wenn der zukünftige Klima- und Transformationsfonds"
   expected_defect: "Notlagenkredite 2021 werden überjährig in einer Rücklage geparkt — Verstoß gegen Jährlichkeit und Jährigkeit (Art. 109 Abs. 3, Art. 115 Abs. 2 GG)"
   expected_category: verfassungsrisiko
   expected_severity: null
@@ -333,6 +333,8 @@
   expected_category: referenz
   expected_severity: hoch
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: enwg_2005/__102, rolle: nicht_genannt}
   forbidden_claim: null
   repaired_by: null
   split: dev
@@ -504,9 +506,13 @@
   expected_passage: "Art. 1, § 2 Abs. 3 WPflG-E i. V. m. §§ 3 und 45 WPflG"
   anchor: "Außerhalb des Spannungs- oder Verteidigungsfalls und solange keine Rechtsverordnung nach § 2a gilt, gelten die §§ 3, 8a bis 20b, 25, 32 bis 35, 44 und 45"
   expected_defect: "Die Neufassung stellt die ruhende Genehmigungspflicht für Auslandsaufenthalte (§ 3 WPflG) samt Bußgeld (§ 45 WPflG) in Friedenszeiten scharf, ohne dass Entwurf oder Verfahren dies thematisieren"
-  expected_category: referenz
+  expected_category: vollstaendigkeit
   expected_severity: hoch
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: wehrpflg/__2, rolle: geaendert}
+    - {id: wehrpflg/__3, rolle: verwiesen}
+    - {id: wehrpflg/__45, rolle: verwiesen}
   forbidden_claim: null
   repaired_by: null
   split: dev
@@ -524,8 +530,9 @@
     vom 09.04.2026, die Gutachten der Wissenschaftlichen Dienste (WD 3-3000-046/26, 047/26,
     053/26) ihrerseits für rechtswidrig halten; Minister Pistorius räumte am 25.04.2026
     gegenüber der Rheinischen Post einen „handwerklichen Fehler“ ein, ohne eine
-    Gesetzeskorrektur anzukündigen. Es ist ein Positivfall der Kategorie referenz: nicht
-    bedachte Fernwirkung einer Änderung auf Bestandsnormen. requires_context ist
+    Gesetzeskorrektur anzukündigen. Es ist ein Positivfall der Kategorie vollstaendigkeit:
+    Die Verweisung selbst ist korrekt, aber der Entwurf verschweigt ihre Fernwirkung auf
+    Bestandsnormen. requires_context ist
     bestandsrecht, weil sich die Wirkung nur mit dem Bestandstext der §§ 3 und 45 WPflG
     erschließt, die der Entwurf lediglich aufzählt. Die parallele verfassungsrechtliche Kritik
     am Losverfahren ist nicht Gegenstand dieses Eintrags.
@@ -998,6 +1005,11 @@
   expected_category: rechenfehler
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: minstg/__45, rolle: geaendert}
+    - {id: minstg/__53, rolle: verwiesen}
+    - {id: minstg/__19, rolle: nicht_genannt}
+    - {id: minstg/__18, rolle: geaendert}
   forbidden_claim: null
   repaired_by: null
   split: test
@@ -1473,6 +1485,80 @@
     Angabe durch „Absatz 3“. Es ist ein Positivfall der Kategorie referenz mit
     requires_context none, weil § 7 und § 10 im selben Dokument stehen.
   source: "Beschlussempfehlung 21/6398; §§ 7 und 10 im Primärtext geprüft."
+
+- id: L-C38-a
+  suite: lektor
+  doc: "21/7859"
+  drucksachetyp: Gesetzentwurf
+  text: {file: 21-7859.txt, sha256: "6c7743b7a233e4e32adb2b99b7e66e6638d76f65f9ea1b5b7a27bbce6e077bb9"}
+  kind: positiv
+  expected_passage: "Art. 3 (Inkrafttreten am Tag nach der Verkündung) mit Art. 1 Nr. 1 (§ 2 Abs. 1 TabStG-E, zeitlich unbestimmte Sätze „vorbehaltlich der Buchstaben …“)"
+  anchor: "Dieses Gesetz tritt am Tag nach der Verkündung in Kraft."
+  expected_defect: "Die neuen Tarife sollen ab 1. Januar 2027 gelten, Art. 3 setzt das ganze Gesetz aber am Tag nach der Verkündung in Kraft; bis Ende 2026 gelten so die zeitlich unbestimmten Sätze des § 2 Abs. 1 Nr. 1 bis 4 Buchst. a TabStG-E, also schon die Endstufe ab 2030."
+  expected_category: vollstaendigkeit
+  expected_severity: hoch
+  requires_context: none
+  forbidden_claim: null
+  repaired_by: null
+  split: test
+  story: |
+    Der Regierungsentwurf BT-Drs. 21/7859 vom 07.09.2026 (21. Wahlperiode), das Gesetz zur
+    Änderung des Tabaksteuergesetzes, erhöht die Tabaksteuer laut Vorblatt und Begründung in
+    vier Jahresstufen „beginnend ab 1. Januar 2027“. Art. 1 Nr. 1 fasst § 2 Abs. 1 TabStG neu:
+    Für Zigaretten, Zigarren und Zigarillos, Feinschnitt und Pfeifentabak nennt jeweils
+    Buchstabe a ohne Datum „vorbehaltlich der Buchstaben b bis …“ den Satz der letzten Stufe;
+    die übrigen Buchstaben gelten für Zeiträume ab dem 1. Januar 2027. Art. 3 lautet nur:
+    „Dieses Gesetz tritt am Tag nach der Verkündung in Kraft.“ Eine Regel, nach der die neuen
+    Tarife erst ab 2027 anzuwenden sind, fehlt. Der Finanzausschuss erhöhte in seiner
+    Beschlussempfehlung BT-Drs. 21/8605 vom 14.10.2026 einige Sätze (Zigaretten im Buchstaben a
+    18,57 Cent je Stück und 21,05 Prozent), ließ Art. 3 aber unverändert. Bundestag (15.10.2026)
+    und Bundesrat (16.10.2026) billigten das Gesetz, verkündet wurde es am 20.10.2026
+    (BGBl. 2026 I Nr. 309), in Kraft trat es am 21.10.2026. Damit galt sofort die Endstufe, für
+    eine Packung mit 20 Zigaretten knapp 12 Euro. Die Süddeutsche Zeitung berichtete am
+    23.10.2026 („Wie es zur Tabaksteuer-Panne kam“). Ein Sprecher des Finanzministers räumte in
+    der Bundespressekonferenz ein: „Was fehlt, ist eine dezidierte Regelung zur Anwendung
+    dieser höheren Steuersätze erst ab dem 1. Januar 2027“; es sei „schon im Regierungsentwurf
+    so“ gewesen. Das Ministerium wies den Zoll an, das Gesetz so nicht anzuwenden, und stieß
+    eine Berichtigung nach § 61 GGO an. Der Fall ist positiv und braucht keinen externen
+    Kontext: Der Entwurf selbst nennt den 1. Januar 2027 als Beginn, und der neue § 38 Abs. 3a
+    lässt Steuerzeichen „sechs Wochen vor Inkrafttreten der Änderung“ des Tarifs beziehen, setzt
+    also voraus, dass der Tarif später in Kraft tritt als das Gesetz.
+  source: "SZ vom 23.10.2026 mit Zitaten aus der Bundespressekonferenz; Art. 1 Nr. 1, Art. 3 und Begründung des Entwurfs 21/7859 sowie Beschlussempfehlung 21/8605 im Volltext geprüft, Verfahrensdaten aus DIP."
+
+- id: L-C38-b
+  suite: lektor
+  doc: "21/7859"
+  drucksachetyp: Gesetzentwurf
+  text: {file: 21-7859.txt, sha256: "6c7743b7a233e4e32adb2b99b7e66e6638d76f65f9ea1b5b7a27bbce6e077bb9"}
+  kind: positiv
+  expected_passage: "Art. 1 Nr. 1, § 2 Abs. 1 Nr. 7 TabStG-E (Substitute für Tabakwaren) — nur datierte Stufen ab 1. Januar 2027"
+  anchor: "a) für den Zeitraum 1. Januar 2027 bis 31. Dezember 2027 0,33 Euro je Milliliter;"
+  expected_defect: "§ 2 Abs. 1 Nr. 7 TabStG-E nennt für Substitute für Tabakwaren nur Sätze ab 1. Januar 2027 und keinen zeitlich unbestimmten Satz; tritt das Gesetz vorher in Kraft, ist für E-Zigaretten-Liquids bis Ende 2026 keine Steuer festgesetzt."
+  expected_category: vollstaendigkeit
+  expected_severity: hoch
+  requires_context: none
+  forbidden_claim: null
+  repaired_by: null
+  split: test
+  story: |
+    Der Regierungsentwurf BT-Drs. 21/7859 vom 07.09.2026 (21. Wahlperiode), das Gesetz zur
+    Änderung des Tabaksteuergesetzes, ersetzt § 2 Abs. 1 TabStG vollständig. Für Zigaretten,
+    Zigarren und Zigarillos, Feinschnitt und Pfeifentabak gibt es jeweils einen Buchstaben a
+    ohne Datum; für Substitute für Tabakwaren (Nr. 7, Liquids für E-Zigaretten) nennt der
+    Entwurf nur vier datierte Stufen, die erste „für den Zeitraum 1. Januar 2027 bis
+    31. Dezember 2027“. Art. 3 setzt das Gesetz am Tag nach der Verkündung in Kraft. Der
+    Finanzausschuss erhöhte in der Beschlussempfehlung BT-Drs. 21/8605 vom 14.10.2026 die Sätze
+    für Substitute (0,38 bis 0,44 Euro je Milliliter), ergänzte aber keinen Satz für die Zeit
+    davor und ließ Art. 3 unverändert. Das Gesetz trat am 21.10.2026 in Kraft (BGBl. 2026 I
+    Nr. 309). Weil die alte Fassung von § 2 Abs. 1 damit ersetzt war und die neue erst ab 2027
+    einen Satz nennt, wären Liquids bis Jahresende steuerfrei gewesen. Die Süddeutsche Zeitung
+    berichtete am 23.10.2026 („Wie es zur Tabaksteuer-Panne kam“), das Finanzministerium
+    sprach von einem redaktionellen Fehler und stieß eine Berichtigung an. Der Fall ist positiv
+    neben L-C38-a: Beide Folgen gehen auf dasselbe fehlende gestaffelte Inkrafttreten zurück,
+    zeigen sich aber an verschiedenen Stellen, hier als Lücke statt als verfrühte Erhöhung. Er
+    braucht keinen externen Kontext, weil die Nummern 1 bis 4 mit ihrem undatierten
+    Buchstaben a den Kontrast im selben Absatz liefern.
+  source: "SZ vom 23.10.2026; § 2 Abs. 1 Nr. 7 und Art. 3 des Entwurfs 21/7859 sowie Beschlussempfehlung 21/8605 im Volltext geprüft, Verfahrensdaten aus DIP."
 
 # --- Teil D: WP21 drafts not passed -------------------------------------------
 

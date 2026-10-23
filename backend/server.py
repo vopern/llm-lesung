@@ -4,18 +4,23 @@ Serves the JSON API over the SQLite database and, in production, the built
 React SPA from ``frontend/dist``. It depends only on ``db.py``, ``feedback.py``
 and ``config.py``: the web layer never calls Claude or DIP, it only reads the
 database the pipeline produces and lists the HTML evaluation reports placed in
-``EVAL_PUBLIC_DIR``. Its one write is reader feedback, appended to files in
+``EVAL_PUBLIC_DIR``, the operator details in ``OPERATOR_FILE`` and the
+hand-picked findings in ``HIGHLIGHTS_FILE``. Its one write is reader feedback, appended to files in
 ``FEEDBACK_DIR`` — never to the database.
 
 Endpoints:
 - ``GET /api/bills``      paginated, filterable list of bills
 - ``GET /api/bills/{id}`` full bill incl. findings, exploits, analyzed and related documents (404 if unknown)
-- ``GET /api/meta``       aggregate counts, statuses, prompt/model, last run, contact address
+- ``GET /api/meta``       aggregate counts, statuses, prompt/model, last run, operator details
+- ``GET /api/highlights`` the hand-picked findings, each with the id of its stored match (or null)
 - ``GET /api/eval``       the HTML evaluation reports, with title and modification time
 - ``GET /api/eval/reports/{path}``   one of those reports
 - ``POST /api/feedback``  a reader's verdict on one finding or exploit
 """
 
+import html
+import json
+import logging
 import os
 import re
 import sqlite3
@@ -152,9 +157,39 @@ def api_bill(
     return bill
 
 
+log = logging.getLogger(__name__)
+
+
+def _operator() -> dict | None:
+    """The operator details from OPERATOR_FILE, or None when absent, empty or malformed."""
+    try:
+        with open(config.OPERATOR_FILE, encoding="utf-8") as f:
+            raw = json.load(f)
+    except FileNotFoundError:
+        return None
+    except (OSError, ValueError) as exc:
+        log.warning("Ignoring unreadable operator file %s: %s", config.OPERATOR_FILE, exc)
+        return None
+    if not isinstance(raw, dict):
+        log.warning("Ignoring operator file %s: not a JSON object", config.OPERATOR_FILE)
+        return None
+
+    def text(value) -> str | None:
+        return (value.strip() or None) if isinstance(value, str) else None
+
+    address = raw.get("address")
+    operator = {
+        "name": text(raw.get("name")),
+        "address": [line for line in map(text, address) if line]
+        if isinstance(address, list) else [],
+        "email": text(raw.get("email")),
+    }
+    return operator if any(operator.values()) else None
+
+
 @app.get("/api/meta")
 def api_meta(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    """Aggregate counts, distinct statuses, prompt/model, last analysis time, contact address."""
+    """Aggregate counts, distinct statuses, prompt/model, last analysis time, operator details."""
     # Single direct query permitted by the story (db.py has no such helper):
     # newest analysis timestamp across all bills, or None if none analyzed.
     last_analyzed_at = conn.execute("SELECT MAX(analyzed_at) FROM bills").fetchone()[0]
@@ -164,8 +199,97 @@ def api_meta(conn: sqlite3.Connection = Depends(get_conn)) -> dict:
         "prompt_version": config.PROMPT_VERSION,
         "model": config.ANALYSIS_MODEL,
         "last_analyzed_at": last_analyzed_at,
-        "contact_email": config.CONTACT_EMAIL or None,
+        "operator": _operator(),
+        "highlight_count": len(_highlights(conn)),
     }
+
+
+# --- Highlights ---------------------------------------------------------------
+# Each entry carries its own copy of the finding. It links to the stored finding
+# only while the bill's current analysis has one with exactly that title and quote.
+
+_SEVERITIES = ("hoch", "mittel", "niedrig")
+
+
+def _highlight_media(raw) -> list[dict]:
+    media = []
+    for item in raw if isinstance(raw, list) else []:
+        if not isinstance(item, dict):
+            continue
+        url = item.get("url")
+        if not isinstance(url, str) or not url.strip().startswith(("https://", "http://")):
+            continue
+        entry = {key: item[key].strip() if isinstance(item.get(key), str) else None
+                 for key in ("outlet", "title", "date")}
+        media.append({"url": url.strip(), **entry})
+    return media
+
+
+def _highlight_finding(raw) -> dict | None:
+    if not isinstance(raw, dict):
+        return None
+    finding = {key: (raw[key].strip() or None) if isinstance(raw.get(key), str) else None
+               for key in ("severity", "category", "title", "quote", "analyzed_at")}
+    if not finding["title"]:
+        return None
+    if finding["severity"] not in _SEVERITIES:
+        finding["severity"] = None
+    return finding
+
+
+def _highlights(conn: sqlite3.Connection) -> list[dict]:
+    """The entries of HIGHLIGHTS_FILE whose bill is stored, in file order; [] without a usable file."""
+    try:
+        with open(config.HIGHLIGHTS_FILE, encoding="utf-8") as f:
+            raw = json.load(f)
+    except FileNotFoundError:
+        return []
+    except (OSError, ValueError) as exc:
+        log.warning("Ignoring unreadable highlights file %s: %s", config.HIGHLIGHTS_FILE, exc)
+        return []
+    if not isinstance(raw, list):
+        log.warning("Ignoring highlights file %s: not a JSON array", config.HIGHLIGHTS_FILE)
+        return []
+
+    def text(value) -> str | None:
+        return (value.strip() or None) if isinstance(value, str) else None
+
+    highlights = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            log.warning("Ignoring highlight %r: not a JSON object", entry)
+            continue
+        bill_id, headline = text(entry.get("bill_id")), text(entry.get("headline"))
+        finding = _highlight_finding(entry.get("finding"))
+        bill = db.get_bill(conn, bill_id) if bill_id and headline and finding else None
+        if bill is None:
+            log.warning("Ignoring highlight %r: no headline, no finding or unknown bill",
+                        entry.get("bill_id"))
+            continue
+        finding_id = next(
+            (f["id"] for f in bill["findings"]
+             if f["title"] == finding["title"] and f["quote"] == finding["quote"]),
+            None,
+        )
+        highlights.append({
+            "bill_id": bill["id"],
+            "dokumentnummer": bill["dokumentnummer"],
+            "titel": bill["titel"],
+            "risk": bill["risk"],
+            "headline": headline,
+            "why": text(entry.get("why")),
+            "added": text(entry.get("added")),
+            "media": _highlight_media(entry.get("media")),
+            "finding": finding,
+            "finding_id": finding_id,
+        })
+    return highlights
+
+
+@app.get("/api/highlights")
+def api_highlights(conn: sqlite3.Connection = Depends(get_conn)) -> list[dict]:
+    """The hand-picked findings, each with its bill and the id of the stored finding it matches (or null)."""
+    return _highlights(conn)
 
 
 # --- Reader feedback --------------------------------------------------------
@@ -208,7 +332,7 @@ def _eval_base() -> str:
 def _report_title(path: str) -> str:
     with open(path, encoding="utf-8", errors="replace") as f:
         match = _TITLE.search(f.read(8192))
-    return " ".join(match.group(1).split()) if match else os.path.basename(path)
+    return " ".join(html.unescape(match.group(1)).split()) if match else os.path.basename(path)
 
 
 @app.get("/api/eval")

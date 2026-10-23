@@ -5,6 +5,7 @@ store into one batch job:
 
     uv run python -m backend.pipeline [--limit N] [--force] [--skip-analysis]
                                       [--concurrency N] [--max-attempts N]
+                                      [--bestandsrecht | --no-bestandsrecht]
 
 Only this module imports all three detail layers; none of them import it. The
 web server (``backend/server.py``) is untouched — serving and data production
@@ -27,6 +28,15 @@ Per bill the job is:
    derive the overall risk and persist findings + analysis metadata, including
    the list of documents the analysis read.
 
+With the Bestandsrecht context on (``config.BESTANDSRECHT_CONTEXT``,
+``--bestandsrecht``), step 3 also selects, resolves and fetches the existing §§
+the draft amends or cites (``backend.bestandsrecht.provide``) and feeds them
+after the draft and the Beschlussempfehlungen. They get the characters
+``analyzer.MAX_INPUT_CHARS`` leaves: over that, only the amended §§ are fed, and
+if those do not fit either, none — the bill is analyzed without them. The fed §§
+enter ``analysis_documents`` as ``bestandsrecht`` entries but never decide
+whether a bill is re-analyzed; neither does the switch (``--force`` does).
+
 Bills are processed by a thread pool (``config.PIPELINE_CONCURRENCY`` workers,
 ``--concurrency`` to override): workers do the slow, thread-safe parts (DIP
 status fetch, PDF download + extraction, the Claude call), while every SQLite
@@ -40,8 +50,10 @@ and every one of them failed.
 
 Every run gets a folder under ``config.PIPELINE_RUNS_DIR``, named by its UTC
 start: ``errors.jsonl`` and ``traces/``, one trace per Claude call
-(``21-1234.jsonl``, ``21-1234.attempt-2.jsonl`` for a retry). A stored analysis
-names its trace in ``bills.analysis_trace``.
+(``21-1234.jsonl``, ``21-1234.attempt-2.jsonl`` for a retry; the Bestandsrecht
+selection as ``21-1234.select.jsonl``), and with the Bestandsrecht context on
+``bestandsrecht/21-1234.json``: what was selected, resolved, fetched and fed. A
+stored analysis names its trace in ``bills.analysis_trace``.
 """
 
 import argparse
@@ -52,25 +64,32 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
-from backend import config, db, errorlog
+from backend import bestandsrecht, config, db, errorlog
 from backend.analysis import analyzer, quotes
 from backend.dip import client as dip_client
 from backend.dip import pdf_text
+from backend.gii import index as gii_index
 
 log = logging.getLogger("llm_lesung.pipeline")
 
 # ``bill_documents.typ`` of the related documents the pipeline catalogues.
 BESCHLUSSEMPFEHLUNG = "beschlussempfehlung"
 
+# ``analysis_documents.typ`` of the existing §§ an analysis read.
+BESTANDSRECHT = "bestandsrecht"
+
 
 def document_versions(documents: list[dict]) -> set[tuple]:
     """The identity of each document version: id plus ``pdf_hash``.
 
     Falls back to ``aktualisiert`` for documents DIP publishes without a hash.
+    Existing §§ (``bestandsrecht``) are left out: they follow from the draft and
+    are only known once it is analyzed.
     """
     return {
         (d.get("document_id"), d.get("pdf_hash") or d.get("aktualisiert"))
         for d in documents
+        if d.get("typ") != BESTANDSRECHT
     }
 
 
@@ -116,6 +135,7 @@ def _decision_reason(existing_row: dict | None, inputs: list[dict], force: bool)
 
 def _documents_change(stored: list[dict], inputs: list[dict]) -> str:
     """Name what differs between the stored and the fresh input documents."""
+    stored = [d for d in stored if d.get("typ") != BESTANDSRECHT]
     stored_by_id = {d.get("document_id"): d for d in stored}
     input_ids = {d.get("document_id") for d in inputs}
     changes = []
@@ -136,6 +156,8 @@ def _documents_change(stored: list[dict], inputs: list[dict]) -> str:
 
 def _document_label(doc: dict) -> str:
     """``Beschlussempfehlung 21/6393`` — a document as named in log lines."""
+    if doc.get("typ") == BESTANDSRECHT:
+        return f"Bestandsrecht {doc.get('dokumentnummer')}"
     typ = "Beschlussempfehlung" if doc.get("typ") == BESCHLUSSEMPFEHLUNG else "Entwurf"
     return f"{typ} {doc.get('dokumentnummer')}"
 
@@ -164,13 +186,16 @@ def _input_documents(bill: dict, related: list[dict]) -> list[dict]:
 def locate_findings(findings: list[dict], documents: list[dict]) -> list[dict]:
     """``findings`` with a ``location`` each: where its quote stands in ``documents``.
 
-    ``documents`` are ``analysis_documents`` entries, searched in order.
-    ``location`` is ``None`` for a finding without a quote or whose quote is
-    not found. Never raises: a document whose pages cannot be read is left out.
+    ``documents`` are ``analysis_documents`` entries, searched in order; the
+    existing §§ are not, since quotes come from the Drucksachen. ``location``
+    is ``None`` for a finding without a quote or whose quote is not found.
+    Never raises: a document whose pages cannot be read is left out.
     """
     prepared = []
     if any(f.get("quote") for f in findings):
         for doc in documents:
+            if doc.get("typ") == BESTANDSRECHT:
+                continue
             try:
                 pages = pdf_text.get_pages(
                     doc.get("pdf_url"),
@@ -192,15 +217,32 @@ def new_run_dir(suffix: str = "") -> Path:
     return Path(config.PIPELINE_RUNS_DIR) / f"{stamp}{suffix}"
 
 
-def trace_file(run_dir: Path, dokumentnummer: str, attempt: int) -> Path:
-    """``traces/21-1234.jsonl``, from the second attempt on ``21-1234.attempt-2.jsonl``."""
+def bill_stem(dokumentnummer: str) -> str:
+    """``21-1234`` for Drucksache 21/1234: the bill's name in file names."""
+    return dokumentnummer.replace("/", "-")
+
+
+def trace_file(run_dir: Path, dokumentnummer: str, attempt: int, kind: str = "") -> Path:
+    """``traces/21-1234.jsonl``, from the second attempt on ``21-1234.attempt-2.jsonl``;
+    a ``kind`` such as ``select`` gives ``21-1234.select.jsonl``."""
+    suffix = (f".{kind}" if kind else "") + ("" if attempt == 1 else f".attempt-{attempt}")
+    return run_dir / "traces" / f"{bill_stem(dokumentnummer)}{suffix}.jsonl"
+
+
+def bestandsrecht_log(run_dir: Path, dokumentnummer: str, attempt: int) -> Path:
+    """``bestandsrecht/21-1234.json``: what the selection found and what was fed."""
     suffix = "" if attempt == 1 else f".attempt-{attempt}"
-    return run_dir / "traces" / f"{dokumentnummer.replace('/', '-')}{suffix}.jsonl"
+    return run_dir / "bestandsrecht" / f"{bill_stem(dokumentnummer)}{suffix}.json"
 
 
-def _trace_fields(bill: dict, attempt: int, inputs: list[dict]) -> dict:
-    """The header of a pipeline trace: the call's settings and its input set."""
-    return {
+def _trace_fields(bill: dict, attempt: int, inputs: list[dict], context_on: bool = False,
+                  context: bestandsrecht.Context | None = None) -> dict:
+    """The header of a pipeline trace: the call's settings and its input set.
+
+    ``inputs`` include the fed existing §§ with their ``rolle``; ``bestandsrecht``
+    holds the size decision behind them.
+    """
+    fields = {
         "pass": "lektor",
         "doc": bill.get("dokumentnummer"),
         "bill_id": bill.get("id"),
@@ -209,12 +251,47 @@ def _trace_fields(bill: dict, attempt: int, inputs: list[dict]) -> dict:
         "model": config.ANALYSIS_MODEL,
         "effort": config.ANALYSIS_EFFORT,
         "max_turns": analyzer.MAX_TURNS,
-        "inputs": [
-            {k: doc.get(k) for k in
-             ("typ", "dokumentnummer", "document_id", "pdf_hash", "text_chars")}
-            for doc in inputs
-        ],
+        "bestandsrecht_context": context_on,
+        "inputs": [_trace_input(doc) for doc in inputs],
     }
+    if context is not None:
+        fields["bestandsrecht"] = context.summary()
+    return fields
+
+
+def _trace_input(doc: dict) -> dict:
+    keys = ["typ", "dokumentnummer", "document_id", "pdf_hash", "text_chars"]
+    if doc.get("typ") == BESTANDSRECHT:
+        keys.append("rolle")
+    return {k: doc.get(k) for k in keys}
+
+
+def _log_fit(bill: dict, fit: bestandsrecht.Fit) -> None:
+    """One line per bill on what of the existing law the analysis reads."""
+    prefix = f"[{bill.get('dokumentnummer')}] {short(bill.get('titel'))} — Bestandsrecht"
+    if fit.decision == "keine":
+        log.info("%s: nothing to feed", prefix)
+    elif fit.decision == "vollstaendig":
+        log.info("%s: %d § fed (%d chars)", prefix, len(fit.fed), fit.chars_fed)
+    elif fit.decision == "nur_geaendert":
+        log.warning("%s: over budget (%d of %d chars), only the %d amended § fed "
+                    "(%d chars), %d cited § left out", prefix, fit.chars_all, fit.budget,
+                    len(fit.fed), fit.chars_fed, len(fit.left_out))
+    else:
+        log.warning("%s: dropped, the amended § alone are over budget (%d of %d chars); "
+                    "analyzing without it", prefix, fit.chars_geaendert, fit.budget)
+
+
+def _provide_bestandsrecht(bill: dict, text: str, budget: int, run_dir: Path | None,
+                           attempt: int, entries: list | None) -> bestandsrecht.Context:
+    """The existing §§ for one bill, frozen under ``GII_DIR/frozen/<21-1234>/``."""
+    dnr = bill.get("dokumentnummer")
+    return bestandsrecht.provide(
+        bill.get("titel") or "", text,
+        freeze_dir=Path(config.GII_DIR) / "frozen" / bill_stem(dnr),
+        log=bestandsrecht_log(run_dir, dnr, attempt) if run_dir is not None else None,
+        trace=trace_file(run_dir, dnr, attempt, "select") if run_dir is not None else None,
+        entries=entries, budget=budget)
 
 
 def short(text: str | None, length: int = 60) -> str:
@@ -233,6 +310,8 @@ def _attempt_bill(
     skip_analysis: bool,
     run_dir: Path | None = None,
     attempt: int = 1,
+    context_on: bool = False,
+    entries: list | None = None,
 ) -> dict:
     """One attempt of the slow, thread-safe work for one bill.
 
@@ -249,7 +328,9 @@ def _attempt_bill(
     An input set over ``analyzer.MAX_INPUT_CHARS`` returns ``"skipped"`` with an
     ``oversize`` reason. With ``run_dir`` set, the Claude call is traced to
     ``trace_file(run_dir, …, attempt)``; ``trace`` is that path relative to
-    ``config.PIPELINE_RUNS_DIR``.
+    ``config.PIPELINE_RUNS_DIR``. With ``context_on`` the existing §§ are fed
+    within the budget the documents leave (``entries`` is GII's list of laws);
+    a failed selection call fails the attempt.
     """
     outcome: dict = {"bill": bill, "phase": "metadata"}
     try:
@@ -298,6 +379,13 @@ def _attempt_bill(
             short(bill.get("titel")),
             outcome["reason"],
         )
+        context = None
+        documents = inputs
+        if context_on:
+            context = _provide_bestandsrecht(
+                bill, texts[0], analyzer.MAX_INPUT_CHARS - total, run_dir, attempt, entries)
+            _log_fit(bill, context.fit)
+            documents = inputs + context.documents()
         trace = (
             trace_file(run_dir, bill.get("dokumentnummer"), attempt)
             if run_dir is not None
@@ -312,14 +400,15 @@ def _attempt_bill(
                 for doc, text in zip(inputs[1:], texts[1:])
             ],
             trace=trace,
-            trace_fields=_trace_fields(bill, attempt, inputs),
+            trace_fields=_trace_fields(bill, attempt, documents, context_on, context),
+            bestandsrecht=context.fed() if context is not None else None,
         )
         outcome["analysis"] = analysis
         outcome["findings"] = locate_findings(
             [f.model_dump() for f in analysis.findings], inputs
         )
         outcome["risk"] = analyzer.derive_risk(analysis.findings)
-        outcome["documents"] = inputs
+        outcome["documents"] = documents
         outcome["trace"] = (
             trace.relative_to(Path(config.PIPELINE_RUNS_DIR)).as_posix()
             if trace is not None
@@ -380,6 +469,8 @@ def _process_bill(
     errors: errorlog.ErrorLog,
     max_attempts: int,
     run_dir: Path | None = None,
+    context_on: bool = False,
+    entries: list | None = None,
 ) -> dict:
     """Process one bill with up to ``max_attempts`` attempts — worker thread.
 
@@ -390,7 +481,8 @@ def _process_bill(
     """
     for attempt in range(1, max_attempts + 1):
         outcome = _attempt_bill(
-            existing, bill, related, force, skip_analysis, run_dir, attempt
+            existing, bill, related, force, skip_analysis, run_dir, attempt,
+            context_on=context_on, entries=entries,
         )
         error = outcome.get("error")
         if error is None:
@@ -416,6 +508,7 @@ def run(
     skip_analysis: bool = False,
     concurrency: int | None = None,
     max_attempts: int | None = None,
+    bestandsrecht_context: bool | None = None,
 ) -> int:
     """Run the pipeline against an open DB connection; return an exit code.
 
@@ -425,7 +518,9 @@ def run(
     bounds how often a failing bill is retried per run (default
     ``config.PIPELINE_MAX_ATTEMPTS``). Every failed attempt is appended to a
     run's ``errors.jsonl``; every Claude call is traced into the run's
-    ``traces/`` (see the module docstring).
+    ``traces/`` (see the module docstring). ``bestandsrecht_context`` feeds
+    the existing §§ (default ``config.BESTANDSRECHT_CONTEXT``); GII's list of
+    laws is then loaded once, and the run aborts if it cannot be.
     """
     if concurrency is None:
         concurrency = config.PIPELINE_CONCURRENCY
@@ -433,18 +528,23 @@ def run(
     if max_attempts is None:
         max_attempts = config.PIPELINE_MAX_ATTEMPTS
     max_attempts = max(1, max_attempts)
+    if bestandsrecht_context is None:
+        bestandsrecht_context = config.BESTANDSRECHT_CONTEXT
+    context_on = bestandsrecht_context and not skip_analysis
     run_dir = new_run_dir()
     errors = errorlog.ErrorLog(run_dir)
 
     log.info(
         "Fetching Gesetzentwürfe from DIP (limit=%s, force=%s, skip_analysis=%s, "
-        "concurrency=%d, max_attempts=%d)",
+        "concurrency=%d, max_attempts=%d, bestandsrecht=%s)",
         limit,
         force,
         skip_analysis,
         concurrency,
         max_attempts,
+        context_on,
     )
+    entries = gii_index.load() if context_on else None
     documents = dip_client.fetch_gesetzentwuerfe(limit=limit)
     log.info("Fetched %d Gesetzentwurf document(s)", len(documents))
     related = _fetch_related(errors)
@@ -475,6 +575,8 @@ def run(
                     errors,
                     max_attempts,
                     run_dir,
+                    context_on,
+                    entries,
                 )
             )
 
@@ -610,6 +712,17 @@ def main(argv: list[str] | None = None) -> int:
             f"(default: PIPELINE_MAX_ATTEMPTS, currently {config.PIPELINE_MAX_ATTEMPTS})"
         ),
     )
+    parser.add_argument(
+        "--bestandsrecht",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=(
+            "feed the existing §§ the draft amends or cites "
+            f"(default: BESTANDSRECHT_CONTEXT, currently "
+            f"{'on' if config.BESTANDSRECHT_CONTEXT else 'off'}); "
+            "never re-analyzes an analyzed bill by itself, use --force"
+        ),
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -628,6 +741,7 @@ def main(argv: list[str] | None = None) -> int:
             skip_analysis=args.skip_analysis,
             concurrency=args.concurrency,
             max_attempts=args.max_attempts,
+            bestandsrecht_context=args.bestandsrecht,
         )
     finally:
         conn.close()

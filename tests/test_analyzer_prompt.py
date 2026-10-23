@@ -11,7 +11,8 @@ message is pinned too: without Beschlussempfehlungen it must not change, since
 
 from typing import get_args
 
-from backend.analysis import analyzer, structured
+from backend.analysis import analyzer
+from backend.llm import structured
 from backend.analysis.analyzer import SYSTEM_PROMPT, build_message
 from backend.analysis.schema import Category
 from backend.analysis.style import STYLE_SECTION
@@ -76,9 +77,9 @@ def test_user_message_appends_bestandsrecht_after_beschlussempfehlungen():
     assert build_message("Titel", "21/1", "Entwurf.", None, []) == _DRAFT_ONLY
     message = build_message("Titel", "21/1", "Entwurf.", [("21/5", "BE.")], excerpts)
     be = '<beschlussempfehlung nummer="21/5">\nBE.\n</beschlussempfehlung>'
-    first = ('<geltende-fassung gesetz="AufenthG" norm="§ 44a" stand="2025-06-23">\n'
+    first = ('<geltende-fassung gesetz="AufenthG" paragraph="§ 44a" stand="2025-06-23">\n'
              "§ 44a Titel\n(1) Satz.\n</geltende-fassung>")
-    second = '<geltende-fassung gesetz="StAG" norm="§ 10" stand="2025-06-23">\n§ 10 Titel\n</geltende-fassung>'
+    second = '<geltende-fassung gesetz="StAG" paragraph="§ 10" stand="2025-06-23">\n§ 10 Titel\n</geltende-fassung>'
     assert message.index(be) < message.index(analyzer.BESTANDSRECHT_NOTICE) < message.index(first)
     assert message.index(first) < message.index(second) and message.endswith(second)
     alone = build_message("Titel", "21/1", "Entwurf.", bestandsrecht=excerpts)

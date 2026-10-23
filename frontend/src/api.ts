@@ -76,13 +76,15 @@ export interface Exploit {
 // One document the stored analysis read.
 export interface AnalysisDocument {
   document_id: string;
-  typ: "gesetzentwurf" | "beschlussempfehlung";
+  typ: "gesetzentwurf" | "beschlussempfehlung" | "bestandsrecht";
   dokumentnummer: string;
   datum: string | null;
   pdf_url: string;
   pdf_hash: string | null;
   aktualisiert: string | null;
   text_chars: number | null;
+  // Existing §§ only: "geaendert" | "verwiesen".
+  rolle?: string;
 }
 
 // A related Drucksache DIP lists for the bill's Vorgang, e.g. a
@@ -143,8 +145,17 @@ export interface Meta {
   prompt_version: string;
   model: string;
   last_analyzed_at: string | null;
-  // Null when the server has no CONTACT_EMAIL configured.
-  contact_email: string | null;
+  // Null when the server has no operator file.
+  operator: Operator | null;
+  // Entries of the highlights file; the Fundstücke tab shows only when non-zero.
+  highlight_count: number;
+}
+
+// Name + address make the Impressum; email the contact links.
+export interface Operator {
+  name: string | null;
+  address: string[];
+  email: string | null;
 }
 
 // Raised when a fetch returns a non-2xx status. `status` lets callers
@@ -197,6 +208,42 @@ export function fetchBill(id: string): Promise<BillDetail> {
 
 export function fetchMeta(): Promise<Meta> {
   return getJson<Meta>("/api/meta");
+}
+
+// --- Highlights (GET /api/highlights) ----------------------------------------
+
+export interface HighlightMedia {
+  url: string;
+  outlet: string | null;
+  title: string | null;
+  date: string | null;
+}
+
+export interface Highlight {
+  bill_id: string;
+  dokumentnummer: string;
+  titel: string;
+  risk: Risk | null;
+  headline: string;
+  why: string | null;
+  added: string | null;
+  media: HighlightMedia[];
+  // The entry's own copy of the finding.
+  finding: HighlightFinding;
+  // The stored finding with exactly that title and quote; null once the analysis was replaced.
+  finding_id: number | null;
+}
+
+export interface HighlightFinding {
+  severity: Risk | null;
+  category: string | null;
+  title: string;
+  quote: string | null;
+  analyzed_at: string | null;
+}
+
+export function fetchHighlights(): Promise<Highlight[]> {
+  return getJson<Highlight[]>("/api/highlights");
 }
 
 // --- Reader feedback (POST /api/feedback) -----------------------------------

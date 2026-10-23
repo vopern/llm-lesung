@@ -7,7 +7,7 @@ source, and what the verdicts are — passage positions, not a judgement that th
 defect was found — because nothing else on it would stop a reader from taking
 "hit" at face value.
 
-    uv run python -m eval.harness html --split dev --tag <tag> [--task angreifer]
+    uv run python -m eval.harness html --split dev --tag <tag> [--task exploit]
 """
 
 import argparse
@@ -48,19 +48,21 @@ TEXT = {
                             "must not be reported"},
         "expected": "Expected finding",
     },
-    "angreifer": {
-        "note": _POSITION.replace("{thing}", "attack") + (
-            "The Angreifer reads a draft that may be technically flawless and reports what a "
-            "bad-faith actor gets out of it; each finding is one attack, with actor, steps, "
-            "gain and the missing safeguard. On drafts that offer nothing to exploit, "
-            "<i>fired</i> means the pass reported attacks anyway and <i>quiet</i> that it "
-            "stayed silent — the only precision signal on this page. Elsewhere a finding that "
-            "matches no case may be a real attack the evaluation set does not list, or it may "
-            "be invented, and nothing here tells the two apart."),
-        "kind": {"positiv": "an attack the pass should find",
-                 "negativ": "a draft with nothing to exploit — any attack is a false alarm",
+    "exploit": {
+        "note": _POSITION.replace("{thing}", "exploit") + (
+            "The analysis reads a draft that may be technically flawless and reports how a "
+            "bad-faith actor could use it against its intent; each finding is one exploit, "
+            "with actor, steps, gain and the missing safeguard. On drafts that offer "
+            "nothing to exploit, <i>fired</i> means the analysis reported exploits "
+            "anyway and <i>quiet</i> that it stayed silent — the only precision signal on this "
+            "page. Elsewhere a finding that matches no case may be a real exploit the "
+            "evaluation set does not list, or it may be invented, and nothing here tells the "
+            "two apart."),
+        "kind": {"positiv": "an exploit the analysis should find",
+                 "negativ": "a draft with nothing to exploit — any exploit is a false "
+                            "alarm",
                  "invers": "a gap already closed — must not be reported as still open"},
-        "expected": "Expected attack",
+        "expected": "Expected exploit",
     },
 }
 # A precision run: the draft with its Beschlussempfehlungen, every case repaired.
@@ -116,8 +118,9 @@ def _model_name(model: str) -> str:
 
 
 def _heading(summary: dict) -> tuple[str, str, str]:
-    """``(title, headline, config line)``: what was measured, then how."""
-    cases = about.FILES.get(summary["cases_file"], {}).get("title", summary["cases_file"])
+    """``(title, headline, config line)``: the test set and what was measured, then how."""
+    about_file = about.FILES.get(summary["cases_file"], {})
+    cases = f'Test set "{about_file.get("title", summary["cases_file"])}"'
     split = summary.get("split", "all")
     prompts = ", ".join(str(k) for k in summary["prompt_versions"]) or "–"
     efforts = ", ".join("default" if k in (None, "None", "null") else str(k)
@@ -129,15 +132,15 @@ def _heading(summary: dict) -> tuple[str, str, str]:
         f"reasoning effort {efforts}",
         f"{summary['documents']} drafts",
         f"scored {summary['generated_at'][:10]}"])
-    title = tasks.get(summary["task"]).title
     context = summary.get("requires_context", "none")
-    if _precision(summary):
-        title = title.replace("evaluation", "precision evaluation")
-        cases += f" (repaired defects, input {summary['input_set']})"
-    elif context != "none":
-        cases += f" ({context} cases, input {summary['input_set']})"
-    return (f"{title} · {cases} · {split} · {prompts} · {models}",
-            f"{title}: {cases}, " + ("all splits" if split == "all" else f"{split} split"),
+    measure = ("false alarms on fixed errors" if _precision(summary)
+               else about_file.get("measure"))
+    # "all" is every case of the set on the draft alone: nothing to tell apart.
+    if context not in ("none", "all") and not _precision(summary):
+        measure = f"{measure or 'found'} ({context} cases, input {summary['input_set']})"
+    what = " · ".join(filter(None, [cases, measure]))
+    return (f"{what} · {split} · {models} · prompt {prompts}",
+            f"{what} · " + ("all splits" if split == "all" else f"{split} split"),
             config_line)
 
 
@@ -274,6 +277,10 @@ def _document(doc: dict, text: dict) -> str:
         head = (f'<p class="small muted">{page.esc(run["status"])} · {page.money(run.get("cost_usd"))} · '
                 f'{page.duration(run.get("seconds"))} · rescued: {page.esc(run.get("rescued_by") or "no")} · '
                 f'severity {page.esc(run.get("risk") or "–")}</p>')
+        if fit := run.get("bestandsrecht"):
+            head += (f'<p class="small muted">Bestandsrecht {page.esc(fit["decision"])}: '
+                     f'{fit["fed_count"]} fed ({fit["chars_fed"]} chars), '
+                     f'{fit["left_out_count"]} left out, budget {fit["budget"]} chars</p>')
         if run.get("error"):
             head += f'<p class="small"><b>Error:</b> {page.esc(run["error"])}</p>'
         if run.get("summary"):

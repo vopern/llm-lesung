@@ -4,8 +4,8 @@ Used by the test-set scorer (`eval/testset/score.py`) and through it by the eval
 harness. Pure string comparison, never an LLM judge, so a number from either can
 be quoted.
 
-``squash()`` (``backend/analysis/quotes.py``, which the pipeline locates quotes
-with) is the whole trick: it strips what the PDF text layer mangles.
+``squash()`` (``backend/text.py``, which the pipeline locates quotes with) is the
+whole trick: it strips what the PDF text layer mangles.
 
 Beyond the yes/no verdict a check needs to tell a spliced quote from an
 invented one, which is what ``longest_run`` and ``grounded_runs`` are for: a
@@ -14,7 +14,7 @@ model read past, a quote whose longest grounded piece is eleven characters is
 not in the draft at all.
 """
 
-from backend.analysis.quotes import squash, squash_with_index  # noqa: F401 — shared with the pipeline
+from backend.text import squash, squash_with_index  # noqa: F401 — shared with the pipeline
 
 
 def fold_umlauts(s: str) -> str:

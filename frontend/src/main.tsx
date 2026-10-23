@@ -14,7 +14,9 @@ import { ListPage } from "./pages/ListPage";
 import { DetailPage } from "./pages/DetailPage";
 import { AboutPage } from "./pages/AboutPage";
 import { EvalPage } from "./pages/EvalPage";
+import { HighlightsPage } from "./pages/HighlightsPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
+import { ImpressumPage } from "./pages/ImpressumPage";
 import "./styles.css";
 
 function App() {
@@ -37,9 +39,11 @@ function App() {
           <Routes>
             <Route path="/" element={<ListPage />} />
             <Route path="/bill/:id" element={<DetailPage />} />
+            <Route path="/fundstuecke" element={<HighlightsPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/evaluation" element={<EvalPage />} />
             <Route path="/datenschutz" element={<PrivacyPage />} />
+            <Route path="/impressum" element={<ImpressumPage />} />
             <Route path="*" element={<ListPage />} />
           </Routes>
         </Layout>

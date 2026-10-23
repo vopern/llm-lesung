@@ -536,7 +536,7 @@ def _traced_run_query(fail_first: bool):
     """A ``run_query`` stand-in that streams one message through ``on_message``."""
     from types import SimpleNamespace
 
-    from backend.analysis import structured
+    from backend.llm import structured
 
     calls = {"n": 0}
 
@@ -951,3 +951,185 @@ def test_unreadable_pages_do_not_cost_the_analysis(conn, monkeypatch):
     bill = db.get_bill(conn, "1")
     assert bill["risk"] == "mittel"
     assert bill["findings"][0]["location"] is None
+
+
+# --------------------------------------------------------------------------- #
+# Bestandsrecht context
+# --------------------------------------------------------------------------- #
+def _bestandsrecht_context(*units):
+    """A retrieved context of ``(id, rolle, text)`` units, without a model call or GII."""
+    from backend import bestandsrecht
+    from backend.bestandsrecht.reference import Reference, Resolved
+    from backend.bestandsrecht.resolve import Resolution
+
+    resolved = [Resolved(i, "§ " + i.split("__")[1],
+                         Reference(gesetz="Wehrpflichtgesetz", paragraph="§ x", rolle=rolle,
+                                   beleg="x"))
+                for i, rolle, _ in units]
+    fetched = [bestandsrecht.Fetched(i, "WPflG", "§ " + i.split("__")[1], "", None,
+                                     "20260506120000", text, f"sha-{i}") for i, _, text in units]
+    return bestandsrecht.Context(
+        bestandsrecht.Selected([], [], {"model": "haiku", "cost_usd": 0.02}),
+        Resolution(resolved, [], {}), fetched)
+
+
+def _patch_provide(monkeypatch, *units, seen=None):
+    """Serve ``units`` as every bill's existing law, fitted into the given budget."""
+    from dataclasses import replace
+
+    from backend import bestandsrecht
+
+    monkeypatch.setattr(pipeline.gii_index, "load", lambda: [])
+
+    def provide(titel, text, *, budget, **kwargs):
+        if seen is not None:
+            seen.append({"budget": budget, **kwargs})
+        context = _bestandsrecht_context(*units)
+        return replace(context, fit=bestandsrecht.fit(context, budget))
+
+    monkeypatch.setattr(pipeline.bestandsrecht, "provide", provide)
+
+
+UNITS = (("wehrpflg/__2", "geaendert", "Alter Text von § 2."),
+         ("wehrpflg/__3", "verwiesen", "Alter Text von § 3."))
+
+
+def test_run_feeds_the_existing_law_records_and_traces_it(conn, monkeypatch, runs_dir, tmp_path):
+    from backend import tracelog
+    from backend.llm import structured
+
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch)
+    monkeypatch.setattr(config, "GII_DIR", str(tmp_path / "gii"))
+    seen, messages = [], []
+    _patch_provide(monkeypatch, *UNITS, seen=seen)
+
+    async def run_query(user_message, on_message=None, **_):
+        messages.append(user_message)
+        return structured.StructuredRun(_analysis(_finding()), None, [], None, None)
+
+    monkeypatch.setattr(pipeline.analyzer, "run_query", run_query)
+
+    assert pipeline.run(conn, bestandsrecht_context=True) == 0
+    (message,) = messages
+    assert message.index("<entwurfstext>") < message.index('<geltende-fassung gesetz="WPflG"')
+    assert "Alter Text von § 3." in message
+
+    (call,) = seen
+    assert call["budget"] == pipeline.analyzer.MAX_INPUT_CHARS - len("Ein Gesetzestext.")
+    assert call["freeze_dir"] == tmp_path / "gii" / "frozen" / "21-1"
+    assert call["trace"].name == "21-1.select.jsonl"
+    assert call["log"].parent.name == "bestandsrecht"
+
+    stored = db.get_bill(conn, "1")
+    documents = stored["analysis_documents"]
+    assert [d["typ"] for d in documents] == ["gesetzentwurf", "bestandsrecht", "bestandsrecht"]
+    assert documents[1]["rolle"] == "geaendert" and documents[1]["pdf_hash"] == "sha-wehrpflg/__2"
+    assert stored["prompt_version"] == config.PROMPT_VERSION
+
+    header, _, _ = tracelog.read(runs_dir / stored["analysis_trace"])
+    assert header["bestandsrecht_context"] is True
+    assert header["bestandsrecht"]["decision"] == "vollstaendig"
+    assert header["bestandsrecht"]["fed_count"] == 2
+    assert header["inputs"][2] == {"typ": "bestandsrecht", "dokumentnummer": "§ 3 WPflG",
+                                   "document_id": "wehrpflg/__3", "pdf_hash": "sha-wehrpflg/__3",
+                                   "text_chars": documents[2]["text_chars"],
+                                   "rolle": "verwiesen"}
+    assert "Alter Text" not in (runs_dir / stored["analysis_trace"]).read_text(encoding="utf-8")
+
+
+def test_run_over_budget_feeds_the_amended_paragraphs_or_none_but_still_analyzes(
+        conn, monkeypatch, caplog):
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch, text="x" * 100)
+    _patch_provide(monkeypatch, *UNITS)
+    sent = []
+    monkeypatch.setattr(
+        pipeline.analyzer, "analyze_bill",
+        lambda titel, dnr, text, context_docs=None, bestandsrecht=None, **_:
+        sent.append(bestandsrecht) or _analysis(),
+    )
+    block = len("§ 2\nAlter Text von § 2.")
+    monkeypatch.setattr(pipeline.analyzer, "MAX_INPUT_CHARS", 100 + block)
+
+    assert pipeline.run(conn, bestandsrecht_context=True) == 0
+    assert [b[1] for b in sent[0]] == ["§ 2"]
+    assert "only the 1 amended § fed" in caplog.text
+
+    monkeypatch.setattr(pipeline.analyzer, "MAX_INPUT_CHARS", 100 + block - 1)
+    assert pipeline.run(conn, force=True, bestandsrecht_context=True) == 0
+    assert sent[1] == []
+    assert "analyzing without it" in caplog.text
+    stored = db.get_bill(conn, "1")
+    assert stored["risk"] is not None
+    assert [d["typ"] for d in stored["analysis_documents"]] == ["gesetzentwurf"]
+
+
+def test_switching_the_context_on_reanalyzes_only_with_force(conn, monkeypatch):
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch)
+    seen = []
+    _patch_provide(monkeypatch, *UNITS, seen=seen)
+    monkeypatch.setattr(pipeline.analyzer, "analyze_bill", lambda *a, **k: _analysis())
+
+    pipeline.run(conn, bestandsrecht_context=False)
+    pipeline.run(conn, bestandsrecht_context=True)
+    assert seen == []  # analyzed and unchanged: the switch alone is no reason
+    assert [d["typ"] for d in db.get_bill(conn, "1")["analysis_documents"]] == ["gesetzentwurf"]
+
+    pipeline.run(conn, force=True, bestandsrecht_context=True)
+    assert len(seen) == 1
+    stored = db.get_bill(conn, "1")["analysis_documents"]
+    assert [d["typ"] for d in stored].count("bestandsrecht") == 2
+
+    pipeline.run(conn, bestandsrecht_context=False)
+    assert db.get_bill(conn, "1")["analysis_documents"] == stored  # off again: kept
+
+
+def test_needs_analysis_ignores_the_existing_law_an_analysis_read():
+    existing = _stored(analysis_documents=[
+        pipeline.entwurf_document(_fresh()),
+        {"document_id": "wehrpflg/__2", "typ": "bestandsrecht", "pdf_hash": "sha"}])
+    assert pipeline.needs_analysis(existing, _inputs(), force=False) is False
+    changed = _inputs(pdf_hash="hash-new")
+    assert "bestandsrecht" not in pipeline._decision_reason(existing, changed, force=False)
+
+
+def test_locate_findings_skips_the_existing_law(monkeypatch):
+    opened = []
+    monkeypatch.setattr(pipeline.pdf_text, "get_pages",
+                        lambda url, cache_key=None: opened.append(url) or ["Zitat steht hier."])
+    documents = [{"document_id": "wehrpflg/__2", "typ": "bestandsrecht",
+                  "pdf_url": "https://www.gesetze-im-internet.de/wehrpflg/__2.html"},
+                 pipeline.entwurf_document(_fresh(pdf_url="https://example.org/1.pdf"))]
+    (located,) = pipeline.locate_findings([{"quote": "Zitat steht hier"}], documents)
+    assert opened == ["https://example.org/1.pdf"]
+    assert located["location"]["document_id"] == "1"
+
+
+def test_a_failed_selection_fails_the_attempt(conn, monkeypatch, runs_dir):
+    _patch_dip(monkeypatch, [_doc("1")])
+    _patch_pdf(monkeypatch)
+    monkeypatch.setattr(pipeline.gii_index, "load", lambda: [])
+
+    def provide(*args, **kwargs):
+        raise RuntimeError("selection failed")
+
+    monkeypatch.setattr(pipeline.bestandsrecht, "provide", provide)
+    monkeypatch.setattr(pipeline.analyzer, "analyze_bill", lambda *a, **k: _analysis())
+
+    assert pipeline.run(conn, bestandsrecht_context=True) == 1
+    assert db.get_bill(conn, "1")["risk"] is None
+    assert [r["error"] for r in _error_records(runs_dir)] == ["selection failed"] * 2
+
+
+def test_the_list_of_laws_is_loaded_only_with_the_context_on(conn, monkeypatch):
+    _patch_dip(monkeypatch, [])
+
+    def load():
+        raise RuntimeError("GII down")
+
+    monkeypatch.setattr(pipeline.gii_index, "load", load)
+    assert pipeline.run(conn, bestandsrecht_context=False) == 0
+    with pytest.raises(RuntimeError, match="GII down"):
+        pipeline.run(conn, bestandsrecht_context=True)

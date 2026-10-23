@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useI18n } from "../i18n";
+import { hasImpressum, useMeta } from "../operator";
 
 function LangToggle() {
   const { lang, setLang } = useI18n();
@@ -28,6 +29,8 @@ function LangToggle() {
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useI18n();
+  const meta = useMeta();
+  const operator = meta?.operator ?? null;
   return (
     <div className="app">
       <header className="site-header">
@@ -42,6 +45,11 @@ export function Layout({ children }: { children: ReactNode }) {
             <NavLink to="/" end className="nav-link">
               {t("navBills")}
             </NavLink>
+            {!!meta?.highlight_count && (
+              <NavLink to="/fundstuecke" className="nav-link">
+                {t("navHighlights")}
+              </NavLink>
+            )}
             <NavLink to="/about" className="nav-link">
               {t("navAbout")}
             </NavLink>
@@ -60,6 +68,15 @@ export function Layout({ children }: { children: ReactNode }) {
           <NavLink to="/datenschutz" className="footer-link">
             {t("privacyLink")}
           </NavLink>
+          {hasImpressum(operator) && (
+            <>
+              {" "}
+              ·{" "}
+              <NavLink to="/impressum" className="footer-link">
+                Impressum
+              </NavLink>
+            </>
+          )}
         </div>
       </footer>
     </div>

@@ -1,24 +1,12 @@
-import { useEffect, useState } from "react";
-import { fetchMeta } from "../api";
+import { hasImpressum, useOperator } from "../operator";
 import { useI18n } from "../i18n";
 
 export function PrivacyPage() {
   const { lang } = useI18n();
   const de = lang === "de";
 
-  // The contact address is server configuration; without one the line stays hidden.
-  const [contactEmail, setContactEmail] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    fetchMeta()
-      .then((meta) => {
-        if (!cancelled) setContactEmail(meta.contact_email);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const operator = useOperator();
+  const contactEmail = operator?.email;
 
   return (
     <article className="about-page prose">
@@ -86,14 +74,33 @@ export function PrivacyPage() {
             supervisory authority.
           </>
         )}
-        {contactEmail && (
-          <>
-            {" "}
-            {de ? "Verantwortlich ist der Betreiber dieser Website:" : "The operator of this website is the controller:"}{" "}
-            <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
-          </>
-        )}
       </p>
+
+      {(hasImpressum(operator) || contactEmail) && (
+        <p>
+          {de
+            ? "Verantwortlich ist der Betreiber dieser Website:"
+            : "The operator of this website is the controller:"}
+          {hasImpressum(operator) && (
+            <>
+              <br />
+              {operator.name}
+              {operator.address.map((line) => (
+                <span key={line}>
+                  <br />
+                  {line}
+                </span>
+              ))}
+            </>
+          )}
+          {contactEmail && (
+            <>
+              <br />
+              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            </>
+          )}
+        </p>
+      )}
     </article>
   );
 }

@@ -12,7 +12,7 @@ controlled here; every artefact lands in `data/`, which is gitignored.
 
 | | `eval/gg` | `eval/harness` |
 |---|---|---|
-| Question | Does the model recall the Grundgesetz unaided? | Does the Lektor find the known drafting defects? Does the Angreifer find what a bad-faith actor gets out of a draft that is handwerklich flawless? |
+| Question | Does the model recall the Grundgesetz unaided? | Does the Lektor find the known drafting defects? Does the red-team pass find what a bad-faith actor gets out of a draft that is handwerklich flawless? |
 | Ground truth | official GG XML, gesetze-im-internet.de | `testset/cases-*.yaml`, splits `dev` and `test` |
 | Scoring | mechanical (string comparison) | mechanical (passage position); whether a hit names the defect stays a hand verdict |
 | Under test | any model id | `backend/analysis/analyzer.py` and `backend/analysis/redteam.py` with their prompts |
@@ -38,7 +38,7 @@ with them. `--task` picks the pass:
 | Task | Pass | Case files (`--cases`) | Finding |
 |---|---|---|---|
 | `lektor` (default) | `analyzer` — drafting defects | `beschlussempfehlungen` (default), `lektor` | a finding |
-| `angreifer` | `redteam` — what a bad-faith actor gets out of the draft | `angreifer` | an exploit, with actor, steps, gain, effort and the missing safeguard |
+| `exploit` | `redteam` — what a bad-faith actor gets out of the draft | `exploit` | an exploit, with actor, steps, gain, effort and the missing safeguard |
 
 Inputs come from the test set alone: the pinned text, the title and, for the oracle and the
 precision run, the pinned norms and Beschlussempfehlungen in `testset/inputs.yaml`.
@@ -50,7 +50,7 @@ and not sent.
 ```
 make eval-run EVAL_ONLY=21/537,21/1493      # those drafts (paid, one call each)
 make eval-run EVAL_SPLIT=dev                # every dev draft of the case set
-make eval-run EVAL_TASK=angreifer EVAL_SPLIT=dev   # the Angreifer on its dev drafts
+make eval-run EVAL_TASK=exploit EVAL_SPLIT=dev   # the red-team pass on its dev drafts
 make eval-report                            # re-score the stored samples (free)
 uv run python -m eval.harness run --cases lektor --model claude-opus-4-8
 make eval-run EVAL_ONLY=21/1493 EVAL_EFFORT=medium   # same drafts at a lower reasoning effort
@@ -68,12 +68,14 @@ cases match is not run.
 |---|---|---|---|---|
 | default | — | `requires_context: none` | the draft | `<task>-<tag>` |
 | baseline | `--context bestandsrecht` | `requires_context: bestandsrecht` | the draft | `<task>-<tag>`, shared with the default |
-| oracle | `--context bestandsrecht --oracle` (Lektor) | `requires_context: bestandsrecht` | the draft, then the document's pinned norms | `<task>-<tag>-oracle-bestandsrecht` |
+| all cases | `--context all` | every case, any `requires_context` | the draft | `<task>-<tag>`, shared with the default |
+| oracle | `--context bestandsrecht --oracle` (Lektor) | `requires_context: bestandsrecht` | the draft, then the document's pinned paragraphs | `<task>-<tag>-oracle-bestandsrecht` |
 | precision | `--beschlussempfehlung` (Lektor) | every case with `repaired_by`, any context | the draft, then its pinned Beschlussempfehlungen, as the pipeline sends them | `<task>-<tag>-beschlussempfehlung` |
+| retrieved | `--retrieved` (Lektor, any `--context`, also with `--beschlussempfehlung`) | as without it | as without it, then the existing law the pipeline retrieves | `<task>-<tag>[-beschlussempfehlung]-abgerufen` |
 
 The baseline is the number the oracle is compared with: same cases, draft alone. The oracle is an
-upper bound, because it hands the model exactly the norms that matter. Cases needing EU law or
-outside facts have no pinned context and are not run. Reports of a context run carry the context
+upper bound, because it hands the model exactly the paragraphs that matter. Cases needing EU law or
+outside facts have no pinned context and run only under `--context all`. Reports of a context run carry the context
 in their name (`report-<cases>-bestandsrecht[-<split>].html`).
 
 The precision run turns the committee-repair cases around: the run reads the Beschlussempfehlung
@@ -85,6 +87,18 @@ counts only same-category findings as re-reports, overall and by context. Recall
 are separate measurements: a repaired case counts whether or not a recall run finds it.
 Reports carry `-beschlussempfehlung` in their name.
 
+The retrieved context is pipeline output, not test content: `bestandsrecht.provide` selects the
+§§ for the pinned draft (one cheap call), resolves and fetches them from gesetze-im-internet.de and
+fits them into the budget the pipeline uses (all, else only the amended §§, else none). The
+selection and the texts are frozen per document under `data/eval/bestandsrecht/<doc>/` and shared
+by every run, so runs on other models or Lektor prompts read the same context; a new selection
+prompt, model or effort, or a changed resolver, gives a new one. Each sample lists the fed §§
+(`id`, `rolle`, `sha256`, `chars`) under `inputs` and the decision under `bestandsrecht`;
+`bestandsrecht/<doc>.json` in the run directory holds the selection and resolution, and
+`traces/<doc>.select.jsonl` the selection call. For drafts already enacted GII's text may carry
+the draft's own changes. Compare a retrieved run with the baseline and the oracle on the same
+cases; `--retrieved --context none` and `--retrieved --beschlussempfehlung` check precision.
+
 Samples are per document, so drafts shared by two case files or two modes on the same input are
 not run twice. A document with a sample is skipped unless `--force`.
 
@@ -92,6 +106,7 @@ not run twice. A document with a sample is skipped unless `--force`.
 make eval-run EVAL_CONTEXT=bestandsrecht EVAL_SPLIT=dev                # baseline
 make eval-run EVAL_CONTEXT=bestandsrecht EVAL_ORACLE=1 EVAL_SPLIT=dev  # oracle
 make eval-run EVAL_BE=1 EVAL_SPLIT=dev                                 # precision
+make eval-run EVAL_CONTEXT=bestandsrecht EVAL_RETRIEVED=1 EVAL_SPLIT=dev  # retrieved
 ```
 
 Output lands in `data/eval/runs/<task>-<prompt version>-<model>[-effort-<level>]/`:
@@ -105,13 +120,35 @@ Output lands in `data/eval/runs/<task>-<prompt version>-<model>[-effort-<level>]
 | `results-<cases>[-<split>].json` | per document: the expectations, the analysis's summary, every finding (with `located`: quote found in the pinned text) and each case's verdict, naming matched findings by index |
 | `report-<cases>[-<split>].html` | one run as a self-contained page: how the test set was mined, headline numbers, recall per category, then every document with each scored case in full — anchor, `story`, `source` — its verdict and all findings |
 
+### Bestandsrecht selection (`select`)
+
+`select` measures the retrieval in front of the oracle: does the shipped selection
+([`backend/bestandsrecht`](../backend/bestandsrecht/)) name the paragraphs a case needs? Every
+document with a `requires_context: bestandsrecht` case of the case set gets one cheap selection
+call on its pinned draft; the references are resolved to GII ids (law zips downloaded, no
+paragraph text read) and compared with the case's `bestandsrecht` list. Per needed id: `hit`,
+`paragraph missed` (other paragraphs of the law selected), `law missed`, with any unresolved
+reference of the same § named beside it — then Resolve, not Select, lost it. Recall counts
+`geaendert` and `verwiesen`; `nicht_genannt` paragraphs (not named in the Wortlaut) are counted
+apart, since no reading of the draft reaches them.
+
+```
+make eval-select EVAL_SPLIT=dev                     # committee-repair cases
+make eval-select EVAL_CASES=lektor EVAL_SPLIT=dev   # press cases
+```
+
+Output in `data/eval/runs/select-<prompt version>-<model>-effort-<level>/`: `samples/<doc>.json`
+(references, those whose beleg was not found, ids, unresolved with reason, call cost), `traces/<doc>.select.jsonl`,
+`summary-<cases>-<split>.json` and `report-<cases>-<split>.html`. A sampled document is not called
+again (`--force`), so re-scoring is free (`--rescore`).
+
 The page covers one run and nothing else; re-render it any time with
-`uv run python -m eval.harness html --split dev --tag <tag> [--task angreifer]`.
+`uv run python -m eval.harness html --split dev --tag <tag> [--task exploit]`.
 
 Verdicts are the passage verdicts of `testset/score.py` plus `oversize`, `failed` and
 `not_run`. A `hit` says a finding quoted the anchored passage, not that it named the defect or
 attack: reading the matched finding against `expected_defect` stays a hand verdict. For the
-Angreifer, an unanchored negative is a draft that offers nothing to exploit: `fired` if the
+exploit task, an unanchored negative is a draft that offers nothing to exploit: `fired` if the
 run reported any exploit, `quiet` if none — its one precision signal. Every Lektor negative
 is anchored on the passage its forbidden claim would quote.
 
@@ -120,8 +157,8 @@ Every call's message stream is written to `traces/<doc>.jsonl` as it arrives, by
 successful or not: a failed or odd call is diagnosed from its trace. The draft text is never
 stored (length + hash only); the thinking summary is stored in full.
 
-The Angreifer's positive cases are retold as stories — what happened, who profited, how much —
-in [`testset/angreifer-stories.md`](testset/angreifer-stories.md). Read them before judging a
+The exploit task's positive cases are retold as stories — what happened, who profited, how much —
+in [`testset/exploit-stories.md`](testset/exploit-stories.md). Read them before judging a
 run: if you cannot tell the story, you cannot tell whether the pass found it.
 
 ## Publishing reports
@@ -136,7 +173,7 @@ atomically switched release.
 The structured ground truth both suites are scored against — one YAML record per
 expected defect or attack (`positiv`), per controversy that must not surface as
 one (`negativ`, carrying a `forbidden_claim`), or per closed gap that must not be
-reported as open (`invers`). Ids are `L-…` for the Lektor, `R-…` for the Angreifer.
+reported as open (`invers`). Ids are `L-…` for the Lektor, `R-…` for the exploit task.
 Every record is self-contained: `story` tells how the case came about — the ruling,
 repair law or criticism behind it and why it counts as positive or negative — and
 `source` notes how it was mined. Lint rejects either field pointing outside the set.
@@ -162,10 +199,18 @@ After the fetch, all free and offline.
   dserver.bundestag.de, extracts it with the pipeline's `extract_text` and writes
   it only if it matches the pin. Anchors and quotes are checked against these
   bytes, so a re-extraction cannot move a verdict silently.
+- **`bestandsrecht`** (case field, required exactly when `requires_context:
+  bestandsrecht`) — the existing paragraphs a reviewer must read beside the draft,
+  as `{id, rolle}`. `id` is the paragraph's page on gesetze-im-internet.de
+  (`wehrpflg/__3` → `https://www.gesetze-im-internet.de/wehrpflg/__3.html`;
+  `art_5`, `art_229__1`, `anlage` for Artikel and Anlagen); `rolle` is `geaendert`
+  (the draft amends it), `verwiesen` (its new wording cites it) or `nicht_genannt`
+  (the Wortlaut does not name it). What the selection eval scores against.
 - **`texts/bestandsrecht/`** — the golden context of the `bestandsrecht` cases:
-  one file per norm (a whole §), **as it read on the draft's date**. The entries
-  live in `inputs.yaml` under the draft's `bestandsrecht` key (`gesetz`, `norm`,
-  `fassung`, `herkunft`, the `cases` it settles, `file`, `sha256`). gesetze-im-internet.de
+  one file per paragraph (a whole §), **as it read on the draft's date**. The entries
+  live in `inputs.yaml` under the draft's `bestandsrecht` key (`id`, `gesetz`,
+  `paragraph`, `fassung`, `herkunft`, the `cases` it settles, `file`, `sha256`); each
+  `id` is among the `bestandsrecht` ids of every case it names. gesetze-im-internet.de
   serves only the current version, which often already contains the repair, so
   these texts are pinned by hand. `herkunft` records the source and any later
   amendment reverted, and `fetch` cannot recreate them. Lint checks every hash and
@@ -198,8 +243,10 @@ After the fetch, all free and offline.
   case's anchor are located in the same squashed pinned text (quotes that are
   not verbatim by their longest ≥ 40-character run), and the verdict is
   `hit` (overlap), `near` (within `TESTSET_NEAR_CHARS`, default 300), `miss`,
-  `unanchored` or `not_run`; negatives are `touched` or `clear` (Angreifer: `fired` or
-  `quiet` when unanchored). `score db` scores the stored Lektor analyses; harness runs
+  `unanchored` or `not_run`; negatives are `touched` or `clear` (exploit: `fired` or
+  `quiet` when unanchored). `score db` scores the stored Lektor analyses; a case whose
+  `repaired_by` Beschlussempfehlung the stored analysis read is scored as repaired
+  (`behoben`, `clear`/`touched`, `precision`) instead of as a positive. Harness runs
   are scored by `eval.harness report`. Reported per
   split and by `requires_context`. It measures where a run looked, not
   whether it named the defect, and bounds hand recall in neither direction:

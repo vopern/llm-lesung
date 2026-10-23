@@ -23,18 +23,19 @@ export function EvalPage() {
       <h1>{t("evalTitle")}</h1>
       {lang === "de" ? (
         <p>
-          Diese Seite richtet sich an technisch Interessierte. Die Berichte zeigen, wie gut die
-          Analyse Mängel findet, die nachweislich in Gesetzentwürfen standen: je Testfall die
-          erwartete Stelle, das Urteil und die Ausgabe des Modells, dazu die Gesamtzahlen. Die
-          Testfälle stehen fest, bevor ein Lauf den Entwurf liest, und bewertet wird mechanisch —
-          kein Modell bewertet sich selbst.
+          Diese Seite richtet sich an technisch Interessierte. Die Evaluierungen sollen messen, wie gut die
+          Analyse bekannte Mängel in früheren Gesetzentwürfen findet und bestehen aus verschiedenen Testfällen:
+          jeder Testfall definiert eine Passage, eine Kategorie und den passenden Befund in einem Entwurf.
+          Jede Evaluierung enthält die Ergebnisse der Analyse der Entwürfe und aggregierte Metriken.
+          Testfälle werden mechanisch ausschließlich über die gefundene Passage bewertet.
         </p>
       ) : (
         <p>
-          This page is for technical readers. The reports show how well the analysis finds
-          defects that demonstrably were in draft bills: per test case the expected passage, the
-          verdict and the model&apos;s output, plus the aggregate numbers. Test cases are fixed
-          before a run reads the draft, and scoring is mechanical — no model grades itself.
+          This page is for technical readers. The evaluations are meant to measure how well the
+          analysis finds known defects in earlier draft bills, and consist of individual test cases:
+          each test case defines a passage, a category and the matching finding in a draft. Each
+          evaluation contains the results of analysing the drafts and aggregate metrics. Test cases
+          are scored mechanically, solely by the passage found.
         </p>
       )}
       <p className="method-disclaimer">{t("disclaimer")}</p>

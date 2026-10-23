@@ -25,8 +25,8 @@ from typing import Any
 from claude_agent_sdk import ClaudeAgentOptions
 
 from backend import config, tracelog
+from backend.llm import structured
 
-from . import structured
 from .schema import RedTeamAnalysis
 from .style import STYLE_SECTION
 

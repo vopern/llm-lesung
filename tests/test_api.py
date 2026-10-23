@@ -4,6 +4,8 @@ No network: seeds a temporary SQLite file via the db.py public functions and
 points the server at it by monkeypatching ``config.DB_PATH``.
 """
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -47,6 +49,8 @@ _EXPLOIT = {
 def client(tmp_path, monkeypatch):
     db_path = str(tmp_path / "test.db")
     monkeypatch.setattr(config, "DB_PATH", db_path)
+    monkeypatch.setattr(config, "OPERATOR_FILE", str(tmp_path / "operator.json"))
+    monkeypatch.setattr(config, "HIGHLIGHTS_FILE", str(tmp_path / "highlights.json"))
 
     # Seed the database via the public db.py API.
     conn = db.connect(db_path)
@@ -314,7 +318,8 @@ def test_meta_shape(client):
         "prompt_version",
         "model",
         "last_analyzed_at",
-        "contact_email",
+        "operator",
+        "highlight_count",
     }
     assert meta["counts"] == {
         "hoch": 1,
@@ -328,6 +333,7 @@ def test_meta_shape(client):
     assert meta["prompt_version"] == config.PROMPT_VERSION
     assert meta["model"] == config.ANALYSIS_MODEL
     assert meta["last_analyzed_at"] is not None
+    assert meta["highlight_count"] == 0
 
 
 def test_meta_last_analyzed_null_when_none(tmp_path, monkeypatch):
@@ -343,11 +349,109 @@ def test_meta_last_analyzed_null_when_none(tmp_path, monkeypatch):
     assert meta["counts"]["unanalysiert"] == 1
 
 
-def test_meta_contact_email_null_unless_configured(client, monkeypatch):
-    monkeypatch.setattr(config, "CONTACT_EMAIL", "")
-    assert client.get("/api/meta").json()["contact_email"] is None
-    monkeypatch.setattr(config, "CONTACT_EMAIL", "kontakt@example.org")
-    assert client.get("/api/meta").json()["contact_email"] == "kontakt@example.org"
+def test_meta_operator_null_without_file(client):
+    assert client.get("/api/meta").json()["operator"] is None
+
+
+def test_meta_operator_from_file(client, tmp_path):
+    (tmp_path / "operator.json").write_text(json.dumps({
+        "name": " Erika Mustermann ",
+        "address": ["c/o Service #12", "", "Musterstraße 1", "12345 Musterstadt"],
+        "email": "kontakt@example.org",
+    }), encoding="utf-8")
+    assert client.get("/api/meta").json()["operator"] == {
+        "name": "Erika Mustermann",
+        "address": ["c/o Service #12", "Musterstraße 1", "12345 Musterstadt"],
+        "email": "kontakt@example.org",
+    }
+
+
+def test_meta_operator_partial(client, tmp_path):
+    (tmp_path / "operator.json").write_text('{"email": "kontakt@example.org"}', encoding="utf-8")
+    assert client.get("/api/meta").json()["operator"] == {
+        "name": None, "address": [], "email": "kontakt@example.org",
+    }
+
+
+@pytest.mark.parametrize("content", ["{not json", "[]", '{"name": 3, "address": "x"}', "{}"])
+def test_meta_operator_null_when_malformed_or_empty(client, tmp_path, content):
+    (tmp_path / "operator.json").write_text(content, encoding="utf-8")
+    assert client.get("/api/meta").json()["operator"] is None
+
+
+# --- Highlights -------------------------------------------------------------
+
+
+def _write_highlights(tmp_path, entries) -> None:
+    (tmp_path / "highlights.json").write_text(json.dumps(entries), encoding="utf-8")
+
+
+def test_highlights_empty_without_file(client):
+    assert client.get("/api/highlights").json() == []
+
+
+@pytest.mark.parametrize("content", ["[not json", '{"bill_id": "10"}'])
+def test_highlights_empty_when_malformed(client, tmp_path, content):
+    (tmp_path / "highlights.json").write_text(content, encoding="utf-8")
+    assert client.get("/api/highlights").json() == []
+
+
+def _finding(title="Falscher Verweis", quote="gemäß § 5 Absatz 3", **extra) -> dict:
+    return {"severity": "hoch", "category": "referenz", "title": title, "quote": quote,
+            "analyzed_at": "2026-10-02", **extra}
+
+
+def test_highlights_link_their_exact_stored_finding(client, tmp_path):
+    _write_highlights(tmp_path, [
+        {"bill_id": "20", "headline": " Treffer ", "why": " Darum. ", "added": "2026-10-20",
+         "finding": _finding("Leichte Mehrdeutigkeit", "der Betreiber",
+                             severity="niedrig", category="unklarheit"),
+         "media": [{"outlet": "Zeitung", "title": "Bericht", "url": "https://example.org/a",
+                    "date": "2026-10-21"},
+                   {"outlet": "Kaputt", "url": "javascript:alert(1)"}]},
+        {"bill_id": "10", "headline": "Ohne Extras", "finding": _finding()},
+    ])
+    first, second = client.get("/api/highlights").json()
+    stored = client.get("/api/bills/20").json()["findings"][0]
+    assert first == {
+        "bill_id": "20", "dokumentnummer": "21/20", "titel": "Entwurf 20", "risk": "niedrig",
+        "headline": "Treffer", "why": "Darum.", "added": "2026-10-20",
+        "media": [{"url": "https://example.org/a", "outlet": "Zeitung", "title": "Bericht",
+                   "date": "2026-10-21"}],
+        "finding": _finding("Leichte Mehrdeutigkeit", "der Betreiber",
+                            severity="niedrig", category="unklarheit"),
+        "finding_id": stored["id"],
+    }
+    assert second["finding_id"] is not None
+    assert second["media"] == [] and second["why"] is None
+    assert client.get("/api/meta").json()["highlight_count"] == 2
+
+
+def test_highlights_without_exact_match_keep_their_finding_but_no_link(client, tmp_path):
+    _write_highlights(tmp_path, [
+        {"bill_id": "10", "headline": "Anderer Titel", "finding": _finding("Falscher  Verweis")},
+        {"bill_id": "10", "headline": "Anderes Zitat", "finding": _finding(quote="gemäß § 5")},
+        {"bill_id": "10", "headline": "Kaputt",
+         "finding": {"severity": "extrem", "title": "Ohne Schweregrad"}},
+    ])
+    title, quote, odd = client.get("/api/highlights").json()
+    assert title["finding_id"] is None and title["finding"]["title"] == "Falscher  Verweis"
+    assert quote["finding_id"] is None
+    assert odd["finding"] == {"severity": None, "category": None, "title": "Ohne Schweregrad",
+                              "quote": None, "analyzed_at": None}
+
+
+def test_highlights_drop_unknown_bills_and_entries_without_headline_or_finding(client, tmp_path):
+    _write_highlights(tmp_path, [
+        {"bill_id": "nope", "headline": "Unbekannt", "finding": _finding()},
+        {"bill_id": "10", "headline": "  ", "finding": _finding()},
+        {"bill_id": "10", "headline": "Ohne Befund"},
+        {"bill_id": "10", "headline": "Befund ohne Titel", "finding": {"severity": "hoch"}},
+        {"bill_id": "10", "headline": "Alter Schnipsel", "finding": "falscher verweis"},
+        "kein Objekt",
+        {"bill_id": "20", "headline": "Bleibt", "finding": _finding()},
+    ])
+    assert [h["headline"] for h in client.get("/api/highlights").json()] == ["Bleibt"]
 
 
 # --- Evaluation reports -----------------------------------------------------
@@ -373,13 +477,13 @@ def test_eval_without_folder(eval_client):
 def test_eval_lists_and_serves_html_reports(eval_client):
     client, folder = eval_client
     (folder / "runs").mkdir(parents=True)
-    (folder / "runs" / "dev.html").write_text("<html><title> Lauf\n dev </title>", encoding="utf-8")
+    (folder / "runs" / "dev.html").write_text("<html><title> Lauf\n &quot;dev&quot; </title>", encoding="utf-8")
     (folder / "top.html").write_text("<p>no title</p>", encoding="utf-8")
     (folder / "notes.txt").write_text("x", encoding="utf-8")
 
     reports = client.get("/api/eval").json()
     assert [(r["path"], r["title"]) for r in reports] == [("top.html", "top.html"),
-                                                          ("runs/dev.html", "Lauf dev")]
+                                                          ("runs/dev.html", 'Lauf "dev"')]
     assert all(r["modified"] for r in reports)
 
     report = client.get("/api/eval/reports/runs/dev.html")

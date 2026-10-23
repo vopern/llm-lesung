@@ -1,14 +1,16 @@
-"""Entry point: ``python -m eval.harness <run|report|html>``.
+"""Entry point: ``python -m eval.harness <run|report|html|select>``.
 
 ``run`` costs money (one call per document); ``report`` and ``html`` are
-offline. ``--task lektor|angreifer`` picks the pass.
+offline. ``--task lektor|exploit`` picks the pass. ``select`` scores the
+Bestandsrecht selection (one cheap call per document not yet sampled).
 """
 
 import sys
 
-from . import html, report, run
+from . import html, report, run, selection
 
-_COMMANDS = {"run": run.main, "report": report.main, "html": html.main}
+_COMMANDS = {"run": run.main, "report": report.main, "html": html.main,
+             "select": selection.main}
 
 
 def main(argv: list[str]) -> int:

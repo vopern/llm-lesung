@@ -3,20 +3,24 @@
 .PHONY: setup pipeline pipeline-all redteam redteam-all serve dev build test \
         gg-build gg-run gg-score gg-report gg-eval \
         eval-fetch eval-lint eval-export eval-score eval-run eval-report \
-        infra-up infra-ip infra-down deploy push-db push-eval pull-feedback ssh-ec2 dockerlogs
+        infra-up infra-ip infra-down deploy push-db push-eval push-operator push-highlights pull-feedback ssh-ec2 dockerlogs
 
 # --- Local: app + pipeline runs ----------------------------------------------
 LIMIT ?= 5
+# BESTANDSRECHT=on|off overrides BESTANDSRECHT_CONTEXT for one run.
+BESTANDSRECHT ?=
+PIPELINE_ARGS = $(if $(filter on,$(BESTANDSRECHT)),--bestandsrecht,) \
+                $(if $(filter off,$(BESTANDSRECHT)),--no-bestandsrecht,)
 
 setup:            ## install backend + frontend deps
 	uv sync
 	cd frontend && npm install
 
 pipeline:         ## analyze LIMIT bills (default 5), e.g. make pipeline LIMIT=20
-	uv run python -m backend.pipeline --limit $(LIMIT)
+	uv run python -m backend.pipeline --limit $(LIMIT) $(PIPELINE_ARGS)
 
 pipeline-all:     ## analyze the full legislative period (~340 bills, ~$$45)
-	uv run python -m backend.pipeline
+	uv run python -m backend.pipeline $(PIPELINE_ARGS)
 
 redteam:          ## red-team LIMIT stored bills (default 5), one Claude call each
 	uv run python -m backend.redteam_pipeline --limit $(LIMIT)
@@ -49,7 +53,7 @@ eval-export:      ## one JSONL sample per document -> data/testset/export/ (free
 eval-score:       ## passage recall of the stored findings against the anchors (free, offline)
 	uv run python -m eval.testset score db
 
-# --- Eval: harness, Lektor or Angreifer on the pinned drafts (eval/README.md) --
+# --- Eval: harness, Lektor or red-team pass on the pinned drafts (eval/README.md) --
 EVAL_TASK  ?= lektor
 EVAL_CASES ?=
 EVAL_SPLIT ?= all
@@ -60,22 +64,27 @@ EVAL_TURNS  ?=
 EVAL_CONTEXT ?=
 EVAL_ORACLE  ?=
 EVAL_BE      ?=
+EVAL_RETRIEVED ?=
 EVAL_ARGS   = --task $(EVAL_TASK) $(if $(EVAL_CASES),--cases $(EVAL_CASES),) \
               $(if $(EVAL_TAG),--tag $(EVAL_TAG),) \
               $(if $(EVAL_CONTEXT),--context $(EVAL_CONTEXT),) \
               $(if $(EVAL_ORACLE),--oracle,) \
               $(if $(EVAL_BE),--beschlussempfehlung,) \
+              $(if $(EVAL_RETRIEVED),--retrieved,) \
               $(if $(EVAL_EFFORT),--effort $(EVAL_EFFORT),) \
               $(if $(EVAL_TURNS),--max-turns $(EVAL_TURNS),)
 
-eval-run:         ## run EVAL_TASK (lektor|angreifer) on the test-set drafts and score (costs money, one call per draft)
+eval-run:         ## run EVAL_TASK (lektor|exploit) on the test-set drafts and score (costs money, one call per draft)
 	uv run python -m eval.harness run $(EVAL_ARGS) --split $(EVAL_SPLIT) \
 		$(if $(EVAL_ONLY),--only $(EVAL_ONLY),)
 eval-report:      ## re-score a harness run -> data/eval/runs/<task>-<tag>/ (free, offline)
 	uv run python -m eval.harness report $(EVAL_ARGS) --split $(EVAL_SPLIT)
+eval-select:      ## score the Bestandsrecht selection against the cases' needed paragraphs (one cheap call per new draft)
+	uv run python -m eval.harness select --task $(EVAL_TASK) $(if $(EVAL_CASES),--cases $(EVAL_CASES),) \
+		--split $(EVAL_SPLIT) $(if $(EVAL_ONLY),--only $(EVAL_ONLY),)
 
 # --- Eval: GG-recall (eval/README.md) ----------------------------------------
-GG_MODEL ?= claude-sonnet-5
+GG_MODEL ?= claude-sonnet-5-5
 GG_TAG   ?= $(GG_MODEL)-on
 GG_LIMIT ?=
 
@@ -102,10 +111,11 @@ SSH_KEY := $(patsubst ~/%,$(HOME)/%,$(SSH_KEY))
 export TF_VAR_aws_profile         := $(AWS_PROFILE)
 export TF_VAR_ssh_public_key_path := $(if $(SSH_KEY),$(SSH_KEY).pub)
 export TUNNEL_TOKEN
-export CONTACT_EMAIL
 
 IMAGE_TAR    = /tmp/llm-lesung-image.tar.gz
 REMOTE_TAR   = /app/llm-lesung-image.tar.gz
+OPERATOR_JSON = data/operator.json
+HIGHLIGHTS_JSON = data/highlights.json
 
 RESOLVE_HOST = HOST=$$(cd infra && terraform output -raw public_ip)
 SSH          = ssh -i $(or $(SSH_KEY),$(error SSH_KEY is not set in .env)) ec2-user@$$HOST
@@ -135,9 +145,11 @@ deploy:           ## build the image locally, ship it to the instance, restart (
 		$(IMAGE_TAR) ec2-user@$$HOST:$(REMOTE_TAR) && \
 	$(SSH) 'gunzip -c $(REMOTE_TAR) | docker load' && \
 	$(SCP) compose.prod.yaml ec2-user@$$HOST:/app/compose.yaml && \
-	printf 'COMPOSE_PROFILES=%s\nTUNNEL_TOKEN=%s\nCONTACT_EMAIL=%s\n' \
-		"$${TUNNEL_TOKEN:+tunnel}" "$$TUNNEL_TOKEN" "$$CONTACT_EMAIL" | \
+	printf 'COMPOSE_PROFILES=%s\nTUNNEL_TOKEN=%s\n' \
+		"$${TUNNEL_TOKEN:+tunnel}" "$$TUNNEL_TOKEN" | \
 		$(SSH) 'umask 077 && cat > /app/.env' && \
+		{ test ! -f $(OPERATOR_JSON) || $(MAKE) --no-print-directory push-operator; } && \
+		{ test ! -f $(HIGHLIGHTS_JSON) || $(MAKE) --no-print-directory push-highlights; } && \
 	$(SSH) 'cd /app && docker compose up -d' && \
 	echo "Deployed: http://$$HOST$${TUNNEL_TOKEN:+ (tunnel running)}"
 
@@ -155,6 +167,20 @@ push-eval:        ## upload data/eval-public as a new release and switch to it a
 	$(SSH) "cd /app/data && ln -sfn eval-releases/$$REL eval-public.tmp && mv -T eval-public.tmp eval-public \
 		&& ls -1d eval-releases/* | head -n -3 | xargs -r rm -rf" && \
 	echo "Eval release $$REL live (previous releases kept: 2)."
+
+push-operator:    ## upload data/operator.json (Impressum and contact address) to the instance (no restart)
+	@$(RESOLVE_HOST); \
+	python3 -m json.tool $(OPERATOR_JSON) > /dev/null && \
+	rsync -az -e "ssh -i $(SSH_KEY)" $(OPERATOR_JSON) ec2-user@$$HOST:/app/data/operator.json.tmp && \
+	$(SSH) 'mv /app/data/operator.json.tmp /app/data/operator.json' && \
+	echo "Operator details updated."
+
+push-highlights:  ## upload data/highlights.json (the Fundstücke page) to the instance (no restart)
+	@$(RESOLVE_HOST); \
+	python3 -m json.tool $(HIGHLIGHTS_JSON) > /dev/null && \
+	rsync -az -e "ssh -i $(SSH_KEY)" $(HIGHLIGHTS_JSON) ec2-user@$$HOST:/app/data/highlights.json.tmp && \
+	$(SSH) 'mv /app/data/highlights.json.tmp /app/data/highlights.json' && \
+	echo "Highlights updated."
 
 pull-feedback:    ## download the reader feedback files into data/feedback/
 	@$(RESOLVE_HOST); mkdir -p data/feedback && \

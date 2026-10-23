@@ -7,6 +7,7 @@ placeable by its longest run, and a document no run covers.
 
 import hashlib
 
+from backend import db
 from eval.testset import export, lint, score
 from tests.test_testset_lint import _case
 
@@ -73,6 +74,35 @@ def test_score_marks_documents_without_run_and_summarizes(tmp_path):
     assert score.score([case], {}, tmp_path)[0]["verdict"] == "not_run"
     summary = score.summarize(rows)["dev"]["all"]
     assert (summary["scorable"], summary["strict"]) == (2, 0.5)
+
+
+def test_case_is_repaired_only_on_a_run_that_read_its_beschlussempfehlung(tmp_path):
+    case = _doc(tmp_path, repaired_by="21/900")
+    runs = {("lektor", "21/537"): [
+        {"label": "read", "beschlussempfehlungen": ["21/900"], "findings": [_finding("in Kraft")]},
+        {"label": "other", "beschlussempfehlungen": ["21/901"], "findings": []},
+        {"label": "draft", "findings": []}]}
+    rows = score.score([case], runs, tmp_path, near=100)
+    assert [(r["run"], r["kind"], r["verdict"]) for r in rows] == [
+        ("read", score.REPAIRED, "clear"), ("other", "positiv", "miss"),
+        ("draft", "positiv", "miss")]
+    summary = score.summarize(rows)["dev"]
+    assert summary[score.REPAIRED]["all"]["precision"] == 1.0
+    assert summary["all"]["counts"] == {"miss": 2}
+
+
+def test_db_runs_lists_the_beschlussempfehlungen_an_analysis_read():
+    conn = db.connect(":memory:")
+    db.init_db(conn)
+    for bill_id, documents in (("1", [{"typ": "gesetzentwurf", "dokumentnummer": "21/537"},
+                                      {"typ": "beschlussempfehlung", "dokumentnummer": "21/900"}]),
+                               ("2", [])):
+        db.upsert_bill(conn, {"id": bill_id, "dokumentnummer": f"21/53{6 + int(bill_id)}",
+                              "wahlperiode": 21, "titel": "t", "pdf_url": "u"})
+        db.mark_analyzed(conn, bill_id, "niedrig", "s", "v7", "m", documents)
+    runs = score.db_runs(conn, {"21/537", "21/538"})
+    assert runs[("lektor", "21/537")][0]["beschlussempfehlungen"] == ["21/900"]
+    assert runs[("lektor", "21/538")][0]["beschlussempfehlungen"] == []
 
 
 def test_export_groups_cases_into_one_sample_per_document(tmp_path):

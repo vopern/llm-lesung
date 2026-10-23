@@ -1,0 +1,23 @@
+[
+  {
+    "bill_id": "290543",
+    "finding": {
+      "severity": "hoch",
+      "category": "vollstaendigkeit",
+      "title": "Keine eigene Stichtagsregel für die neuen Tarife ab 2027 – Tarifsprung oder Regelungslücke vor dem 1. Januar 2027 möglich",
+      "quote": "a) vorbehaltlich der Buchstaben b bis e 17,41 Cent je Stück und 20 Prozent des Kleinverkaufspreises, mindestens jedoch den Betrag, der sich aus Absatz 2 ergibt;",
+      "analyzed_at": "2026-10-02"
+    },
+    "headline": "Steuerlücke für E-Zigaretten-Liquids",
+    "why": "Der Entwurf nennt für Liquids nur Steuersätze ab 2027. Tritt das Gesetz früher in Kraft, gilt bis Jahresende kein Satz. Die Analyse fand diese Lücke im Entwurf, über die auch die Presse später berichtete.",
+    "added": "2026-10-23",
+    "media": [
+      {
+        "outlet": "Süddeutsche Zeitung",
+        "title": "Wie es zur Tabaksteuer-Panne kam",
+        "url": "https://www.sueddeutsche.de/…",
+        "date": "2026-10-23"
+      }
+    ]
+  }
+]

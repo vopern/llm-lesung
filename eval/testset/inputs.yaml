@@ -40,8 +40,9 @@
   beschlussempfehlungen:
     - {doc: "21/1634", file: beschlussempfehlung/21-1634.txt, sha256: "b4a0aadcf26fdb0cb32f7b7ccd3749d48bfa2b81f9cd0216c3caecf29a0fae97"}
   bestandsrecht:
-    - gesetz: AufenthG
-      norm: "§ 44a"
+    - id: aufenthg_2004/__44a
+      gesetz: AufenthG
+      paragraph: "§ 44a"
       fassung: 2025-06-23
       herkunft: "buzer.de a.F., in Kraft 1.7.2023 bis 29.10.2025; zurückgeführt: Art. 2 G v. 27.10.2025 (BGBl. 2025 I Nr. 256, streicht die Angabe zu § 10 Abs. 3 StAG), Art. 11 G v. 16.4.2026 (BGBl. 2026 I Nr. 107), Art. 3 G v. 22.7.2026 (BGBl. 2026 I Nr. 222); jede Abweichung von GII durch diese drei erklärt"
       cases: [L-E1634-a]
@@ -82,8 +83,9 @@
   titel: Entwurf eines Gesetzes zur Änderung des Energiewirtschaftsrechts zur Stärkung des Verbraucherschutzes im Energiebereich sowie zur Änderung weiterer energierechtlicher Vorschriften
   gesetzentwurf: {file: 21-1497.txt, sha256: "cb40ac5961d5557dca8a6043eb0f9b10a8889860ee9d356e3166757221b18ff4"}
   bestandsrecht:
-    - gesetz: EnWG
-      norm: "§ 102"
+    - id: enwg_2005/__102
+      gesetz: EnWG
+      paragraph: "§ 102"
       fassung: 2025-09-08
       herkunft: "GII (Stand Art. 8 Abs. 6 G v. 23.7.2026) ohne den durch Art. 7 G v. 21.7.2026 (BGBl. 2026 I Nr. 221) mWv 29.7.2026 angefügten Abs. 3; buzer.de a.F. und der Änderungsbefehl stimmen überein; Abs. 1 und 2 unverändert seit 2023 (VRUG)"
       cases: [L-B4]
@@ -117,22 +119,25 @@
   beschlussempfehlungen:
     - {doc: "21/3076", file: beschlussempfehlung/21-3076.txt, sha256: "8d16a7732e969ec43a703fa8f78c3276494441c6213ecdf041774d687faf1f3d"}
   bestandsrecht:
-    - gesetz: WPflG
-      norm: "§ 2"
+    - id: wehrpflg/__2
+      gesetz: WPflG
+      paragraph: "§ 2"
       fassung: 2025-09-29
       herkunft: "Fassung vor Art. 1 WDModG v. 22.12.2025 (BGBl. 2025 I Nr. 370, mWv 1.1.2026) nach buzer.de a.F.; deckt sich mit BGBl. 2011 I 1730 i.d.F. Art. 2 G v. 8.4.2013 (BGBl. I 730)"
       cases: [L-C2]
       file: bestandsrecht/WPflG-2.txt
       sha256: "c1ac47c509779810969bcac4ff0716f7e90b5b1c57e74d42eb0a3f061ad4a535"
-    - gesetz: WPflG
-      norm: "§ 3"
+    - id: wehrpflg/__3
+      gesetz: WPflG
+      paragraph: "§ 3"
       fassung: 2025-09-29
       herkunft: "GII, unverändert seit Entwurfsdatum (zuletzt geändert durch Art. 4 G v. 4.8.2019, BGBl. I 1147); wortgleich mit Neubekanntmachung BGBl. 2011 I 1730 und Art. 4 Nr. 8 und 9 des Gesetzes von 2019; das WDModG ändert § 3 nicht"
       cases: [L-C2]
       file: bestandsrecht/WPflG-3.txt
       sha256: "b8996a613477426cd8ff2b1a0053fe977710b44ca75830e73a3f7b99b11415ae"
-    - gesetz: SVG
-      norm: "§ 16"
+    - id: svg_2025/__16
+      gesetz: SVG
+      paragraph: "§ 16"
       fassung: 2025-09-29
       herkunft: "Fassung nach Art. 9 G v. 27.2.2025 (BGBl. 2025 I Nr. 72) nach buzer.de a.F.; beide Änderungen durch Art. 7 WDModG v. 22.12.2025 zurückgeführt (rückwirkend zum 1.1.2025: Abs. 3 S. 4, Abs. 6 S. 2; ab 1.1.2026: Abs. 1, 2, 5); Abs. 2 mit BGBl. 2021 I 3967 abgeglichen"
       cases: [L-E3076-a]
@@ -157,36 +162,41 @@
   beschlussempfehlungen:
     - {doc: "21/2751", file: beschlussempfehlung/21-2751.txt, sha256: "23a202366f46f940314204f892a6e655063030e03d7b8fca3e6ac4beca119637"}
   bestandsrecht:
-    - gesetz: EUAHiG
-      norm: "§ 7"
+    - id: euahig/__7
+      gesetz: EUAHiG
+      paragraph: "§ 7"
       fassung: 2025-09-29
       herkunft: "Stand einschließlich des parallelen DAC8-Entwurfs BT-Drs. 21/1937, den der Entwurf voraussetzt: buzer.de-Fassung nach Art. 2 G v. 22.12.2025 (BGBl. 2025 I Nr. 352), vor Art. 3 G v. 22.12.2025 (BGBl. 2025 I Nr. 353, dieser Entwurf); Abs. 14c entfernt, Abs. 8 '14c' -> '14b'; mit GII abgeglichen"
       cases: [L-E2751-b]
       file: bestandsrecht/EUAHiG-7.txt
       sha256: "35fa9309388cbd00c3176646342369b8d15f86f20c054619c50f7977a9642f2f"
-    - gesetz: MinStG
-      norm: "§ 45"
+    - id: minstg/__45
+      gesetz: MinStG
+      paragraph: "§ 45"
       fassung: 2025-09-29
       herkunft: "buzer.de-Fassung vor Art. 1 G v. 22.12.2025 (BGBl. 2025 I Nr. 353, MinStAnpG = dieser Entwurf); Abs. 2 wieder mit 3 Nummern; neueste buzer.de-Fassung = GII"
       cases: [L-C21]
       file: bestandsrecht/MinStG-45.txt
       sha256: "2c4f61ee7530622756d5e71ac9214c4864c3758072cc53b5d4c32570ccd4ea4d"
-    - gesetz: MinStG
-      norm: "§ 53"
+    - id: minstg/__53
+      gesetz: MinStG
+      paragraph: "§ 53"
       fassung: 2025-09-29
       herkunft: "GII (Stand Art. 1 G v. 22.12.2025 I Nr. 353); unverändert seit Urfassung (BGBl. 2023 I Nr. 397); die Formel ist in GII und BGBl. ein Bild, hier als eine Zeile transkribiert"
       cases: [L-C21]
       file: bestandsrecht/MinStG-53.txt
       sha256: "eadc112780f8d8acaff962fd269cd4349d51941dab3c01e1d2bab2c1ddc860e2"
-    - gesetz: MinStG
-      norm: "§ 19"
+    - id: minstg/__19
+      gesetz: MinStG
+      paragraph: "§ 19"
       fassung: 2025-09-29
       herkunft: "GII (Stand Art. 1 G v. 22.12.2025 I Nr. 353); unverändert seit Urfassung"
       cases: [L-C21]
       file: bestandsrecht/MinStG-19.txt
       sha256: "c59619f166b7db7f4d9e058ac29cfd6bdf035d1aa093fe670204b82221ac4aa2"
-    - gesetz: MinStG
-      norm: "§ 18"
+    - id: minstg/__18
+      gesetz: MinStG
+      paragraph: "§ 18"
       fassung: 2025-09-29
       herkunft: "GII (Stand Art. 1 G v. 22.12.2025 I Nr. 353), Nr. 14 auf die alten Nr. 14 und 15 zurückgeführt nach buzer.de-Fassung vor Art. 1 BGBl. 2025 I Nr. 353; ganzer Text mit dieser Fassung abgeglichen"
       cases: [L-C21]
@@ -198,8 +208,9 @@
   beschlussempfehlungen:
     - {doc: "21/2753", file: beschlussempfehlung/21-2753.txt, sha256: "b071e15acdad9fb4210ecf9056e6244eb66109541e3c36b15236647bed762260"}
   bestandsrecht:
-    - gesetz: EnergieStV
-      norm: "§ 80"
+    - id: energiestv/__80
+      gesetz: EnergieStV
+      paragraph: "§ 80"
       fassung: 2025-09-29
       herkunft: "buzer.de-Fassung vor Art. 4 G v. 22.12.2025 (BGBl. 2025 I Nr. 340, dieser Entwurf), Stand ab 1.1.2025 (Vierte ÄndV, BGBl. 2024 I Nr. 445); nur Abs. 1 zurückgeführt, Abs. 2 und 3 unverändert; neueste buzer.de-Fassung = GII"
       cases: [L-E2753-a]
@@ -211,8 +222,9 @@
   beschlussempfehlungen:
     - {doc: "21/3106", file: beschlussempfehlung/21-3106.txt, sha256: "d075afd8495a27ac3f235ad88aad023732c91e7020b9a95eabd5fe5dc7417862"}
   bestandsrecht:
-    - gesetz: SÜG
-      norm: "§ 4"
+    - id: s_g/__4
+      gesetz: SÜG
+      paragraph: "§ 4"
       fassung: 2025-10-01
       herkunft: "GII (Stand Art. 4 G v. 9.1.2026 I Nr. 7); Art. 1 G v. 11.1.2026 (BGBl. 2026 I Nr. 6, mWv 16.1.2026) zurückgeführt nach buzer.de-Vergleich; deckt sich mit den Änderungsbefehlen in Art. 1 Nr. 5 des Entwurfs"
       cases: [L-E3106-c]
@@ -237,8 +249,9 @@
   beschlussempfehlungen:
     - {doc: "21/2622", file: beschlussempfehlung/21-2622.txt, sha256: "d03bc66e51adb736b36146d7fec74e71427e3d59fe0b7e65d1d658b0562d9cbb"}
   bestandsrecht:
-    - gesetz: FKAustG
-      norm: "§ 19"
+    - id: fkaustg/__19
+      gesetz: FKAustG
+      paragraph: "§ 19"
       fassung: 2025-10-01
       herkunft: "GII (Stand Art. 3 G v. 22.12.2025 I Nr. 352); Art. 3 G v. 22.12.2025 (BGBl. 2025 I Nr. 352, das DAC8-Gesetz selbst) zurückgeführt nach buzer.de-Vergleich, Typografie an GII angeglichen; mit den Änderungsbefehlen in Art. 3 Nr. 6 der Drs. 21/1937 abgeglichen"
       cases: [L-E2622-a]
@@ -268,8 +281,9 @@
   beschlussempfehlungen:
     - {doc: "21/4326", file: beschlussempfehlung/21-4326.txt, sha256: "78315196fe8245004bd1edb464f14b0c1cf128ca24deec3503dbf86156909322"}
   bestandsrecht:
-    - gesetz: BImSchG
-      norm: "§ 16b"
+    - id: bimschg/__16b
+      gesetz: BImSchG
+      paragraph: "§ 16b"
       fassung: 2025-11-03
       herkunft: "GII (Stand Art. 2 G v. 29.3.2026 I Nr. 84); unverändert seit Entwurfsdatum (zuletzt geändert durch Art. 1 G v. 12.8.2025, BGBl. 2025 I Nr. 189)"
       cases: [L-E4326-a]
@@ -284,8 +298,9 @@
   beschlussempfehlungen:
     - {doc: "21/3634", file: beschlussempfehlung/21-3634.txt, sha256: "0b16d1dd4e373227d20e3fc8170703ed3e010bfbf966d9a990796fa4bae736d2"}
   bestandsrecht:
-    - gesetz: BKAG
-      norm: "§ 77"
+    - id: bkag_2018/__77
+      gesetz: BKAG
+      paragraph: "§ 77"
       fassung: 2025-12-01
       herkunft: "GII (Stand Art. 11 G v. 23.4.2026 I Nr. 111); den durch Art. 1 G v. 10.2.2026 (BGBl. 2026 I Nr. 39, dieser Entwurf) angefügten Abs. 9 entfernt; laut buzer.de einzige Änderung seit Art. 1 G v. 17.7.2025 (BGBl. 2025 I Nr. 171, Abs. 7 und 8)"
       cases: [L-E3634-a]
@@ -341,15 +356,17 @@
   beschlussempfehlungen:
     - {doc: "21/6049", file: beschlussempfehlung/21-6049.txt, sha256: "e2874b84977202e1d58975086306730b77127a14460b63c93c9982b523d36aa3"}
   bestandsrecht:
-    - gesetz: BMeldDigiV
-      norm: "§ 8"
+    - id: bmelddigiv/__8
+      gesetz: BMeldDigiV
+      paragraph: "§ 8"
       fassung: 2026-01-14
       herkunft: "GII (zuletzt geändert durch Art. 16 G v. 22.12.2025 I Nr. 370, Art. 14 G v. 3.7.2026 I Nr. 199 teilweise eingearbeitet); Art. 14 G v. 3.7.2026 (BGBl. 2026 I Nr. 199) von Hand rückgängig gemacht ('§ 50 Absatz 1 und 2' -> '§ 50 Absatz 1, 2 und 3'); deckt sich mit buzer.de-Fassung ab 1.1.2026"
       cases: [L-E6049-a]
       file: bestandsrecht/BMeldDigiV-8.txt
       sha256: "31ec1b6e9218374b01e489bf09f1ce01e2b4655f67a24f7606f910eff6575850"
-    - gesetz: BMG
-      norm: "§ 50"
+    - id: bmg/__50
+      gesetz: BMG
+      paragraph: "§ 50"
       fassung: 2026-01-14
       herkunft: "buzer.de-Fassung vor Art. 5 G v. 3.7.2026 (BGBl. 2026 I Nr. 199), Stand ab 1.1.2026 nach Art. 12 WDModG (BGBl. 2025 I Nr. 370); übriger Text identisch mit GII"
       cases: [L-E6049-a]
@@ -361,8 +378,9 @@
   beschlussempfehlungen:
     - {doc: "21/4815", file: beschlussempfehlung/21-4815.txt, sha256: "c98125f9401b074593de9f32225553a666c2d1e06823f279a0bcd0918cb04fce"}
   bestandsrecht:
-    - gesetz: GvKostG
-      norm: "Anlage (KV) Nr. 205, 221, 300"
+    - id: gvkostg/anlage
+      gesetz: GvKostG
+      paragraph: "Anlage (KV) Nr. 205, 221, 300"
       fassung: 2026-01-21
       herkunft: "GII (Stand Art. 8 G v. 7.4.2025 I Nr. 109); unverändert seit Entwurfsdatum (KV zuletzt geändert durch KostBRÄG 2025 mWv 1.6.2025); nur die Gebührenzeilen, ohne Anmerkungen"
       cases: [L-E4815-b]
@@ -377,8 +395,9 @@
   beschlussempfehlungen:
     - {doc: "21/7004", file: beschlussempfehlung/21-7004.txt, sha256: "a8b09a422a52f689081085388f7526287677edc6b50ca36a7410f6232a529325"}
   bestandsrecht:
-    - gesetz: GwG
-      norm: "§ 28"
+    - id: gwg_2017/__28
+      gesetz: GwG
+      paragraph: "§ 28"
       fassung: 2026-02-11
       herkunft: "GII (Stand Art. 12 Abs. 4 G v. 29.6.2026 I Nr. 197); § 28 zuletzt geändert mWv 18.11.2023 (BGBl. 2023 I Nr. 311), unverändert seit Entwurfsdatum; identisch mit neuester buzer.de-Fassung"
       cases: [L-E7004-b]
@@ -400,15 +419,17 @@
   beschlussempfehlungen:
     - {doc: "21/5530", file: beschlussempfehlung/21-5530.txt, sha256: "58d2d7909c4c9d332a772d8a48d36f2359cf1b4905ff2fe3e5f866083c3fa59a"}
   bestandsrecht:
-    - gesetz: 37. BImSchV
-      norm: "§ 14"
+    - id: bimschv_37_2024/__14
+      gesetz: 37. BImSchV
+      paragraph: "§ 14"
       fassung: 2026-02-11
       herkunft: "GII bimschv_37_2024; Art. 2 G v. 1.6.2026 (BGBl. 2026 I Nr. 163, Neufassung durch den Ausschuss) zurückgeführt nach buzer.de-Vergleich; davor unverändert seit Urfassung 2024"
       cases: [L-E5530-b]
       file: bestandsrecht/37BImSchV-14.txt
       sha256: "e5daa9d90dbd4e0a0e09f607d474c5b10ea66420931c339a889cae5d92be3bc5"
-    - gesetz: 37. BImSchV
-      norm: "§ 16"
+    - id: bimschv_37_2024/__16
+      gesetz: 37. BImSchV
+      paragraph: "§ 16"
       fassung: 2026-02-11
       herkunft: "GII bimschv_37_2024; Art. 2 G v. 1.6.2026 (BGBl. 2026 I Nr. 163) zurückgeführt nach buzer.de-Vergleich; mit den Änderungsbefehlen in Art. 2 Nr. 10 des Entwurfs abgeglichen"
       cases: [L-E5530-b]
@@ -463,8 +484,9 @@
   beschlussempfehlungen:
     - {doc: "21/5546", file: beschlussempfehlung/21-5546.txt, sha256: "760eb7a9b6e43a61bba9a805acaaf2b1456ed90dc7a6ab3a38fa9485b1454b1a"}
   bestandsrecht:
-    - gesetz: EnergieStG
-      norm: "§ 53"
+    - id: energiestg/__53
+      gesetz: EnergieStG
+      paragraph: "§ 53"
       fassung: 2026-04-14
       herkunft: "GII (zuletzt geändert durch Art. 11 G v. 25.9.2026 I Nr. 275); § 53 zuletzt geändert mWv 1.1.2026 durch Art. 2 G v. 22.12.2025 (BGBl. 2025 I Nr. 340), unverändert seit Entwurfsdatum (Versionsgeschichte buzer.de)"
       cases: [L-E5546-a]
@@ -555,8 +577,11 @@
 "21/7733":
   titel: Entwurf eines Gesetzes zur Strafbewehrung der Leugnung des Existenzrechts des Staates Israel
   gesetzentwurf: {file: 21-7733.txt, sha256: "42312bc6e76dd458061b6e47a3fb70e7c6032064c5602e0e7556cf6abcd632ce"}
+"21/7859":
+  titel: Entwurf eines Gesetzes zur Änderung des Tabaksteuergesetzes
+  gesetzentwurf: {file: 21-7859.txt, sha256: "6c7743b7a233e4e32adb2b99b7e66e6638d76f65f9ea1b5b7a27bbce6e077bb9"}
 
-# --- Angreifer --------------------------------------------------------------
+# --- Exploit -----------------------------------------------------------------
 "19/13437":
   titel: Entwurf eines Gesetzes zur Änderung des Grunderwerbsteuergesetzes
   gesetzentwurf: {file: 19-13437.txt, sha256: "468ffa81433294f0ab7282f9b1b4f0e8fbb038df80c02b61d9735b6c191c3c4b"}
@@ -576,15 +601,17 @@
   titel: Entwurf eines Neunten Gesetzes zur Änderung des Gesetzes gegen Wettbewerbsbeschränkungen
   gesetzentwurf: {file: 18-10207.txt, sha256: "0151b4a0cf70659829e2153c2f55211e576a6d2c0abf172097ea8b67be9ab8b0"}
   bestandsrecht:
-    - gesetz: GWB
-      norm: "§ 81"
+    - id: gwb/__81
+      gesetz: GWB
+      paragraph: "§ 81"
       fassung: 2016-11-07
       herkunft: "Neubekanntmachung BGBl. 2013 I 1750 mit Fußnote zu Abs. 10 Nr. 1 (Art. 2 G v. 6.6.2013, BGBl. I 1482) eingearbeitet; keine weitere Änderung vor der 9. GWB-Novelle (BGBl. 2017 I 1416); deckt sich mit jedem Änderungsbefehl des Entwurfs"
       cases: [R-C1]
       file: bestandsrecht/GWB-81.txt
       sha256: "40fbc8a17d924806e61e5bd90c3406c085f5ae6dd228a74930bb0ca815d8a0cf"
-    - gesetz: OWiG
-      norm: "§ 30"
+    - id: owig_1968/__30
+      gesetz: OWiG
+      paragraph: "§ 30"
       fassung: 2016-11-07
       herkunft: "buzer.de a.F., in Kraft 30.6.2013 bis 30.6.2017 (mit Abs. 2a aus der 8. GWB-Novelle); Art. 5 G v. 13.4.2017 (BGBl. I 872) zurückgeführt; die spätere buzer.de-Fassung ist wortgleich mit GII"
       cases: [R-C1]

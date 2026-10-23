@@ -64,7 +64,7 @@ function FindingCard({
   documents: AnalysisDocument[];
 }) {
   return (
-    <article className="finding-card">
+    <article className="finding-card" id={`finding-${f.id}`}>
       <div className="finding-card-head">
         <RiskBadge level={f.severity} />
         <span className="finding-category">{categoryLabel(f.category)}</span>
@@ -117,7 +117,8 @@ export function DetailPage() {
   const { id = "" } = useParams();
   const { t } = useI18n();
   // Back to the list as it was left: the list passes its filters and page.
-  const listSearch = (useLocation().state as { listSearch?: string } | null)?.listSearch;
+  const location = useLocation();
+  const listSearch = (location.state as { listSearch?: string } | null)?.listSearch;
   const backTo = `/${listSearch ?? ""}`;
 
   const [bill, setBill] = useState<BillDetail | null>(null);
@@ -148,6 +149,13 @@ export function DetailPage() {
     };
   }, [id]);
 
+  // A link to one finding (#finding-<id>) scrolls to it once the bill is shown.
+  useEffect(() => {
+    if (bill && location.hash) {
+      document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: "start" });
+    }
+  }, [bill, location.hash]);
+
   if (loading) {
     return <p className="notice">{t("loading")}</p>;
   }
@@ -175,7 +183,8 @@ export function DetailPage() {
     );
   }
 
-  const documents = bill.analysis_documents ?? [];
+  // The existing law an analysis read is recorded but not listed.
+  const documents = (bill.analysis_documents ?? []).filter((d) => d.typ !== "bestandsrecht");
   const related = bill.related_documents ?? [];
   const craftFindings = bill.findings.filter(
     (f) => !CONSTITUTIONAL_CATEGORIES.has(f.category),

@@ -17,6 +17,7 @@ INTRO = (
 FILES = {
     "cases-lektor-beschlussempfehlungen.yaml": {
         "title": "Committee repairs",
+        "measure": "fixed errors found",
         "mined": (
             "Mined by comparing a Gesetzentwurf with the report of "
             "the Bundestag committee that handled it: wherever the committee corrected the "
@@ -28,7 +29,8 @@ FILES = {
         ),
     },
     "cases-lektor.yaml": {
-        "title": "Press-documented controversies",
+        "title": "Controversies",
+        "measure": "errors found",
         "mined": (
             "Built from the outside in: a ruling of the Bundesverfassungsgericht, a later "
             "repair law or documented expert criticism points to a draft, and the passage "
@@ -39,8 +41,8 @@ FILES = {
             "in the text, each with the claim the analysis must not make."
         ),
     },
-    "cases-angreifer.yaml": {
-        "title": "Attack surfaces",
+    "cases-exploit.yaml": {
+        "title": "Exploits",
         "mined": (
             "Built backwards from observed consequences: drafts that were not technically wrong, but "
             "whose wording allowed unintended exploits — share-deal thresholds, the "
@@ -48,7 +50,7 @@ FILES = {
             "traced from press coverage and hearing statements back to the passage that "
             "made it possible. Negative test cases are the opposite: a later law that closed "
             "such a gap, which must not be reported as still open, and current bills that "
-            "offer no known exploits, where a reported attack is a false alarm."
+            "offer no known exploits, where a reported exploit is a false alarm."
         ),
     },
 }

@@ -28,6 +28,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: aufenthg_2004/__44a, rolle: nicht_genannt}
   forbidden_claim: null
   repaired_by: "21/1634"
   split: dev
@@ -370,6 +372,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: fkaustg/__19, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/2622"
   split: dev
@@ -545,6 +549,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: euahig/__7, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/2751"
   split: test
@@ -619,6 +625,8 @@
   expected_category: referenz
   expected_severity: niedrig
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: energiestv/__80, rolle: verwiesen}
   forbidden_claim: null
   repaired_by: "21/2753"
   split: test
@@ -652,6 +660,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: svg_2025/__16, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/3076"
   split: dev
@@ -855,6 +865,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: s_g/__4, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/3106"
   split: dev
@@ -1062,6 +1074,8 @@
   expected_category: referenz
   expected_severity: niedrig
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: bkag_2018/__77, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/3634"
   split: dev
@@ -1249,6 +1263,8 @@
   expected_category: referenz
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: bimschg/__16b, rolle: verwiesen}
   forbidden_claim: null
   repaired_by: "21/4326"
   split: dev
@@ -1460,6 +1476,8 @@
   expected_category: rechenfehler
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: gvkostg/anlage, rolle: nicht_genannt}
   forbidden_claim: null
   repaired_by: "21/4815"
   split: dev
@@ -1793,6 +1811,9 @@
   expected_category: widerspruch
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: bimschv_37_2024/__14, rolle: verwiesen}
+    - {id: bimschv_37_2024/__16, rolle: verwiesen}
   forbidden_claim: null
   repaired_by: "21/5530"
   split: dev
@@ -1844,6 +1865,8 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: energiestg/__53, rolle: nicht_genannt}
   forbidden_claim: null
   repaired_by: "21/5546"
   split: dev
@@ -1947,6 +1970,9 @@
   expected_category: vollstaendigkeit
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: bmelddigiv/__8, rolle: nicht_genannt}
+    - {id: bmg/__50, rolle: geaendert}
   forbidden_claim: null
   repaired_by: "21/6049"
   split: dev
@@ -2239,6 +2265,8 @@
   expected_category: referenz
   expected_severity: null
   requires_context: bestandsrecht
+  bestandsrecht:
+    - {id: gwg_2017/__28, rolle: verwiesen}
   forbidden_claim: null
   repaired_by: "21/7004"
   split: test

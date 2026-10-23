@@ -9,7 +9,7 @@ Offline and free. Verdicts are the mechanical passage verdicts of
 ``eval/testset/score.py`` (``hit`` / ``near`` / ``miss`` for positives,
 ``touched`` / ``clear`` for negatives), plus what a run itself can end in:
 
-``fired`` / ``quiet``  an unanchored Angreifer negative with / without findings.
+``fired`` / ``quiet``  an unanchored exploit negative with / without findings.
 ``oversize``  the input is over ``MAX_INPUT_CHARS`` and was not sent.
 ``failed``    the call raised; the sample has a ``.failed.json``.
 ``not_run``   the run has no sample for the document.
@@ -23,7 +23,7 @@ Two files in the run directory, per case set:
                           the findings that matched by index.
 
     uv run python -m eval.harness report --tag v6-text-json-claude-opus-4-8-effort-high
-    uv run python -m eval.harness report --task angreifer --split dev
+    uv run python -m eval.harness report --task exploit --split dev
 """
 
 import argparse
@@ -47,9 +47,10 @@ ALL_CASE_SETS = sorted({name for t in tasks.TASKS.values() for name in t.case_se
 
 # Which cases a run scores, by ``requires_context``. ``none``: cases the draft
 # alone can settle. ``bestandsrecht``: cases that need the existing law, run on
-# the draft alone (baseline) or with their pinned norms fed (oracle). EU law and
-# outside facts have no pinned context and are not run.
-CONTEXTS = ["none", "bestandsrecht"]
+# the draft alone (baseline) or with their pinned paragraphs fed (oracle). EU law and
+# outside facts have no pinned context and run only under ``all``: every case,
+# on the draft alone.
+CONTEXTS = ["none", "bestandsrecht", "all"]
 
 # Case fields a reader of the results needs next to the verdict.
 EXPECTATION_FIELDS = ("id", "kind", "expected_passage", "anchor", "expected_defect",
@@ -68,13 +69,13 @@ def case_set(task: Task, name: str | None) -> str:
 
 def load_cases(task: Task, case_set: str, context: str = "none",
                repaired: bool = False) -> list[dict]:
-    """The cases of a case set that require ``context``; with ``repaired``,
-    every case with ``repaired_by`` instead, whatever its context, as kind
-    ``behoben``."""
+    """The cases of a case set that require ``context`` (every case for ``all``);
+    with ``repaired``, every case with ``repaired_by`` instead, whatever its
+    context, as kind ``behoben``."""
     cases = load(task.case_sets[case_set])
     if repaired:
         return [c | {"kind": REPAIRED} for c in cases if c.get("repaired_by")]
-    return [c for c in cases if c["requires_context"] == context]
+    return [c for c in cases if context == "all" or c["requires_context"] == context]
 
 
 def load_samples(out: Path) -> dict[str, dict]:
@@ -119,7 +120,7 @@ def build(task: Task, cases: list[dict], samples: dict[str, dict], manifest: dic
         run = {"status": status,
                **{k: record.get(k) for k in ("input_set", "prompt_version", "model", "effort", "max_turns", "risk",
                                              "cost_usd", "num_turns", "seconds",
-                                             "tool_calls", "rescued_by")}}
+                                             "tool_calls", "rescued_by", "bestandsrecht")}}
         if status != "ok":
             if status == "failed":
                 run["error"] = f"{record['error_type']}: {record['error']}"
@@ -300,12 +301,15 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--beschlussempfehlung", action="store_true",
                         help="precision run: the run fed the Beschlussempfehlungen; score "
                         "every case with repaired_by as repaired")
+    parser.add_argument("--retrieved", action="store_true",
+                        help="the run fed the retrieved Bestandsrecht (names the run directory)")
     args = parser.parse_args(argv)
 
     task = tasks.get(args.task)
     tag = args.tag or config.default_tag(task, args.model or task.model,
                                          args.effort or task.effort, args.max_turns,
-                                         oracle=args.oracle, committee=args.beschlussempfehlung)
+                                         oracle=args.oracle, committee=args.beschlussempfehlung,
+                                         retrieved=args.retrieved)
     out = config.run_dir(task.name, tag)
     if not (out / "samples").is_dir():
         print(f"no samples in {out}")

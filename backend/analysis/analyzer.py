@@ -16,8 +16,8 @@ from typing import Any
 from claude_agent_sdk import ClaudeAgentOptions
 
 from backend import config, tracelog
+from backend.llm import structured
 
-from . import structured
 from .schema import RISK_BEARING_CATEGORIES, BillAnalysis, Finding, Severity
 from .style import STYLE_SECTION
 
@@ -209,7 +209,7 @@ def build_message(
 
     ``context_docs`` is a list of ``(dokumentnummer, text)`` in the order the
     Beschlussempfehlungen were issued; ``bestandsrecht`` a list of
-    ``(gesetz, norm, stand, text)`` excerpts. Without either, the message is
+    ``(gesetz, paragraph, stand, text)`` excerpts. Without either, the message is
     the Entwurf alone. The pipeline and the eval harness both build their
     message here, so an eval measures the shipped input.
     """
@@ -229,9 +229,9 @@ def build_message(
         message = f"{message}\n\n{BESCHLUSSEMPFEHLUNG_NOTICE}{blocks}"
     if bestandsrecht:
         blocks = "".join(
-            f'\n\n<geltende-fassung gesetz="{gesetz}" norm="{norm}" stand="{stand}">'
-            f"\n{norm_text}\n</geltende-fassung>"
-            for gesetz, norm, stand, norm_text in bestandsrecht
+            f'\n\n<geltende-fassung gesetz="{gesetz}" paragraph="{paragraph}" stand="{stand}">'
+            f"\n{paragraph_text}\n</geltende-fassung>"
+            for gesetz, paragraph, stand, paragraph_text in bestandsrecht
         )
         message = f"{message}\n\n{BESTANDSRECHT_NOTICE}{blocks}"
     return message
@@ -244,15 +244,17 @@ def analyze_bill(
     context_docs: list[tuple[str, str]] | None = None,
     trace: Path | None = None,
     trace_fields: dict | None = None,
+    bestandsrecht: list[tuple[str, str, str, str]] | None = None,
 ) -> BillAnalysis:
     """Analyze a single bill with Claude and return the validated result.
 
     ``context_docs`` are the bill's Beschlussempfehlungen as
-    ``(dokumentnummer, text)``. Texts are sent whole; the caller keeps their sum
-    within ``MAX_INPUT_CHARS``. With ``trace`` set, the call's message stream is
+    ``(dokumentnummer, text)``, ``bestandsrecht`` the existing law as
+    ``(gesetz, paragraph, stand, text)``. Texts are sent whole; the caller keeps
+    their sum within ``MAX_INPUT_CHARS``. With ``trace`` set, the call's message stream is
     written there (``tracelog.traced``), headed by ``trace_fields``.
     """
-    user_message = build_message(titel, dokumentnummer, text, context_docs)
+    user_message = build_message(titel, dokumentnummer, text, context_docs, bestandsrecht)
     with tracelog.traced(trace, trace_fields or {}, user_message) as on_message:
         return asyncio.run(run_query(user_message, on_message=on_message)).output
 

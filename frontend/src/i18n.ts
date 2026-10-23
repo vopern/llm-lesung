@@ -8,6 +8,14 @@ export type StringKey =
   | "subtitle"
   | "navBills"
   | "navAbout"
+  | "navHighlights"
+  | "highlightsTitle"
+  | "highlightsIntro"
+  | "highlightsToFinding"
+  | "highlightsFindingGone"
+  | "highlightsAnalyzedAt"
+  | "highlightsMedia"
+  | "highlightsEmpty"
   | "riskHigh"
   | "riskMedium"
   | "riskLow"
@@ -83,9 +91,18 @@ export type StringKey =
   | "evalNoReports";
 
 const de: Record<StringKey, string> = {
-  subtitle: "KI-Analyse von Gesetzentwürfen des Deutschen Bundestags",
+  subtitle: "Gibt KI nützliche Hinweise auf Fehler in Gesetzentwürfen?",
   navBills: "Gesetzentwürfe",
   navAbout: "Info",
+  navHighlights: "Fundstücke",
+  highlightsTitle: "Fundstücke",
+  highlightsIntro:
+    "Ausgewählte Befunde.",
+  highlightsToFinding: "Zum Befund",
+  highlightsFindingGone: "Die Analyse wurde seither erneuert; dieser Befund ist darin nicht mehr enthalten.",
+  highlightsAnalyzedAt: "Analyse vom",
+  highlightsMedia: "Berichterstattung",
+  highlightsEmpty: "Noch keine Fundstücke.",
   riskHigh: "Hoch",
   riskMedium: "Mittel",
   riskLow: "Niedrig",
@@ -127,7 +144,7 @@ const de: Record<StringKey, string> = {
   exploitsHeading: "Missbrauchsszenarien",
   exploitsExperimental: "Experimentell",
   exploitsNote:
-    "Ein zweiter Durchlauf fragt, wie jemand den Entwurf in böser Absicht ausnutzen könnte, auch wenn er handwerklich fehlerfrei ist. Die Szenarien sind ungeprüft und zählen nicht zum Schweregrad.",
+    "Ein zweiter Durchlauf sucht nach Missbrauchsmöglichkeiten: Welche Schlupflöcher könnte jemand ausnutzen, auch wenn der Entwurf handwerklich fehlerfrei ist? Die Szenarien sind ungeprüft und zählen nicht zum Schweregrad.",
   noExploits: "Keine Missbrauchsszenarien gefunden.",
   exploitActor: "Akteur",
   exploitSteps: "Vorgehen",
@@ -168,9 +185,18 @@ const de: Record<StringKey, string> = {
 };
 
 const en: Record<StringKey, string> = {
-  subtitle: "AI analysis of German Bundestag draft bills",
+  subtitle: "Does AI give useful hints on errors in draft bills?",
   navBills: "Draft bills",
   navAbout: "About",
+  navHighlights: "Highlights",
+  highlightsTitle: "Highlights",
+  highlightsIntro:
+    "A hand-picked selection of findings.",
+  highlightsToFinding: "Go to finding",
+  highlightsFindingGone: "The analysis has since been replaced; this finding is no longer in it.",
+  highlightsAnalyzedAt: "Analysis of",
+  highlightsMedia: "Coverage",
+  highlightsEmpty: "No highlights yet.",
   riskHigh: "High",
   riskMedium: "Medium",
   riskLow: "Low",
@@ -212,7 +238,7 @@ const en: Record<StringKey, string> = {
   exploitsHeading: "Abuse scenarios",
   exploitsExperimental: "Experimental",
   exploitsNote:
-    "A second pass asks how someone acting in bad faith could exploit the draft, even if it is technically flawless. The scenarios are unreviewed and are not part of the severity.",
+    "A second pass looks for ways to misuse the draft: which loopholes could someone exploit, even if it is technically flawless? The scenarios are unreviewed and are not part of the severity.",
   noExploits: "No abuse scenarios found.",
   exploitActor: "Actor",
   exploitSteps: "Steps",

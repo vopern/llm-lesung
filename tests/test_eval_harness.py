@@ -9,17 +9,18 @@ import json
 from types import SimpleNamespace
 
 from backend import config as backend_config
-from backend.analysis import analyzer, redteam, structured
+from backend.analysis import analyzer, redteam
+from backend.llm import structured
 from backend.analysis.schema import BillAnalysis, RedTeamAnalysis
 from eval import page
-from eval.harness import config, html, report, run, tasks
+from eval.harness import config, html, report, run, selection, tasks
 from eval.testset import about, lint
 from tests.test_testset_export_score import TEXT, _doc
 from tests.test_testset_lint import _case
 
 
 LEKTOR = tasks.get("lektor")
-ANGREIFER = tasks.get("angreifer")
+EXPLOIT = tasks.get("exploit")
 
 
 def _manifest(case):
@@ -92,7 +93,7 @@ def test_effort_reaches_the_query_and_the_record_and_names_the_run(tmp_path, mon
     assert config.default_tag(LEKTOR, "claude-x", None, 1) == config.default_tag(LEKTOR, "claude-x")
     assert config.default_tag(LEKTOR, "claude-x", "low", 2).endswith(
         "-claude-x-effort-low-turns-2")
-    assert config.default_tag(ANGREIFER, "claude-x", "high") == (
+    assert config.default_tag(EXPLOIT, "claude-x", "high") == (
         f"{backend_config.REDTEAM_PROMPT_VERSION}-claude-x-effort-high")
 
 
@@ -169,11 +170,14 @@ def test_cases_are_selected_by_the_context_they_require():
             assert cases and {c["requires_context"] for c in cases} == {"none"}
             context = report.load_cases(task, case_set, "bestandsrecht")
             assert {c["requires_context"] for c in context} <= {"bestandsrecht"}
+            assert len(report.load_cases(task, case_set, "all")) == len(
+                lint.load(task.case_sets[case_set]))
 
 
-def test_oracle_feeds_the_pinned_norms_after_the_draft(tmp_path, monkeypatch):
+def test_oracle_feeds_the_pinned_paragraphs_after_the_draft(tmp_path, monkeypatch):
     case = _doc(tmp_path)
-    excerpt = {"gesetz": "AufenthG", "norm": "§ 44a", "fassung": "2025-06-23",
+    excerpt = {"id": "aufenthg_2004/__44a", "gesetz": "AufenthG", "paragraph": "§ 44a",
+               "fassung": "2025-06-23",
                "file": "bestandsrecht/AufenthG-44a.txt", "sha256": "abc"}
     manifest = {case["doc"]: _manifest(case)[case["doc"]] | {"bestandsrecht": [excerpt]}}
     assert "bestandsrecht" not in run.select([case], manifest, "all", None)[0]
@@ -189,17 +193,18 @@ def test_oracle_feeds_the_pinned_norms_after_the_draft(tmp_path, monkeypatch):
         "Entwurf eines Gesetzes", "21/537", TEXT,
         bestandsrecht=[("AufenthG", "§ 44a", "2025-06-23", "§ 44a Titel")]), "claude-x")]
     assert record["input_set"] == "entwurf+bestandsrecht"
-    assert record["inputs"][1] == {"typ": "bestandsrecht", "gesetz": "AufenthG", "norm": "§ 44a",
+    assert record["inputs"][1] == {"typ": "bestandsrecht", "id": "aufenthg_2004/__44a",
+                                   "gesetz": "AufenthG", "paragraph": "§ 44a",
                                    "fassung": "2025-06-23", "file": excerpt["file"],
                                    "sha256": "abc", "chars": len("§ 44a Titel")}
     assert run.run_one(LEKTOR, document, TEXT, "claude-x", "tag")["input_set"] == "entwurf"
 
 
-def test_oversize_counts_the_pinned_norms(tmp_path, monkeypatch):
+def test_oversize_counts_the_pinned_paragraphs(tmp_path, monkeypatch):
     sent = []
     _fake_query(monkeypatch, [], sent)
     monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT))
-    excerpt = {"gesetz": "G", "norm": "§ 1", "fassung": "2025-01-01", "file": "f", "sha256": "s"}
+    excerpt = {"id": "g/__1", "gesetz": "G", "paragraph": "§ 1", "fassung": "2025-01-01", "file": "f", "sha256": "s"}
     record = run.run_one(LEKTOR, _document(_doc(tmp_path)), TEXT, "claude-x", "tag",
                          excerpts=[(excerpt, "x")])
     assert record["status"] == "oversize" and sent == []
@@ -275,7 +280,7 @@ def test_precision_report_scores_repaired_cases_as_negatives(tmp_path, monkeypat
     assert entry["behoben"]["none"]["counts"] == {"touched": 1}
     assert entry["behoben"]["context"]["counts"] == {"clear": 1}
     page_html = html.render_run({"summary": summary | {"split": "dev"}, "documents": results})
-    assert "precision evaluation" in page_html and "Repaired by" in page_html
+    assert "false alarms on fixed errors" in page_html and "Repaired by" in page_html
     assert "Passage recall by expected category" not in page_html
 
 
@@ -323,7 +328,7 @@ def test_about_section_describes_only_the_case_file_that_was_scored():
     rendered = html._about(name, 7, "dev")
     assert name in rendered and page.esc(about.FILES[name]["mined"]) in rendered
     assert "7 of them in this run, split dev" in rendered
-    assert "cases-angreifer.yaml" not in rendered and "cases-lektor.yaml</b>" not in rendered
+    assert "cases-exploit.yaml" not in rendered and "cases-lektor.yaml</b>" not in rendered
 
 
 def test_case_sets_name_every_file_of_each_task():
@@ -331,8 +336,8 @@ def test_case_sets_name_every_file_of_each_task():
                                     lint.DIR / "cases-lektor-beschlussempfehlungen.yaml",
                                 "lektor": lint.DIR / "cases-lektor.yaml"}
     assert LEKTOR.default_cases == "beschlussempfehlungen"
-    assert ANGREIFER.case_sets == {"angreifer": lint.DIR / "cases-angreifer.yaml"}
-    assert report.case_set(ANGREIFER, None) == "angreifer"
+    assert EXPLOIT.case_sets == {"exploit": lint.DIR / "cases-exploit.yaml"}
+    assert report.case_set(EXPLOIT, None) == "exploit"
 
 
 def test_manifest_must_cover_every_document_with_its_pinned_text(tmp_path):
@@ -371,14 +376,25 @@ def test_heading_names_what_was_measured_and_how():
                "efforts": {"high": 21}, "documents": 21,
                "generated_at": "2026-09-30T10:00:00+00:00"}
     assert html._heading(summary) == (
-        "Lektor evaluation · Committee repairs · dev · v6-text-json · Claude Opus 4.8",
-        "Lektor evaluation: Committee repairs, dev split",
+        'Test set "Committee repairs" · fixed errors found · dev · Claude Opus 4.8 · '
+        "prompt v6-text-json",
+        'Test set "Committee repairs" · fixed errors found · dev split',
         "Prompt v6-text-json · Claude Opus 4.8 · reasoning effort high · 21 drafts · "
         "scored 2026-09-30")
     assert html._heading(summary | {"split": "all"})[1].endswith("all splits")
+    every = summary | {"cases_file": "cases-lektor.yaml", "requires_context": "all",
+                       "input_set": "entwurf"}
+    assert html._heading(every)[0].startswith('Test set "Controversies" · errors found · dev · ')
+    oracle = every | {"requires_context": "bestandsrecht", "input_set": "entwurf+bestandsrecht"}
+    assert "(bestandsrecht cases, input entwurf+bestandsrecht)" in html._heading(oracle)[0]
+    precision = summary | {"measures": "precision"}
+    assert html._heading(precision)[0].startswith(
+        'Test set "Committee repairs" · false alarms on fixed errors · dev')
+    exploit = summary | {"task": "exploit", "cases_file": "cases-exploit.yaml"}
+    assert html._heading(exploit)[0].startswith('Test set "Exploits" · dev · ')
 
 
-# --- the Angreifer task -------------------------------------------------------
+# --- the exploit task -------------------------------------------------------
 
 def _exploit(quote, muster="schwellenwert", severity="hoch"):
     return {"muster": muster, "akteur": "Ein Erwerber", "titel": "<b>Angriff</b>",
@@ -396,33 +412,33 @@ def _fake_redteam(monkeypatch, exploits, sent):
     monkeypatch.setattr(redteam, "run_query", fake)
 
 
-def _angreifer_case(tmp_path, **overrides):
-    return _doc(tmp_path) | {"id": "R-X1", "suite": "angreifer",
+def _exploit_case(tmp_path, **overrides):
+    return _doc(tmp_path) | {"id": "R-X1", "suite": "exploit",
                              "expected_category": "schwellenwert"} | overrides
 
 
-def test_angreifer_sends_the_redteam_message_whole_and_normalises_exploits(tmp_path, monkeypatch):
+def test_exploit_sends_the_redteam_message_whole_and_normalises_exploits(tmp_path, monkeypatch):
     sent = []
     _fake_redteam(monkeypatch, [_exploit("§ 10 Absatz 3 wird gestrichen.", severity="mittel")], sent)
-    record = run.run_one(ANGREIFER, _document(_angreifer_case(tmp_path)), TEXT, "claude-x",
+    record = run.run_one(EXPLOIT, _document(_exploit_case(tmp_path)), TEXT, "claude-x",
                          "tag", effort="high")
 
     assert sent == [(redteam.build_message("Entwurf eines Gesetzes", "21/537", TEXT),
                      "claude-x", "high")]
     assert "HINWEIS" not in sent[0][0]  # never truncated
-    assert record["task"] == "angreifer" and record["risk"] == "mittel"
+    assert record["task"] == "exploit" and record["risk"] == "mittel"
     assert record["prompt_version"] == backend_config.REDTEAM_PROMPT_VERSION
-    [finding] = ANGREIFER.findings(record["analysis"])
+    [finding] = EXPLOIT.findings(record["analysis"])
     assert finding["category"] == "schwellenwert" and finding["title"] == "<b>Angriff</b>"
     assert finding["quote"] == "§ 10 Absatz 3 wird gestrichen."
     assert "(1) Erwirbt 89,9 %. (2) Wartet." in finding["description"]
 
 
-def test_angreifer_oversize_follows_the_lektor_rule(tmp_path, monkeypatch):
+def test_exploit_oversize_follows_the_lektor_rule(tmp_path, monkeypatch):
     sent = []
     _fake_redteam(monkeypatch, [], sent)
     monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT) - 1)
-    record = run.run_one(ANGREIFER, _document(_angreifer_case(tmp_path)), TEXT, "claude-x", "tag")
+    record = run.run_one(EXPLOIT, _document(_exploit_case(tmp_path)), TEXT, "claude-x", "tag")
     assert record["status"] == "oversize" and sent == []
 
 
@@ -433,22 +449,22 @@ def test_redteam_options_carry_model_effort_and_turns():
     assert redteam._options().model == backend_config.REDTEAM_MODEL
 
 
-def test_angreifer_negative_without_anchor_is_fired_or_quiet(tmp_path, monkeypatch):
-    negative = _angreifer_case(tmp_path, id="R-F1", kind="negativ", anchor=None,
+def test_exploit_negative_without_anchor_is_fired_or_quiet(tmp_path, monkeypatch):
+    negative = _exploit_case(tmp_path, id="R-F1", kind="negativ", anchor=None,
                                expected_defect=None, expected_category=None,
                                forbidden_claim="Jeder konstruierte Angriff")
     manifest = _manifest(negative)
     out = tmp_path / "run"
 
     _fake_redteam(monkeypatch, [_exploit("frei erfunden")], [])
-    _write_sample(out, "21-537.json", run.run_one(ANGREIFER, _document(negative), TEXT, "c", "t"))
-    rows, _ = report.build(ANGREIFER, [negative], report.load_samples(out), manifest,
+    _write_sample(out, "21-537.json", run.run_one(EXPLOIT, _document(negative), TEXT, "c", "t"))
+    rows, _ = report.build(EXPLOIT, [negative], report.load_samples(out), manifest,
                            texts=tmp_path)
     assert rows[0]["verdict"] == "fired"
 
     _fake_redteam(monkeypatch, [], [])
-    _write_sample(out, "21-537.json", run.run_one(ANGREIFER, _document(negative), TEXT, "c", "t"))
-    rows, _ = report.build(ANGREIFER, [negative], report.load_samples(out), manifest,
+    _write_sample(out, "21-537.json", run.run_one(EXPLOIT, _document(negative), TEXT, "c", "t"))
+    rows, _ = report.build(EXPLOIT, [negative], report.load_samples(out), manifest,
                            texts=tmp_path)
     assert rows[0]["verdict"] == "quiet"
 
@@ -461,18 +477,158 @@ def test_angreifer_negative_without_anchor_is_fired_or_quiet(tmp_path, monkeypat
     assert rows[0]["verdict"] == "unanchored"
 
 
-def test_angreifer_report_uses_its_own_wording(tmp_path, monkeypatch):
-    case = _angreifer_case(tmp_path)
+def test_exploit_report_uses_its_own_wording(tmp_path, monkeypatch):
+    case = _exploit_case(tmp_path)
     monkeypatch.setattr(report, "load_cases", lambda task, case_set, context="none", repaired=False: [case])
     monkeypatch.setattr(report, "load_manifest", lambda: _manifest(case))
     _fake_redteam(monkeypatch, [_exploit("§ 10 Absatz 3 wird gestrichen.")], [])
     out = tmp_path / "run"
-    _write_sample(out, "21-537.json", run.run_one(ANGREIFER, _document(case), TEXT, "c", "t"))
-    summary = report.write_report(out, ANGREIFER, "angreifer", "tag", split="dev")
+    _write_sample(out, "21-537.json", run.run_one(EXPLOIT, _document(case), TEXT, "c", "t"))
+    summary = report.write_report(out, EXPLOIT, "exploit", "tag", split="dev")
 
-    assert summary["task"] == "angreifer" and summary["cases_file"] == "cases-angreifer.yaml"
+    assert summary["task"] == "exploit" and summary["cases_file"] == "cases-exploit.yaml"
     assert summary["recall"]["dev"]["all"]["counts"] == {"hit": 1}
-    html_page = (out / "report-angreifer-dev.html").read_text(encoding="utf-8")
-    assert "Angreifer evaluation" in html_page and "Expected attack" in html_page
-    assert "Lektor evaluation" not in html_page
+    html_page = (out / "report-exploit-dev.html").read_text(encoding="utf-8")
+    assert page.esc('Test set "Exploits"') in html_page
+    assert "Expected exploit" in html_page
+    assert "Angreifer" not in html_page and "attack" not in html_page
     assert "&lt;b&gt;Angriff&lt;/b&gt;" in html_page
+
+
+def _selection_case(needed, doc="21/1853", cid="L-C2"):
+    return {"id": cid, "doc": doc, "split": "dev", "bestandsrecht": needed}
+
+
+SELECTION_SAMPLE = {
+    "doc": "21/1853", "status": "ok", "call": {"cost_usd": 0.01},
+    "ids": ["wehrpflg/__2", "wehrpflg/__3"],
+    "references": [{}, {}, {}], "unbelegt": [],
+    "unresolved": [{"gesetz": "Wehrpflichtgesetz", "paragraph": "§ 45", "reason": "ambiguous"}],
+}
+
+
+def test_selection_scores_each_needed_paragraph_and_names_what_resolve_lost():
+    case = _selection_case([{"id": "wehrpflg/__2", "rolle": "geaendert"},
+                            {"id": "wehrpflg/__45", "rolle": "verwiesen"},
+                            {"id": "owig_1968/__30", "rolle": "verwiesen"}])
+    rows = selection.score_case(case, SELECTION_SAMPLE)
+    assert [(r["id"], r["verdict"]) for r in rows] == [
+        ("wehrpflg/__2", "hit"), ("wehrpflg/__45", "paragraph missed"),
+        ("owig_1968/__30", "law missed")]
+    assert rows[1]["unresolved"] == ["Wehrpflichtgesetz § 45: ambiguous"]
+    assert rows[0]["unresolved"] == [] and rows[2]["unresolved"] == []
+    assert {r["verdict"] for r in selection.score_case(case, None)} == {"not_run"}
+    assert {r["verdict"] for r in selection.score_case(case, {"status": "failed"})} == {"failed"}
+
+
+def test_selection_recall_counts_unnamed_paragraphs_apart():
+    case = _selection_case([{"id": "wehrpflg/__2", "rolle": "geaendert"},
+                            {"id": "wehrpflg/__45", "rolle": "verwiesen"},
+                            {"id": "aufenthg_2004/__44a", "rolle": "nicht_genannt"}])
+    rows = selection.score_case(case, SELECTION_SAMPLE)
+    documents = [{"doc": "21/1853", "titel": "T"}]
+    summary = selection.summarize(rows, {"21/1853": SELECTION_SAMPLE}, documents, {})
+    assert summary["reachable"] == {"needed": 2, "hit": 1, "recall": 0.5}
+    assert summary["by_rolle"]["nicht_genannt"] == {"needed": 1, "hit": 0, "recall": 0.0}
+    assert summary["per_document"][0] == {
+        "doc": "21/1853", "titel": "T", "status": "ok", "references": 3, "ids": 2,
+        "unresolved": 1, "unresolved_reasons": {"ambiguous": 1}, "unbelegt": 0, "cost_usd": 0.01,
+        "chars": None, "chars_geaendert": None, "ranges": None}  # a sample without blocks
+    html = selection.render(summary | {"task": "lektor", "case_set": "x", "split": "dev",
+                                       "prompt_version": "v2", "model": "m", "effort": "low"},
+                            rows)
+    assert "https://www.gesetze-im-internet.de/wehrpflg/__45.html" in html
+
+
+def _retrieved(seen, *units):
+    """A ``provide`` serving ``(id, rolle, text)`` units, fitted into the budget it gets."""
+    from dataclasses import replace
+
+    from backend import bestandsrecht
+    from backend.bestandsrecht.reference import Reference, Resolved
+    from backend.bestandsrecht.resolve import Resolution
+
+    def provide(titel, text, budget):
+        seen.append(budget)
+        resolved = [Resolved(i, "§ 1", Reference(gesetz="G", paragraph="§ 1", rolle=rolle,
+                                                 beleg="b")) for i, rolle, _ in units]
+        fetched = [bestandsrecht.Fetched(i, "G", "§ " + i.split("__")[1], "", None, "20260101",
+                                         t, f"sha-{i}") for i, _, t in units]
+        context = bestandsrecht.Context(bestandsrecht.Selected([], [], {"model": "haiku"}),
+                                        Resolution(resolved, [], {}), fetched)
+        return replace(context, fit=bestandsrecht.fit(context, budget))
+    return provide
+
+
+def test_retrieved_feeds_the_pipelines_existing_law_and_records_it(tmp_path, monkeypatch):
+    case = _doc(tmp_path, repaired_by="21/1634")
+    pin = {"doc": "21/1634", "file": "beschlussempfehlung/21-1634.txt", "sha256": "abc"}
+    sent, budgets = [], []
+    _fake_query(monkeypatch, [], sent)
+    provide = _retrieved(budgets, ("g/__1", "geaendert", "Text eins."),
+                         ("g/__2", "verwiesen", "Text zwei."))
+
+    record = run.run_one(LEKTOR, _document(case), TEXT, "claude-x", "tag",
+                         committee=[(pin, "Beschlussempfehlung")], provide=provide)
+
+    assert budgets == [analyzer.MAX_INPUT_CHARS - len(TEXT) - len("Beschlussempfehlung")]
+    assert sent == [(analyzer.build_message(
+        "Entwurf eines Gesetzes", "21/537", TEXT,
+        context_docs=[("21/1634", "Beschlussempfehlung")],
+        bestandsrecht=[("G", "§ 1", "2026-01-01", "§ 1\nText eins."),
+                       ("G", "§ 2", "2026-01-01", "§ 2\nText zwei.")]), "claude-x")]
+    assert record["input_set"] == "entwurf+beschlussempfehlung+abgerufen"
+    assert record["inputs"][2] == {"typ": "bestandsrecht", "id": "g/__1", "gesetz": "G",
+                                   "paragraph": "§ 1 G", "rolle": "geaendert",
+                                   "sha256": "sha-g/__1", "chars": len("§ 1\nText eins.")}
+    assert record["bestandsrecht"]["decision"] == "vollstaendig"
+    assert record["bestandsrecht"]["fed_count"] == 2
+
+
+def test_retrieved_over_budget_follows_the_pipeline_rule(tmp_path, monkeypatch):
+    sent, budgets = [], []
+    _fake_query(monkeypatch, [], sent)
+    monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT) + len("§ 1\nText eins."))
+    provide = _retrieved(budgets, ("g/__1", "geaendert", "Text eins."),
+                         ("g/__2", "verwiesen", "Text zwei."))
+    record = run.run_one(LEKTOR, _document(_doc(tmp_path)), TEXT, "claude-x", "tag",
+                         provide=provide)
+    assert record["input_set"] == "entwurf+abgerufen"
+    assert record["bestandsrecht"]["decision"] == "nur_geaendert"
+    assert [i["id"] for i in record["inputs"][1:]] == ["g/__1"]
+    assert "Text zwei." not in sent[0][0]
+
+    monkeypatch.setattr(analyzer, "MAX_INPUT_CHARS", len(TEXT) - 1)
+    oversize = run.run_one(LEKTOR, _document(_doc(tmp_path)), TEXT, "claude-x", "tag",
+                           provide=provide)
+    assert oversize["status"] == "oversize" and len(budgets) == 1  # no selection for it
+
+
+def test_retrieved_runs_are_named_apart_and_need_the_lektor_without_the_oracle():
+    assert config.default_tag(LEKTOR, "m", "high", retrieved=True) == (
+        config.default_tag(LEKTOR, "m", "high") + "-abgerufen")
+    for argv in (["--retrieved", "--task", "exploit"],
+                 ["--retrieved", "--oracle", "--context", "bestandsrecht"]):
+        try:
+            run.main(argv + ["--dry-run"])
+        except SystemExit as exc:
+            assert exc.code == 2
+        else:
+            raise AssertionError(f"{argv} accepted")
+
+
+def test_selection_reports_how_a_hit_is_fed_and_the_blocks_sizes():
+    case = _selection_case([{"id": "wehrpflg/__2", "rolle": "geaendert"},
+                            {"id": "wehrpflg/__9", "rolle": "verwiesen"}])
+    sample = SELECTION_SAMPLE | {"ids": ["wehrpflg/__2", "wehrpflg/__9"], "blocks": [
+        {"key": "wehrpflg/__2", "form": "wortlaut", "rolle": "geaendert", "chars": 100,
+         "ids": ["wehrpflg/__2"]},
+        {"key": "wehrpflg/§§ 8a bis 20b", "form": "ueberschriften", "rolle": "verwiesen",
+         "chars": 40, "ids": ["wehrpflg/__8a", "wehrpflg/__9"]}]}
+    rows = selection.score_case(case, sample)
+    assert [(r["verdict"], r["fed_as"]) for r in rows] == [
+        ("hit", "wortlaut"), ("hit", "ueberschriften")]
+    summary = selection.summarize(rows, {"21/1853": sample}, [{"doc": "21/1853", "titel": "T"}], {})
+    doc = summary["per_document"][0]
+    assert (doc["chars"], doc["chars_geaendert"], doc["ranges"]) == (140, 100, 1)
+    assert summary["chars"] == 140

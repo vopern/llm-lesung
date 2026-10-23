@@ -18,7 +18,7 @@ load_dotenv()
 # No key is read here; the SDK's bundled CLI resolves credentials itself.
 
 # Model used by the analyzer; overridable for cheaper/experimental runs.
-ANALYSIS_MODEL = os.environ.get("ANALYSIS_MODEL", "claude-sonnet-5")
+ANALYSIS_MODEL = os.environ.get("ANALYSIS_MODEL", "claude-sonnet-5-5")
 
 # Reasoning effort of the analysis call (low, medium, high, xhigh, max). Set
 # explicitly because the model's default depends on the model and on the CLI.
@@ -29,9 +29,9 @@ ANALYSIS_EFFORT = os.environ.get("ANALYSIS_EFFORT", "high")
 PROMPT_VERSION = "v7"
 
 # Model of the rescue call that transcribes a response the schema rejected
-# (backend/analysis/structured.py). It copies text, and its result is checked
+# (backend/llm/structured.py). It copies text, and its result is checked
 # verbatim against the response, so a cheaper model is safe.
-RESCUE_MODEL = os.environ.get("RESCUE_MODEL", "claude-sonnet-5")
+RESCUE_MODEL = os.environ.get("RESCUE_MODEL", "claude-sonnet-5-5")
 
 # --- Red team (docs/REDTEAM.md) ---------------------------------------------
 # The adversarial second pass runs its own call with its own prompt, so it
@@ -44,6 +44,23 @@ REDTEAM_EFFORT = os.environ.get("REDTEAM_EFFORT", ANALYSIS_EFFORT)
 
 # Versioned tag of the adversarial prompt, stored with every red-team result.
 REDTEAM_PROMPT_VERSION = "v5"
+
+# --- Bestandsrecht selection ------------------------------------------------
+# The cheap call that lists the existing §§ a draft amends or cites
+# (backend/bestandsrecht/model.py). It reads the draft's Wortlaut only.
+BESTANDSRECHT_MODEL = os.environ.get("BESTANDSRECHT_MODEL", "claude-haiku-5-5")
+
+# Reasoning effort of the selection call. Listing what the draft names needs
+# little reasoning; higher efforts spend most output tokens on thinking.
+BESTANDSRECHT_EFFORT = os.environ.get("BESTANDSRECHT_EFFORT", "low")
+
+# Versioned tag of the selection prompt, written into every selection trace.
+BESTANDSRECHT_PROMPT_VERSION = "v3"
+
+# Whether the pipeline feeds the selected §§ after the draft ("on"/"off"). The
+# pipeline's --bestandsrecht / --no-bestandsrecht override it. Switching it never
+# re-analyzes a bill by itself; --force does.
+BESTANDSRECHT_CONTEXT = os.environ.get("BESTANDSRECHT_CONTEXT", "off").lower() == "on"
 
 # How many bills the pipeline analyzes concurrently. All SQLite writes stay on
 # the main thread; workers only do network I/O and the Claude call.
@@ -59,6 +76,11 @@ DB_PATH = os.environ.get("LLM_LESUNG_DB", "./data/llm-lesung.db")
 # Directory for cached Drucksache PDFs (set empty to disable caching).
 PDF_CACHE_DIR = os.environ.get("PDF_CACHE_DIR", "./data/pdf-cache")
 
+# gesetze-im-internet.de: its list of laws (``index.json``), the laws' cached
+# ``xml.zip`` files (``zips/``) and the selection and paragraph texts frozen per
+# bill (``frozen/<21-1853>/``).
+GII_DIR = os.environ.get("GII_DIR", "./data/gii")
+
 # One folder per pipeline run, named by its UTC start: ``errors.jsonl`` (failed
 # attempts) and ``traces/`` (the message stream of every Claude call).
 PIPELINE_RUNS_DIR = os.environ.get("PIPELINE_RUNS_DIR", "./data/pipeline/runs")
@@ -71,8 +93,13 @@ EVAL_PUBLIC_DIR = os.environ.get("EVAL_PUBLIC_DIR", "./data/eval-public")
 FEEDBACK_DIR = os.environ.get("FEEDBACK_DIR", "./data/feedback")
 
 # --- Website ----------------------------------------------------------------
-# Contact address shown on the About page; empty hides the contact section.
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "").strip()
+# Operator details, JSON {"name", "address": [lines], "email"}, all optional:
+# name + address make the Impressum, email the contact links. Read per request.
+OPERATOR_FILE = os.environ.get("OPERATOR_FILE", "./data/operator.json")
+
+# Hand-picked findings for the Fundstücke page, a JSON array of
+# {"bill_id", "finding", "headline", "why", "added", "media": [...]}. Read per request.
+HIGHLIGHTS_FILE = os.environ.get("HIGHLIGHTS_FILE", "./data/highlights.json")
 
 # --- DIP (Bundestag Dokumentations- und Informationssystem) -----------------
 # Public portal API key. Referer-locked (see DIP_HEADERS). Rotates ~yearly;

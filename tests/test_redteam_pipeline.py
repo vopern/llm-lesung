@@ -329,7 +329,7 @@ def test_run_traces_the_call_into_its_own_run_folder(conn, monkeypatch, runs_dir
     from types import SimpleNamespace
 
     from backend import tracelog
-    from backend.analysis import structured
+    from backend.llm import structured
 
     async def _run_query(user_message, on_message=None, **_):
         on_message(SimpleNamespace(content=[SimpleNamespace(text="call")]))

@@ -1,4 +1,4 @@
-"""The two passes the harness runs: the Lektor and the Angreifer.
+"""The two passes the harness runs: the Lektor and the red-team pass.
 
 A task names everything that differs between them — the case files, the call,
 the prompt version, the default model and effort, and how the pass's output
@@ -22,7 +22,6 @@ SEVERITY_ORDER = ["niedrig", "mittel", "hoch"]
 @dataclass(frozen=True)
 class Task:
     name: str  # also the testset suite and the run directory prefix
-    title: str  # report heading
     # Case set name -> YAML file; the first is the default.
     case_sets: dict
     prompt_version: str
@@ -60,13 +59,13 @@ def _exploit_description(e: dict) -> str:
             f"Aufwand: {e['aufwand']}. Fehlende Absicherung: {e['fehlende_absicherung']}")
 
 
-def _angreifer_findings(analysis: dict) -> list[dict]:
+def _exploit_findings(analysis: dict) -> list[dict]:
     return [{"category": e["muster"], "severity": e["severity"], "title": e["titel"],
              "description": _exploit_description(e), "quote": e["quote"]}
             for e in analysis["exploits"]]
 
 
-def _angreifer_risk(analysis: dict) -> Severity | None:
+def _exploit_risk(analysis: dict) -> Severity | None:
     """The highest exploit severity; ``None`` when nothing was reported."""
     found = [e["severity"] for e in analysis["exploits"]]
     return max(found, key=SEVERITY_ORDER.index) if found else None
@@ -81,17 +80,17 @@ def _case_sets(suite: str, prefix: str) -> dict:
 
 TASKS = {
     "lektor": Task(
-        name="lektor", title="Lektor evaluation",
+        name="lektor",
         case_sets=_case_sets("lektor", "cases-lektor"),
         prompt_version=backend_config.PROMPT_VERSION,
         model=backend_config.ANALYSIS_MODEL, effort=backend_config.ANALYSIS_EFFORT,
         module=analyzer, findings=_lektor_findings, risk=_lektor_risk, quiet_negatives=False),
-    "angreifer": Task(
-        name="angreifer", title="Angreifer evaluation",
-        case_sets=_case_sets("angreifer", "cases-angreifer"),
+    "exploit": Task(
+        name="exploit",
+        case_sets=_case_sets("exploit", "cases-exploit"),
         prompt_version=backend_config.REDTEAM_PROMPT_VERSION,
         model=backend_config.REDTEAM_MODEL, effort=backend_config.REDTEAM_EFFORT,
-        module=redteam, findings=_angreifer_findings, risk=_angreifer_risk, quiet_negatives=True),
+        module=redteam, findings=_exploit_findings, risk=_exploit_risk, quiet_negatives=True),
 }
 
 

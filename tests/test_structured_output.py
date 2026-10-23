@@ -12,6 +12,7 @@ import pytest
 from claude_agent_sdk import (
     AssistantMessage,
     ResultMessage,
+    SystemMessage,
     TextBlock,
     ThinkingBlock,
     ToolResultBlock,
@@ -20,7 +21,8 @@ from claude_agent_sdk import (
 )
 
 from backend import errorlog
-from backend.analysis import analyzer, redteam, structured
+from backend.analysis import analyzer, redteam
+from backend.llm import structured
 from backend.analysis.schema import BillAnalysis, RedTeamAnalysis
 
 REJECTED = ("Output does not match required schema: root: must have required property "
@@ -225,6 +227,18 @@ def test_parse_answer_never_accepts_a_partial_or_broken_answer(texts, why):
     assert output is None and why in reason
 
 
+def test_parse_answer_accepts_a_category_written_with_umlauts():
+    finding = FINDING | {"category": "vollständigkeit"}
+    output, why = structured.parse_answer([_json(_analysis(findings=[finding]))], BillAnalysis)
+    assert why == "" and output.findings[0].category == "vollstaendigkeit"
+
+
+def test_parse_answer_names_where_the_object_mismatches():
+    finding = FINDING | {"category": "begruendung"}
+    output, why = structured.parse_answer([_json(_analysis(findings=[finding]))], BillAnalysis)
+    assert output is None and "at findings.0.category" in why
+
+
 def test_success_needs_no_rescue(monkeypatch):
     prompts = _fake_query(monkeypatch, _answered(_json(_analysis())))
     run = _run()
@@ -320,6 +334,12 @@ def test_verify_accepts_umlauts_escapes_and_whitespace_as_written():
     assert structured.verify(BillAnalysis.model_validate(_analysis()), [payload], []) is None
 
 
+def test_verify_accepts_an_enum_value_the_answer_wrote_with_umlauts():
+    answer = _analysis(findings=[FINDING | {"category": "vollständigkeit"}])
+    output = BillAnalysis.model_validate(answer)
+    assert structured.verify(output, [], [json.dumps(answer, ensure_ascii=False)]) is None
+
+
 def test_verify_works_for_the_red_team_schema():
     exploit = {"muster": "schwellenwert", "akteur": "Ein Betreiber mit mehreren Anlagen.",
                "titel": "Aufteilung unter die Schwelle", "schritte": ["Anlage in zwei Teile teilen."],
@@ -355,6 +375,23 @@ def test_a_response_cut_off_at_the_token_limit_is_not_rescued(monkeypatch):
     with pytest.raises(structured.StructuredOutputError, match="token limit"):
         _run()
     assert prompts == []
+
+
+@pytest.mark.parametrize("valid_after", [False, True])
+def test_a_call_the_cli_continued_after_the_output_limit_is_never_used(monkeypatch, valid_after):
+    # The CLI cuts the answer, injects a "resume" message, compacts the conversation
+    # and lets the model go on: what follows did not see the whole input.
+    after = _json(_analysis()) if valid_after else "Welchen Weg möchtest du?"
+    main = ([_response(TextBlock(text=_broken(_analysis())), stop_reason=None),
+             UserMessage(content=[TextBlock(text="Output token limit hit. Resume directly.")]),
+             SystemMessage(subtype="compact_boundary", data={}),
+             _response(TextBlock(text=after), stop_reason="end_turn"),
+             _result("success")], None)
+    prompts = _fake_query(monkeypatch, main)
+    with pytest.raises(structured.StructuredOutputError, match="continued the call") as err:
+        _run()
+    assert "Output token limit hit" in str(err.value) and "compaction" in str(err.value)
+    assert prompts == []  # no rescue call
 
 
 def test_a_response_with_only_thinking_is_not_rescued(monkeypatch):

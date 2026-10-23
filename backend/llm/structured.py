@@ -13,7 +13,9 @@ transcribes the complete answer text into the schema. ``verify`` checks the
 transcription (every free-text value verbatim in the answer, every enum value
 in it, every empty list named in it, no prose of the JSON part dropped) and
 rejects one that fails. A response cut off at the token limit is never
-rescued.
+rescued, and neither is one the CLI continued on its own: after an output limit
+it injects a "resume" message and compacts the conversation, so whatever comes
+after was written without the full input.
 
 Thinking is never rescue material: an answer the model did not write is not an
 answer.
@@ -26,10 +28,11 @@ from collections.abc import Callable
 from dataclasses import replace
 from typing import Any, NamedTuple
 
-from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
+from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, UserMessage, query
 from pydantic import BaseModel, ValidationError
 
 from backend import config
+from backend.text import ascii_umlauts
 
 _log = logging.getLogger("llm_lesung.structured")
 
@@ -144,6 +147,8 @@ class AttemptLog:
         self.stop_reasons: list[str] = []
         # Texts of the CLI's own notices (``SYNTHETIC_MODEL``), kept for the error.
         self.notices: list[str] = []
+        # What the CLI added on its own: an injected user message, a compaction.
+        self.continued: list[str] = []
         self.session_id: str | None = None
         self._by_id: dict[str, dict] = {}
 
@@ -154,7 +159,14 @@ class AttemptLog:
         stop_reason = getattr(message, "stop_reason", None)
         if stop_reason and getattr(message, "model", None) is not None:
             self.stop_reasons.append(stop_reason)
+        if getattr(message, "subtype", None) == "compact_boundary":
+            self.continued.append("compaction")
         content = getattr(message, "content", None)
+        if isinstance(message, UserMessage):
+            texts = [t for b in content if isinstance(t := getattr(b, "text", None), str)] \
+                if isinstance(content, list) else [str(content or "")]
+            if texts:
+                self.continued.append(" ".join(texts)[:200])
         if not isinstance(content, list):
             return
         if getattr(message, "model", None) == SYNTHETIC_MODEL:
@@ -246,7 +258,7 @@ def parse_answer[M: BaseModel](texts: list[str], model: type[M]) -> tuple[M | No
     whole text, a code fence and the outermost braces, each after at most one
     unwrapping step (``_candidates``).
     """
-    why = "no text in the response"
+    why, mismatch = "no text in the response", ""
     for text in [*reversed(texts), "\n".join(texts)] if texts else []:
         for candidate in _json_texts(text):
             try:
@@ -263,9 +275,11 @@ def parse_answer[M: BaseModel](texts: list[str], model: type[M]) -> tuple[M | No
                 try:
                     return model.model_validate(item), ""
                 except ValidationError as exc:
-                    why = f"answer does not match the schema ({exc.error_count()} errors: " \
-                          f"{exc.errors()[0]['msg']} at {'.'.join(map(str, exc.errors()[0]['loc']))})"
-    return None, why
+                    # The first mismatch is the object itself, not one of its values.
+                    mismatch = mismatch or (
+                        f"answer does not match the schema ({exc.error_count()} errors: "
+                        f"{exc.errors()[0]['msg']} at {'.'.join(map(str, exc.errors()[0]['loc']))})")
+    return None, mismatch or why
 
 
 def answer_entry(log: AttemptLog) -> dict:
@@ -355,7 +369,7 @@ def verify(output: BaseModel, payloads: list[str], texts: list[str]) -> str | No
         norm = _normalize(value)
         if kind == "text" and (not norm or norm not in material):
             return f"text not in the response: {value[:80]!r}"
-        if kind == "enum" and norm.casefold() not in material.casefold():
+        if kind == "enum" and norm.casefold() not in ascii_umlauts(material.casefold()):
             return f"enum value not in the response: {value!r}"
     for name in _empty_lists(output.model_dump()):
         if name not in material:
@@ -478,6 +492,13 @@ async def run[M: BaseModel](
                       thinking=options.thinking or THINKING)
     log = AttemptLog("main")
     result, error = await _stream(prompt, options, log, on_message)
+    if log.continued:
+        # A tool-less single-turn call gets no user message: the CLI continued it
+        # (output limit, compaction), and nothing after that saw the whole input.
+        raise StructuredOutputError(
+            "the CLI continued the call on its own (output limit or compaction), "
+            f"not used: {'; '.join(log.continued)}", [answer_entry(log)],
+            log.session_id) from error
     output, why = parse_answer(log.texts, model)
     if output is not None:
         return StructuredRun(output, result, [], None, None)

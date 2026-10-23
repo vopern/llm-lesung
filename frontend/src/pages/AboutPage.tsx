@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchMeta } from "../api";
+import { useOperator } from "../operator";
 import { useI18n } from "../i18n";
 import { CATEGORY_LABELS } from "../format";
 
@@ -49,19 +48,8 @@ export function AboutPage() {
   const { t, lang } = useI18n();
   const de = lang === "de";
 
-  // The contact address is server configuration; without one the section stays hidden.
-  const [contactEmail, setContactEmail] = useState<string | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    fetchMeta()
-      .then((meta) => {
-        if (!cancelled) setContactEmail(meta.contact_email);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Without an operator email the contact section stays hidden.
+  const contactEmail = useOperator()?.email;
 
   return (
     <article className="about-page prose">

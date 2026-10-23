@@ -2,7 +2,7 @@
 # `make deploy`. The app image arrives via `docker save | rsync | docker load`, so
 # it is never built or pulled there; the DB is rsync'd into ./data separately
 # (`make push-db`). The app itself needs no configuration; /app/.env (written by
-# `make deploy`) only carries the optional tunnel settings and contact address.
+# `make deploy`) only carries the optional tunnel settings.
 services:
   web:
     image: llm-lesung:latest
@@ -11,8 +11,6 @@ services:
       - "80:8000"
     volumes:
       - ./data:/app/data
-    environment:
-      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
     logging:
       driver: json-file
       options:

@@ -10,8 +10,12 @@ from pathlib import Path
 
 EVAL_DIR = Path(os.environ.get("EVAL_DIR", "./data/eval"))
 
+# The existing law ``--retrieved`` runs read: selection and texts frozen per
+# document, shared by every run.
+RETRIEVED_DIR = EVAL_DIR / "bestandsrecht"
+
 # Parallel calls; every one is a paid Claude call.
-CONCURRENCY = int(os.environ.get("EVAL_CONCURRENCY", "4"))
+CONCURRENCY = int(os.environ.get("EVAL_CONCURRENCY", "10"))
 
 # The Agent SDK's reasoning-effort levels.
 EFFORTS = ["low", "medium", "high", "xhigh", "max"]
@@ -19,7 +23,7 @@ EFFORTS = ["low", "medium", "high", "xhigh", "max"]
 
 def default_tag(task, model: str, effort: str | None = None,
                 max_turns: int | None = None, oracle: bool = False,
-                committee: bool = False) -> str:
+                committee: bool = False, retrieved: bool = False) -> str:
     """Prompt version, model, effort, turn limit and input set: a run directory never mixes them.
 
     The task's own turn limit adds nothing to the name; neither does the draft
@@ -34,6 +38,8 @@ def default_tag(task, model: str, effort: str | None = None,
         tag += "-oracle-bestandsrecht"
     if committee:
         tag += "-beschlussempfehlung"
+    if retrieved:
+        tag += "-abgerufen"
     return tag
 
 
